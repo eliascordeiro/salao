@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
+    console.log("📝 [availabilities POST] Dados recebidos:", JSON.stringify(data, null, 2));
+    
     const { staffId, date, dayOfWeek, startTime, endTime, available, reason, type } = data;
 
     // Validações básicas
@@ -159,7 +161,8 @@ export async function POST(request: NextRequest) {
       available: available !== undefined ? available : (type === "RECURRING" ? true : false),
       reason: reason || null,
       type: type || "BLOCK",
-      createdBy: session.user.id || null,
+      // createdBy opcional - session.user pode não ter id
+      ...(session.user?.email && { createdBy: session.user.email }),
     };
 
     // Adicionar date ou dayOfWeek conforme o tipo
@@ -170,6 +173,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Criar disponibilidade/bloqueio/slot recorrente
+    console.log("💾 [availabilities POST] Criando com dados:", JSON.stringify(createData, null, 2));
+    
     const availability = await prisma.availability.create({
       data: createData,
       include: {
@@ -182,11 +187,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("✅ [availabilities POST] Criado com sucesso:", availability.id);
     return NextResponse.json(availability, { status: 201 });
   } catch (error) {
-    console.error("Erro ao criar disponibilidade:", error);
+    console.error("❌ [availabilities POST] Erro ao criar disponibilidade:", error);
+    
+    // Retornar mais detalhes do erro
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+    const errorDetails = error instanceof Error ? error.stack : undefined;
+    
+    console.error("Detalhes:", errorDetails);
+    
     return NextResponse.json(
-      { error: "Erro ao criar disponibilidade" },
+      { 
+        error: "Erro ao criar disponibilidade",
+        message: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+      },
       { status: 500 }
     );
   }
