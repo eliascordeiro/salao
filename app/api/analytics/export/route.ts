@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { subDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// Força renderização dinâmica (usa headers para auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * API de Exportação de Relatórios
  * GET /api/analytics/export?type=bookings&period=30d

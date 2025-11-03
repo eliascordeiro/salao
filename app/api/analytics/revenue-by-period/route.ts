@@ -16,6 +16,9 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// Força renderização dinâmica (usa headers para auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * API de Receita por Período
  * GET /api/analytics/revenue-by-period?days=30&groupBy=day

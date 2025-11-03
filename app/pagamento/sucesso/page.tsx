@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -155,5 +155,22 @@ export default function PaymentSuccessPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="p-8 max-w-md w-full">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-purple-600 animate-spin mb-4" />
+            <p className="text-gray-600">Verificando pagamento...</p>
+          </div>
+        </Card>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }

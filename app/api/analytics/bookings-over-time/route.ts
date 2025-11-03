@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+// Força renderização dinâmica (usa headers para auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * API de Agendamentos ao Longo do Tempo
  * GET /api/analytics/bookings-over-time?days=30

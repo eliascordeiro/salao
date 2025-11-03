@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { XCircle, ArrowLeft, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function PaymentCancelledPage() {
+function PaymentCancelledContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("booking_id");
 
@@ -90,5 +91,21 @@ export default function PaymentCancelledPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentCancelledPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <Card className="p-8 max-w-md w-full">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          </div>
+        </Card>
+      </div>
+    }>
+      <PaymentCancelledContent />
+    </Suspense>
   );
 }

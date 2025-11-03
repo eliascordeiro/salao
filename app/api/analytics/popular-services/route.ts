@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { subDays } from "date-fns";
 
+// Força renderização dinâmica (usa headers para auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * API de Serviços Mais Populares
  * GET /api/analytics/popular-services?days=30&limit=10

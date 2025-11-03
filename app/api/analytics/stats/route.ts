@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay, subDays, subMonths } from "date-fns";
 
+// Força renderização dinâmica (usa headers para auth)
+export const dynamic = 'force-dynamic';
+
 /**
  * API de Estatísticas Gerais
  * GET /api/analytics/stats?period=7d|30d|3m|1y
