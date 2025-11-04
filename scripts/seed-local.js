@@ -69,7 +69,6 @@ async function seedLocal() {
         email: 'carlos@estiloecorte.com.br',
         phone: '(11) 98888-1111',
         specialty: 'Cortes Clássicos e Barba',
-        bio: 'Mais de 10 anos de experiência em cortes clássicos e modernos',
         workDays: '1,2,3,4,5,6', // Seg-Sáb
         workStart: '09:00',
         workEnd: '18:00',
@@ -89,7 +88,6 @@ async function seedLocal() {
         email: 'joao@estiloecorte.com.br',
         phone: '(11) 98888-2222',
         specialty: 'Cortes Modernos e Degradês',
-        bio: 'Especialista em cortes modernos e tendências',
         workDays: '1,2,3,4,5', // Seg-Sex
         workStart: '10:00',
         workEnd: '19:00',
