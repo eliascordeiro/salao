@@ -1,35 +1,92 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, Scissors, Star, Users, Sparkles } from "lucide-react";
+import { Calendar, Clock, Scissors, Star, Users, Sparkles, Menu, X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Header/Navbar */}
       <nav className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Scissors className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">AgendaSalão</span>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Scissors className="h-8 w-8 text-blue-600" />
+              <span className="text-2xl font-bold text-gray-900">AgendaSalão</span>
+            </div>
+
+            {/* Desktop Menu */}
+            <div className="hidden md:flex gap-6 items-center">
+              <Link href="#recursos" className="text-gray-600 hover:text-blue-600 transition">
+                Recursos
+              </Link>
+              <Link href="#como-funciona" className="text-gray-600 hover:text-blue-600 transition">
+                Como Funciona
+              </Link>
+              <Link href="#precos" className="text-gray-600 hover:text-blue-600 transition">
+                Preços
+              </Link>
+              <Link href="/login">
+                <Button variant="outline">Entrar</Button>
+              </Link>
+              <Link href="/register">
+                <Button>Começar Grátis</Button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 text-gray-600 hover:text-blue-600 transition"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
-          <div className="hidden md:flex gap-6 items-center">
-            <Link href="#recursos" className="text-gray-600 hover:text-blue-600 transition">
-              Recursos
-            </Link>
-            <Link href="#como-funciona" className="text-gray-600 hover:text-blue-600 transition">
-              Como Funciona
-            </Link>
-            <Link href="#precos" className="text-gray-600 hover:text-blue-600 transition">
-              Preços
-            </Link>
-            <Link href="/login">
-              <Button variant="outline">Entrar</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Começar Grátis</Button>
-            </Link>
-          </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden mt-4 pb-4 border-t pt-4">
+              <div className="flex flex-col gap-4">
+                <Link 
+                  href="#recursos" 
+                  className="text-gray-600 hover:text-blue-600 transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Recursos
+                </Link>
+                <Link 
+                  href="#como-funciona" 
+                  className="text-gray-600 hover:text-blue-600 transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Como Funciona
+                </Link>
+                <Link 
+                  href="#precos" 
+                  className="text-gray-600 hover:text-blue-600 transition py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Preços
+                </Link>
+                <Link href="/login" className="w-full">
+                  <Button variant="outline" className="w-full">Entrar</Button>
+                </Link>
+                <Link href="/register" className="w-full">
+                  <Button className="w-full">Começar Grátis</Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
