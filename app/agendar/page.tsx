@@ -13,10 +13,15 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  ArrowRight,
+  AlertCircle,
 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { AnimatedText } from "@/components/ui/animated-text";
+import { GridBackground } from "@/components/ui/grid-background";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -274,289 +279,475 @@ function BookingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {STEPS.map((step, index) => (
-              <div key={step.id} className="flex-1">
-                <div className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                      currentStep >= step.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    <step.icon className="h-5 w-5" />
-                  </div>
-                  <div className="ml-3 hidden sm:block">
-                    <p
-                      className={`text-sm font-medium ${
-                        currentStep >= step.id
-                          ? "text-blue-600"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {step.name}
-                    </p>
-                  </div>
-                  {index < STEPS.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-4 ${
-                        currentStep > step.id ? "bg-blue-600" : "bg-gray-200"
-                      }`}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Step Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {currentStep === 1 && "Escolha o Serviço"}
-              {currentStep === 2 && "Escolha o Profissional"}
-              {currentStep === 3 && "Escolha Data e Horário"}
-              {currentStep === 4 && "Confirme seu Agendamento"}
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            {/* Step 1: Serviço */}
-            {currentStep === 1 && (
-              <div className="space-y-4">
-                {services.map((service) => (
-                  <div
-                    key={service.id}
-                    className={`p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-colors ${
-                      bookingData.serviceId === service.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200"
-                    }`}
-                    onClick={() => handleServiceSelect(service)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold text-lg">{service.name}</h3>
-                        {service.description && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {service.description}
-                          </p>
+      <GridBackground>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Progress Steps Railway */}
+          <GlassCard className="mb-8 animate-fadeInUp">
+            <div className="p-6">
+              <div className="flex items-center justify-between gap-2">
+                {STEPS.map((step, index) => (
+                  <div key={step.id} className="flex-1">
+                    <div className="flex items-center">
+                      {/* Step Icon */}
+                      <div
+                        className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all ${
+                          currentStep >= step.id
+                            ? "bg-gradient-primary glow-primary"
+                            : "bg-background-alt"
+                        }`}
+                      >
+                        <step.icon 
+                          className={`h-6 w-6 transition-colors ${
+                            currentStep >= step.id ? "text-white" : "text-foreground-muted"
+                          }`}
+                        />
+                        {currentStep > step.id && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-success rounded-full flex items-center justify-center">
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {service.duration} min
-                          </span>
-                          <span className="flex items-center font-semibold text-green-600">
-                            <DollarSign className="h-4 w-4 mr-1" />
-                            R$ {service.price.toFixed(2)}
-                          </span>
-                        </div>
                       </div>
-                      {bookingData.serviceId === service.id && (
-                        <Check className="h-6 w-6 text-blue-600" />
+
+                      {/* Step Label */}
+                      <div className="ml-3 hidden sm:block">
+                        <p
+                          className={`text-sm font-semibold transition-colors ${
+                            currentStep >= step.id
+                              ? "text-primary"
+                              : "text-foreground-muted"
+                          }`}
+                        >
+                          {step.name}
+                        </p>
+                      </div>
+
+                      {/* Connector Line */}
+                      {index < STEPS.length - 1 && (
+                        <div className="flex-1 mx-3">
+                          <div
+                            className={`h-1 rounded-full transition-all ${
+                              currentStep > step.id 
+                                ? "bg-gradient-primary" 
+                                : "bg-border"
+                            }`}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          </GlassCard>
 
-            {/* Step 2: Profissional */}
-            {currentStep === 2 && (
-              <div className="space-y-4">
-                {staff.length === 0 ? (
-                  <p className="text-center text-gray-600 py-8">
-                    Nenhum profissional disponível para este serviço
-                  </p>
-                ) : (
-                  staff.map((staffMember) => (
+          {/* Step Content Railway */}
+          <GlassCard className="animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+            <div className="p-8">
+              {/* Step Title */}
+              <h2 className="text-3xl font-bold text-foreground mb-8">
+                {currentStep === 1 && (
+                  <AnimatedText gradient="primary">Escolha o Serviço</AnimatedText>
+                )}
+                {currentStep === 2 && (
+                  <AnimatedText gradient="accent">Escolha o Profissional</AnimatedText>
+                )}
+                {currentStep === 3 && (
+                  <AnimatedText gradient="primary">Escolha Data e Horário</AnimatedText>
+                )}
+                {currentStep === 4 && (
+                  <AnimatedText gradient="accent">Confirme seu Agendamento</AnimatedText>
+                )}
+              </h2>
+
+              {/* Step 1: Serviço Railway */}
+              {currentStep === 1 && (
+                <div className="space-y-4">
+                  {services.map((service, index) => (
                     <div
-                      key={staffMember.id}
-                      className={`p-4 border rounded-lg cursor-pointer hover:border-blue-500 transition-colors ${
-                        bookingData.staffId === staffMember.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200"
+                      key={service.id}
+                      className={`group relative p-6 rounded-xl cursor-pointer transition-all animate-fadeInUp ${
+                        bookingData.serviceId === service.id
+                          ? "bg-gradient-primary glow-primary"
+                          : "bg-background-alt border border-border hover:border-primary hover:glow-primary"
                       }`}
-                      onClick={() => handleStaffSelect(staffMember)}
+                      style={{ animationDelay: `${300 + index * 100}ms` }}
+                      onClick={() => handleServiceSelect(service)}
                     >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-semibold text-lg">
-                            {staffMember.name}
+                      <div className="flex justify-between items-start gap-6">
+                        <div className="flex-1">
+                          <h3 className={`font-bold text-xl mb-2 transition-colors ${
+                            bookingData.serviceId === service.id
+                              ? "text-white"
+                              : "text-foreground group-hover:text-primary"
+                          }`}>
+                            {service.name}
                           </h3>
-                          {staffMember.specialty && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              {staffMember.specialty}
+                          
+                          {service.description && (
+                            <p className={`text-sm mb-4 transition-colors ${
+                              bookingData.serviceId === service.id
+                                ? "text-white/80"
+                                : "text-foreground-muted"
+                            }`}>
+                              {service.description}
                             </p>
                           )}
+                          
+                          <div className="flex items-center gap-6">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                              bookingData.serviceId === service.id
+                                ? "bg-white/20"
+                                : "bg-accent/20"
+                            }`}>
+                              <Clock className={`h-4 w-4 ${
+                                bookingData.serviceId === service.id ? "text-white" : "text-accent"
+                              }`} />
+                              <span className={`text-sm font-medium ${
+                                bookingData.serviceId === service.id ? "text-white" : "text-foreground"
+                              }`}>
+                                {service.duration} min
+                              </span>
+                            </div>
+                            
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+                              bookingData.serviceId === service.id
+                                ? "bg-white/20"
+                                : "bg-success/20"
+                            }`}>
+                              <DollarSign className={`h-4 w-4 ${
+                                bookingData.serviceId === service.id ? "text-white" : "text-success"
+                              }`} />
+                              <span className={`text-sm font-bold ${
+                                bookingData.serviceId === service.id ? "text-white" : "text-success"
+                              }`}>
+                                R$ {service.price.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        {bookingData.staffId === staffMember.id && (
-                          <Check className="h-6 w-6 text-blue-600" />
+                        
+                        {bookingData.serviceId === service.id && (
+                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white flex items-center justify-center animate-pulseGlow">
+                            <Check className="h-6 w-6 text-primary" />
+                          </div>
                         )}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* Step 3: Data e Hora */}
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                {/* Seleção de Data */}
-                <div>
-                  <Label className="mb-3 block">Escolha a Data</Label>
-                  <div className="grid grid-cols-7 gap-2">
-                    {availableDates.map((day) => (
-                      <button
-                        key={day.date}
-                        onClick={() => handleDateSelect(day.date)}
-                        className={`p-3 border rounded-lg text-center hover:border-blue-500 transition-colors ${
-                          bookingData.date === day.date
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200"
-                        }`}
-                      >
-                        <div className="text-xs text-gray-600">{day.weekday}</div>
-                        <div className="font-semibold">{day.label}</div>
-                      </button>
-                    ))}
-                  </div>
+                  ))}
                 </div>
+              )}
 
-                {/* Seleção de Hora */}
-                {bookingData.date && (
-                  <div>
-                    <Label className="mb-3 block">Escolha o Horário</Label>
-                    {loading ? (
-                      <p className="text-center text-gray-600 py-8">
-                        Carregando horários disponíveis...
+              {/* Step 2: Profissional Railway */}
+              {currentStep === 2 && (
+                <div className="space-y-4">
+                  {staff.length === 0 ? (
+                    <div className="text-center py-16">
+                      <User className="h-16 w-16 text-foreground-muted mx-auto mb-4 opacity-50" />
+                      <p className="text-foreground-muted text-lg">
+                        Nenhum profissional disponível para este serviço
                       </p>
-                    ) : availableSlots.length === 0 ? (
-                      <p className="text-center text-gray-600 py-8">
-                        Nenhum horário disponível para esta data
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                        {availableSlots.map((slot) => (
-                          <button
-                            key={slot}
-                            onClick={() => handleTimeSelect(slot)}
-                            className={`p-3 border rounded-lg text-center hover:border-blue-500 transition-colors ${
-                              bookingData.time === slot
-                                ? "border-blue-500 bg-blue-50 font-semibold"
-                                : "border-gray-200"
-                            }`}
-                          >
-                            {slot}
-                          </button>
-                        ))}
+                    </div>
+                  ) : (
+                    staff.map((staffMember, index) => (
+                      <div
+                        key={staffMember.id}
+                        className={`group relative p-6 rounded-xl cursor-pointer transition-all animate-fadeInUp ${
+                          bookingData.staffId === staffMember.id
+                            ? "bg-gradient-accent glow-accent"
+                            : "bg-background-alt border border-border hover:border-accent hover:glow-accent"
+                        }`}
+                        style={{ animationDelay: `${300 + index * 100}ms` }}
+                        onClick={() => handleStaffSelect(staffMember)}
+                      >
+                        <div className="flex justify-between items-center gap-6">
+                          <div className="flex items-center gap-4 flex-1">
+                            {/* Avatar */}
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                              bookingData.staffId === staffMember.id
+                                ? "bg-white/20"
+                                : "bg-primary/20 group-hover:bg-accent/30"
+                            }`}>
+                              <User className={`h-8 w-8 ${
+                                bookingData.staffId === staffMember.id
+                                  ? "text-white"
+                                  : "text-primary group-hover:text-accent"
+                              }`} />
+                            </div>
+                            
+                            <div className="flex-1">
+                              <h3 className={`font-bold text-xl mb-1 transition-colors ${
+                                bookingData.staffId === staffMember.id
+                                  ? "text-white"
+                                  : "text-foreground group-hover:text-accent"
+                              }`}>
+                                {staffMember.name}
+                              </h3>
+                              
+                              {staffMember.specialty && (
+                                <p className={`text-sm transition-colors ${
+                                  bookingData.staffId === staffMember.id
+                                    ? "text-white/80"
+                                    : "text-foreground-muted"
+                                }`}>
+                                  {staffMember.specialty}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {bookingData.staffId === staffMember.id && (
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white flex items-center justify-center animate-pulseGlow">
+                              <Check className="h-6 w-6 text-accent" />
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                    ))
+                  )}
+                </div>
+              )}
 
-            {/* Step 4: Confirmação */}
-            {currentStep === 4 && (
-              <div className="space-y-6">
-                {/* Resumo do Agendamento */}
-                <div className="bg-gray-50 p-6 rounded-lg space-y-4">
+              {/* Step 3: Data e Hora Railway */}
+              {currentStep === 3 && (
+                <div className="space-y-8">
+                  {/* Seleção de Data */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-600">Serviço</h3>
-                    <p className="text-lg font-semibold">{selectedService?.name}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-600">
-                      Profissional
-                    </h3>
-                    <p className="text-lg font-semibold">{selectedStaff?.name}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-600">Data</h3>
-                      <p className="text-lg font-semibold">
-                        {format(new Date(bookingData.date), "dd/MM/yyyy", {
-                          locale: ptBR,
-                        })}
-                      </p>
+                    <Label className="mb-4 block text-lg font-semibold text-foreground flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      Escolha a Data
+                    </Label>
+                    <div className="grid grid-cols-7 gap-3">
+                      {availableDates.map((day, index) => (
+                        <button
+                          key={day.date}
+                          onClick={() => handleDateSelect(day.date)}
+                          className={`group p-4 rounded-xl text-center transition-all animate-fadeInUp ${
+                            bookingData.date === day.date
+                              ? "bg-gradient-primary glow-primary"
+                              : "bg-background-alt border border-border hover:border-primary hover:glow-primary"
+                          }`}
+                          style={{ animationDelay: `${300 + index * 50}ms` }}
+                        >
+                          <div className={`text-xs font-medium mb-1 transition-colors ${
+                            bookingData.date === day.date
+                              ? "text-white/80"
+                              : "text-foreground-muted"
+                          }`}>
+                            {day.weekday}
+                          </div>
+                          <div className={`font-bold text-lg transition-colors ${
+                            bookingData.date === day.date
+                              ? "text-white"
+                              : "text-foreground group-hover:text-primary"
+                          }`}>
+                            {day.label}
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                  </div>
+
+                  {/* Seleção de Hora */}
+                  {bookingData.date && (
                     <div>
-                      <h3 className="text-sm font-medium text-gray-600">Horário</h3>
-                      <p className="text-lg font-semibold">{bookingData.time}</p>
+                      <Label className="mb-4 block text-lg font-semibold text-foreground flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-accent" />
+                        Escolha o Horário
+                      </Label>
+                      {loading ? (
+                        <div className="text-center py-16">
+                          <div className="animate-pulseGlow inline-block">
+                            <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                            <p className="text-foreground-muted text-lg">Carregando horários disponíveis...</p>
+                          </div>
+                        </div>
+                      ) : availableSlots.length === 0 ? (
+                        <div className="text-center py-16">
+                          <AlertCircle className="h-16 w-16 text-foreground-muted mx-auto mb-4 opacity-50" />
+                          <p className="text-foreground-muted text-lg">
+                            Nenhum horário disponível para esta data
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
+                          {availableSlots.map((slot, index) => (
+                            <button
+                              key={slot}
+                              onClick={() => handleTimeSelect(slot)}
+                              className={`group p-4 rounded-xl text-center font-semibold transition-all animate-fadeInUp ${
+                                bookingData.time === slot
+                                  ? "bg-gradient-accent glow-accent text-white"
+                                  : "bg-background-alt border border-border hover:border-accent hover:glow-accent text-foreground hover:text-accent"
+                              }`}
+                              style={{ animationDelay: `${300 + index * 30}ms` }}
+                            >
+                              {slot}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+            {/* Step 4: Confirmação Railway */}
+              {currentStep === 4 && (
+                <div className="space-y-8">
+                  {/* Resumo do Agendamento */}
+                  <div className="bg-background-alt border border-success/30 p-8 rounded-2xl space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Calendar className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-foreground-muted uppercase tracking-wide mb-1">
+                          Serviço
+                        </h3>
+                        <p className="text-2xl font-bold text-foreground">{selectedService?.name}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+                        <User className="h-6 w-6 text-accent" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-foreground-muted uppercase tracking-wide mb-1">
+                          Profissional
+                        </h3>
+                        <p className="text-2xl font-bold text-foreground">{selectedStaff?.name}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Calendar className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground-muted uppercase tracking-wide mb-1">
+                            Data
+                          </h3>
+                          <p className="text-xl font-bold text-foreground">
+                            {format(new Date(bookingData.date), "dd/MM/yyyy", {
+                              locale: ptBR,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+                          <Clock className="h-6 w-6 text-accent" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-foreground-muted uppercase tracking-wide mb-1">
+                            Horário
+                          </h3>
+                          <p className="text-xl font-bold text-foreground">{bookingData.time}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-xl bg-success/20 flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-success" />
+                          </div>
+                          <h3 className="text-lg font-medium text-foreground-muted">Valor Total</h3>
+                        </div>
+                        <p className="text-4xl font-bold text-success">
+                          R$ {selectedService?.price.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
+                  {/* Campo de Observações */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-600">Valor</h3>
-                    <p className="text-2xl font-bold text-green-600">
-                      R$ {selectedService?.price.toFixed(2)}
+                    <Label htmlFor="notes" className="text-lg font-semibold text-foreground flex items-center gap-2 mb-3">
+                      <AlertCircle className="h-5 w-5 text-foreground-muted" />
+                      Observações (opcional)
+                    </Label>
+                    <Input
+                      id="notes"
+                      placeholder="Digite alguma observação ou preferência..."
+                      value={bookingData.notes}
+                      onChange={(e) =>
+                        setBookingData({ ...bookingData, notes: e.target.value })
+                      }
+                      className="bg-background-alt border-border focus:border-primary"
+                    />
+                  </div>
+
+                  <div className="bg-warning/10 border border-warning/30 p-6 rounded-xl">
+                    <p className="text-sm text-foreground flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                      <span>
+                        <strong className="text-warning">Atenção:</strong> Seu agendamento será confirmado após
+                        análise. Você receberá uma notificação em breve.
+                      </span>
                     </p>
                   </div>
                 </div>
+              )}
+            </div>
+          </GlassCard>
 
-                {/* Campo de Observações */}
-                <div>
-                  <Label htmlFor="notes">
-                    Observações (opcional)
-                  </Label>
-                  <Input
-                    id="notes"
-                    placeholder="Digite alguma observação ou preferência..."
-                    value={bookingData.notes}
-                    onChange={(e) =>
-                      setBookingData({ ...bookingData, notes: e.target.value })
-                    }
-                    className="mt-2"
-                  />
-                </div>
+          {/* Navigation Buttons Railway */}
+          <div className="flex justify-between mt-8 gap-4">
+            <button
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className={`group px-6 py-3 rounded-xl font-medium transition-all ${
+                currentStep === 1
+                  ? "bg-background-alt text-foreground-muted cursor-not-allowed"
+                  : "bg-background-alt border border-border text-foreground hover:border-primary hover:text-primary"
+              }`}
+            >
+              <ChevronLeft className="h-5 w-5 mr-2 inline-block group-hover:-translate-x-1 transition-transform" />
+              Voltar
+            </button>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Atenção:</strong> Seu agendamento será confirmado após
-                    análise. Você receberá uma notificação em breve.
-                  </p>
-                </div>
-              </div>
+            {currentStep < 4 ? (
+              <GradientButton
+                variant="primary"
+                onClick={handleNext}
+                disabled={!canProceed()}
+                className={!canProceed() ? "opacity-50 cursor-not-allowed" : ""}
+              >
+                Próximo
+                <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </GradientButton>
+            ) : (
+              <GradientButton
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={submitting}
+                className={`min-w-[200px] ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {submitting ? (
+                  <>
+                    <Sparkles className="h-5 w-5 mr-2 animate-spin" />
+                    Agendando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-5 w-5 mr-2" />
+                    Confirmar Agendamento
+                    <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </GradientButton>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-
-          {currentStep < 4 ? (
-            <Button onClick={handleNext} disabled={!canProceed()}>
-              Próximo
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          ) : (
-            <Button onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Confirmando..." : "Confirmar Agendamento"}
-            </Button>
-          )}
+          </div>
         </div>
-      </div>
+      </GridBackground>
     </div>
   );
 }
@@ -564,11 +755,19 @@ function BookingContent() {
 export default function NewBookingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
-        </div>
+      <div className="min-h-screen bg-background">
+        <GridBackground>
+          <div className="container mx-auto px-4 py-20">
+            <GlassCard className="max-w-md mx-auto text-center py-16">
+              <div className="animate-pulseGlow inline-block mb-6">
+                <Sparkles className="h-16 w-16 text-primary mx-auto" />
+              </div>
+              <p className="text-xl text-foreground-muted font-medium">
+                Preparando agendamento...
+              </p>
+            </GlassCard>
+          </div>
+        </GridBackground>
       </div>
     }>
       <BookingContent />
