@@ -8,8 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "node prisma/seed.js",
+    "db:seed:local": "node scripts/seed-local.js",
+    "db:seed:prod": "node scripts/seed-production.js",
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
     "postinstall": "prisma generate"
   },
   "prisma": {

@@ -47,11 +47,11 @@ next-env.d.ts
 # logs
 *.log
 
-# scripts temporários
+# scripts temporários (mas não os oficiais)
 cleanup-*.js
 debug-*.js
-seed-*.js
 test-*.js
+# seed-*.js - REMOVIDO para permitir seed-local.js e seed-production.js oficiais
 
 # documentação de desenvolvimento
 CORRECAO_*.md
