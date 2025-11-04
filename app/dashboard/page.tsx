@@ -2,8 +2,10 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3 } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { AnimatedText } from "@/components/ui/animated-text"
+import { GridBackground } from "@/components/ui/grid-background"
+import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3, ArrowRight, Zap } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
@@ -126,218 +128,251 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Bem-vindo, {session.user.name}!
-          </h1>
-          <p className="text-gray-600">
-            Aqui está um resumo da sua atividade
-          </p>
+      <GridBackground>
+        <main className="container mx-auto px-4 py-12">
+          {/* Header Section Railway */}
+          <div className="mb-12 animate-fadeInUp">
+            <h1 className="text-4xl font-bold text-foreground mb-3">
+              Bem-vindo, <AnimatedText gradient="primary" animation="gradient">{session.user.name}</AnimatedText>!
+            </h1>
+            <p className="text-foreground-muted text-lg">
+              Aqui está um resumo da sua atividade nos últimos 30 dias
+            </p>
+          </div>
+
+        {/* Cards de Estatísticas Railway */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+          {/* Card Agendamentos */}
+          <GlassCard hover glow={bookingsGrowth >= 0 ? "success" : "primary"} className="group">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-foreground-muted mb-1">
+                  Agendamentos
+                </p>
+                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+              </div>
+              <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
+                <Calendar className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-foreground mb-3">{bookingsLast30}</div>
+            <div className="flex items-center">
+              {bookingsGrowth >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-success mr-1" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-error mr-1" />
+              )}
+              <span
+                className={`text-sm font-medium ${
+                  bookingsGrowth >= 0 ? "text-success" : "text-error"
+                }`}
+              >
+                {Math.abs(bookingsGrowth).toFixed(1)}%
+              </span>
+              <span className="text-sm text-foreground-muted ml-1">vs anterior</span>
+            </div>
+          </GlassCard>
+
+          {/* Card Receita */}
+          <GlassCard hover glow={revenueGrowth >= 0 ? "success" : "accent"} className="group">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-foreground-muted mb-1">
+                  Receita
+                </p>
+                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+              </div>
+              <div className="p-2 bg-gradient-success rounded-lg group-hover:scale-110 transition-transform">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-foreground mb-3">
+              R$ {(revenueLast30 / 1000).toFixed(1)}k
+            </div>
+            <div className="flex items-center">
+              {revenueGrowth >= 0 ? (
+                <TrendingUp className="h-4 w-4 text-success mr-1" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-error mr-1" />
+              )}
+              <span
+                className={`text-sm font-medium ${
+                  revenueGrowth >= 0 ? "text-success" : "text-error"
+                }`}
+              >
+                {Math.abs(revenueGrowth).toFixed(1)}%
+              </span>
+              <span className="text-sm text-foreground-muted ml-1">vs anterior</span>
+            </div>
+          </GlassCard>
+
+          {/* Card Taxa Conclusão */}
+          <GlassCard hover glow="accent" className="group">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-foreground-muted mb-1">
+                  Taxa de Conclusão
+                </p>
+                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+              </div>
+              <div className="p-2 bg-gradient-accent rounded-lg group-hover:scale-110 transition-transform">
+                <CheckCircle className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-foreground mb-3">{completionRate.toFixed(1)}%</div>
+            <p className="text-sm text-foreground-muted">
+              {completedLast30} de {bookingsLast30} concluídos
+            </p>
+          </GlassCard>
+
+          {/* Card Top Profissional */}
+          <GlassCard hover glow="primary" className="group">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-foreground-muted mb-1">
+                  Top Profissional
+                </p>
+                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+              </div>
+              <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-foreground mb-3 truncate">
+              {topStaff?.name || "-"}
+            </div>
+            <p className="text-sm text-foreground-muted">
+              {topStaffData.length > 0 ? `${topStaffData[0]._count.id} agendamentos` : "Sem dados"}
+            </p>
+          </GlassCard>
         </div>
 
-        {/* Cards de Estatísticas */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Agendamentos (30d)
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{bookingsLast30}</div>
-              <div className="flex items-center mt-2">
-                {bookingsGrowth >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                )}
-                <span
-                  className={`text-xs ${
-                    bookingsGrowth >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {Math.abs(bookingsGrowth).toFixed(1)}% vs mês anterior
-                </span>
+        {/* Quick Stats & Ações Rápidas Railway */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "400ms" }}>
+          {/* Visão Geral */}
+          <GlassCard hover>
+            <h3 className="text-lg font-bold text-foreground mb-4">Visão Geral</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-foreground-muted">Total de Clientes</span>
+                <span className="text-lg font-bold text-foreground">{stats.totalClients}</span>
               </div>
-            </CardContent>
-          </Card>
+              <div className="h-px bg-border/50"></div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-foreground-muted">Serviços Ativos</span>
+                <span className="text-lg font-bold text-foreground">{stats.totalServices}</span>
+              </div>
+              <div className="h-px bg-border/50"></div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-foreground-muted">Total de Agendamentos</span>
+                <span className="text-lg font-bold text-foreground">{stats.totalBookings}</span>
+              </div>
+            </div>
+          </GlassCard>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Receita (30d)
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                R$ {revenueLast30.toLocaleString("pt-BR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}
-              </div>
-              <div className="flex items-center mt-2">
-                {revenueGrowth >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                )}
-                <span
-                  className={`text-xs ${
-                    revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {Math.abs(revenueGrowth).toFixed(1)}% vs mês anterior
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Taxa de Conclusão
-              </CardTitle>
-              <CheckCircle className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completionRate.toFixed(1)}%</div>
-              <p className="text-xs text-gray-500 mt-1">
-                {completedLast30} de {bookingsLast30} concluídos
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Top Profissional
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {topStaff?.name || "-"}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {topStaffData.length > 0 ? `${topStaffData[0]._count.id} agendamentos` : "últimos 30 dias"}
-              </p>
-            </CardContent>
-          </Card>
+          {/* Ações Rápidas */}
+          <GlassCard hover className="md:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground">Ações Rápidas</h3>
+              <BarChart3 className="h-5 w-5 text-accent" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                href="/dashboard/relatorios"
+                className="glass-card p-4 hover:border-primary/50 transition-all text-center group"
+              >
+                <div className="p-2 bg-gradient-primary rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Relatórios</span>
+              </Link>
+              <Link
+                href="/dashboard/agendamentos"
+                className="glass-card p-4 hover:border-success/50 transition-all text-center group"
+              >
+                <div className="p-2 bg-gradient-success rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
+                  <Calendar className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Agendamentos</span>
+              </Link>
+              <Link
+                href="/dashboard/servicos"
+                className="glass-card p-4 hover:border-accent/50 transition-all text-center group"
+              >
+                <div className="p-2 bg-gradient-accent rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
+                  <Scissors className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Serviços</span>
+              </Link>
+              <Link
+                href="/dashboard/profissionais"
+                className="glass-card p-4 hover:border-primary/50 transition-all text-center group"
+              >
+                <div className="p-2 bg-gradient-primary rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Profissionais</span>
+              </Link>
+            </div>
+          </GlassCard>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Visão Geral</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total de Clientes</span>
-                <span className="font-semibold">{stats.totalClients}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Serviços Ativos</span>
-                <span className="font-semibold">{stats.totalServices}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Total de Agendamentos</span>
-                <span className="font-semibold">{stats.totalBookings}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="md:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base">Ações Rápidas</CardTitle>
-              <BarChart3 className="h-5 w-5 text-gray-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <Link
-                  href="/dashboard/relatorios"
-                  className="p-3 border rounded-lg hover:bg-gray-50 transition text-center"
+        {/* Próximos Agendamentos Railway */}
+        <GlassCard className="animate-fadeInUp" style={{ animationDelay: "600ms" }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-1">Próximos Agendamentos</h3>
+              <p className="text-sm text-foreground-muted">Veja os agendamentos futuros</p>
+            </div>
+            <Link href="/dashboard/agendamentos" className="text-sm text-primary hover:text-accent transition-colors flex items-center gap-1">
+              Ver todos
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          
+          {upcomingBookings.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="h-12 w-12 text-foreground-muted mx-auto mb-3 opacity-50" />
+              <p className="text-foreground-muted">Nenhum agendamento futuro encontrado</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {upcomingBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="glass-card p-4 hover:border-primary/50 transition-all group"
                 >
-                  <BarChart3 className="h-5 w-5 mx-auto mb-1 text-blue-600" />
-                  <span className="text-sm font-medium">Relatórios</span>
-                </Link>
-                <Link
-                  href="/dashboard/agendamentos"
-                  className="p-3 border rounded-lg hover:bg-gray-50 transition text-center"
-                >
-                  <Calendar className="h-5 w-5 mx-auto mb-1 text-green-600" />
-                  <span className="text-sm font-medium">Agendamentos</span>
-                </Link>
-                <Link
-                  href="/dashboard/servicos"
-                  className="p-3 border rounded-lg hover:bg-gray-50 transition text-center"
-                >
-                  <Scissors className="h-5 w-5 mx-auto mb-1 text-purple-600" />
-                  <span className="text-sm font-medium">Serviços</span>
-                </Link>
-                <Link
-                  href="/dashboard/profissionais"
-                  className="p-3 border rounded-lg hover:bg-gray-50 transition text-center"
-                >
-                  <Users className="h-5 w-5 mx-auto mb-1 text-orange-600" />
-                  <span className="text-sm font-medium">Profissionais</span>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Próximos Agendamentos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Próximos Agendamentos</CardTitle>
-            <CardDescription>
-              Veja os agendamentos futuros
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {upcomingBookings.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                Nenhum agendamento futuro encontrado
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {upcomingBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition"
-                  >
-                    <div>
-                      <p className="font-semibold text-gray-900">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground mb-1">
                         {booking.client.name}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {booking.service.name} - {booking.staff.name}
+                      <p className="text-sm text-foreground-muted">
+                        {booking.service.name} • {booking.staff.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-xs text-foreground-muted/70 mt-0.5">
                         {booking.salon.name}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">
-                        {new Date(booking.date).toLocaleDateString("pt-BR")}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(booking.date).toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </p>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        booking.status === "CONFIRMED" ? "bg-green-100 text-green-700" :
-                        booking.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
-                        "bg-gray-100 text-gray-700"
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          {new Date(booking.date).toLocaleDateString("pt-BR")}
+                        </p>
+                        <p className="text-sm text-foreground-muted">
+                          {new Date(booking.date).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </p>
+                      </div>
+                      <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                        booking.status === "CONFIRMED" ? "bg-success/20 text-success" :
+                        booking.status === "PENDING" ? "bg-warning/20 text-warning" :
+                        "bg-foreground-muted/20 text-foreground-muted"
                       }`}>
                         {booking.status === "CONFIRMED" ? "Confirmado" :
                          booking.status === "PENDING" ? "Pendente" :
@@ -345,12 +380,13 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
       </main>
+      </GridBackground>
     </div>
   )
 }
