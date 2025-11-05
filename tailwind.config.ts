@@ -43,8 +43,9 @@ const config: Config = {
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
         'gradient-success': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        'gradient-error': 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },

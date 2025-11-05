@@ -90,11 +90,11 @@
   
   /* Gradient text */
   .gradient-text-primary {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
   }
   
   .gradient-text-accent {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400;
   }
   
   /* Buttons */
@@ -109,7 +109,7 @@
     @apply relative overflow-hidden rounded-xl px-8 py-4;
     @apply font-semibold text-white transition-all duration-300;
     @apply hover:scale-105 hover:shadow-2xl;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
   }
   
   /* Shimmer effect */
