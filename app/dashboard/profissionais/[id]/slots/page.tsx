@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Calendar, Clock, CheckCircle2 } from "lucide-react";
+import { Sparkles, Plus, Trash2, Calendar, Clock, CheckCircle2, ArrowLeft, Save } from "lucide-react";
 
 interface TimeSlot {
   id: string;
@@ -220,13 +221,13 @@ export default function HorariosDisponiveisPage() {
 
   if (loadingData) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardHeader
           user={session?.user || { name: "", email: "", role: "CLIENT" }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Sparkles className="h-12 w-12 text-primary animate-spin" />
           </div>
         </div>
       </div>
@@ -234,45 +235,48 @@ export default function HorariosDisponiveisPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader
         user={session?.user || { name: "", email: "", role: "CLIENT" }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/profissionais")}
-            className="mb-4"
-          >
-            ← Voltar
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Cadastrar Horários Disponíveis
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Profissional: <span className="font-semibold">{staff?.name}</span>
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            Adicione os horários que ficarão disponíveis para agendamento
-          </p>
-        </div>
+      <GridBackground>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="mb-8 animate-fadeInUp">
+            <GradientButton
+              variant="primary"
+              onClick={() => router.push("/dashboard/profissionais")}
+              className="mb-4 px-4 py-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </GradientButton>
+            <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+              <Clock className="h-8 w-8 text-success" />
+              Horários Disponíveis
+            </h1>
+            <p className="text-foreground-muted">
+              Profissional: <span className="font-semibold text-success">{staff?.name}</span>
+            </p>
+            <p className="text-sm text-foreground-muted mt-1">
+              Cadastre os horários que ficarão disponíveis para agendamento
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Formulário */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+            <GlassCard glow="primary" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
                   Selecione o Dia da Semana
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Label htmlFor="dayOfWeek">
-                  Dia da Semana <span className="text-red-500">*</span>
+                </h3>
+              </div>
+              <div className="space-y-3">
+                <Label htmlFor="dayOfWeek" className="text-foreground">
+                  Dia da Semana <span className="text-destructive">*</span>
                 </Label>
                 <select
                   id="dayOfWeek"
@@ -280,7 +284,7 @@ export default function HorariosDisponiveisPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 glass-card bg-background-alt/50 border-primary/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-foreground"
                 >
                   {DAY_NAMES.map((day) => (
                     <option key={day.value} value={day.value}>
@@ -288,24 +292,24 @@ export default function HorariosDisponiveisPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-foreground-muted">
                   Os horários se repetirão toda semana neste dia
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </GlassCard>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
+            <GlassCard glow="success" className="p-6">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-success" />
                   Adicionar Horários
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </h3>
+              </div>
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="startTime">
-                      Hora Inicial <span className="text-red-500">*</span>
+                    <Label htmlFor="startTime" className="text-foreground">
+                      Hora Inicial <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="startTime"
@@ -314,18 +318,20 @@ export default function HorariosDisponiveisPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, startTime: e.target.value })
                       }
-                      className={errors.startTime ? "border-red-500" : ""}
+                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                        errors.startTime ? "border-destructive" : ""
+                      }`}
                     />
                     {errors.startTime && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {errors.startTime}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="endTime">
-                      Hora Final <span className="text-red-500">*</span>
+                    <Label htmlFor="endTime" className="text-foreground">
+                      Hora Final <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="endTime"
@@ -334,89 +340,92 @@ export default function HorariosDisponiveisPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, endTime: e.target.value })
                       }
-                      className={errors.endTime ? "border-red-500" : ""}
+                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                        errors.endTime ? "border-destructive" : ""
+                      }`}
                     />
                     {errors.endTime && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {errors.endTime}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <Button
+                <GradientButton
                   type="button"
                   onClick={handleAddToList}
+                  variant="primary"
                   className="w-full"
-                  variant="outline"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   Adicionar à Lista
-                </Button>
+                </GradientButton>
 
                 {/* Lista Temporária */}
                 {tempSlots.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <Label>Horários para Salvar ({tempSlots.length})</Label>
+                  <div className="mt-4 space-y-3">
+                    <Label className="text-foreground font-semibold">
+                      Horários para Salvar ({tempSlots.length})
+                    </Label>
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {tempSlots.map((slot, index) => (
                         <div
                           key={index}
-                          className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+                          className="flex items-center justify-between p-3 glass-card bg-success/10 border-success/30 rounded-lg"
                         >
-                          <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                            <Clock className="h-4 w-4 text-green-600" />
+                          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <Clock className="h-4 w-4 text-success" />
                             {slot.startTime} - {slot.endTime}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                          <button
                             onClick={() => handleRemoveFromList(index)}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-destructive hover:text-destructive/80 transition p-2 hover:bg-destructive/10 rounded-lg"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </button>
                         </div>
                       ))}
                     </div>
 
-                    <Button
+                    <GradientButton
                       onClick={handleSaveAll}
+                      variant="success"
                       className="w-full mt-4"
                       disabled={loading}
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Sparkles className="h-4 w-4 animate-spin" />
                           Salvando...
                         </>
                       ) : (
                         <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          <Save className="h-4 w-4" />
                           Salvar Todos ({tempSlots.length})
                         </>
                       )}
-                    </Button>
+                    </GradientButton>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </GlassCard>
           </div>
 
           {/* Lista de Horários Cadastrados */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <GlassCard glow="accent" className="p-6">
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-success" />
                 Horários Cadastrados
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </h3>
+            </div>
+            <div>
               {slots.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Clock className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>Nenhum horário cadastrado</p>
-                  <p className="text-xs mt-2">
+                <div className="text-center py-12 text-foreground-muted">
+                  <Clock className="h-16 w-16 mx-auto mb-4 text-foreground-muted/50" />
+                  <p className="text-lg font-medium">Nenhum horário cadastrado</p>
+                  <p className="text-sm mt-2">
                     Adicione horários para ficarem disponíveis aos clientes
                   </p>
                 </div>
@@ -442,11 +451,11 @@ export default function HorariosDisponiveisPage() {
                       }
                       const dayName = DAY_NAMES[dayNum].label;
                       return (
-                        <div key={dayOfWeek} className="border rounded-lg p-4">
+                        <div key={dayOfWeek} className="glass-card border-primary/20 rounded-lg p-4 bg-background-alt/30">
                           <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="h-4 w-4 text-blue-600" />
-                            <span className="font-semibold text-gray-900">{dayName}</span>
-                            <span className="text-xs text-gray-500">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="font-semibold text-foreground">{dayName}</span>
+                            <span className="text-xs text-foreground-muted">
                               ({daySlots.length} horário{daySlots.length > 1 ? "s" : ""})
                             </span>
                           </div>
@@ -456,20 +465,18 @@ export default function HorariosDisponiveisPage() {
                               .map((slot) => (
                                 <div
                                   key={slot.id}
-                                  className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded"
+                                  className="flex items-center justify-between p-3 glass-card bg-success/10 border-success/30 rounded-lg"
                                 >
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Clock className="h-4 w-4 text-green-600" />
+                                  <div className="flex items-center gap-2 text-sm text-foreground">
+                                    <Clock className="h-4 w-4 text-success" />
                                     {slot.startTime} - {slot.endTime}
                                   </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
+                                  <button
                                     onClick={() => handleDelete(slot.id)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-100"
+                                    className="text-destructive hover:text-destructive/80 transition p-2 hover:bg-destructive/10 rounded-lg"
                                   >
                                     <Trash2 className="h-4 w-4" />
-                                  </Button>
+                                  </button>
                                 </div>
                               ))}
                           </div>
@@ -479,10 +486,11 @@ export default function HorariosDisponiveisPage() {
                     .filter(Boolean)} {/* Remove possíveis null */}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </GlassCard>
+          </div>
         </div>
-      </div>
+      </GridBackground>
     </div>
   );
 }
