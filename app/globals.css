@@ -2,20 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Railway-inspired Dark Theme */
+/* Railway-inspired Dark Theme with Purple Tint */
 @layer base {
   :root {
-    /* Dark Background - Railway style */
-    --background: 0 0% 5%;           /* #0d0d0d */
-    --background-alt: 0 0% 8%;       /* #141414 */
+    /* Dark Background - Railway style with subtle purple tint */
+    --background: 260 15% 6%;        /* #0e0c12 - Preto com leve toque roxo */
+    --background-alt: 260 12% 9%;    /* #151318 - Cinza escuro com toque roxo */
     
     /* Foreground */
     --foreground: 0 0% 98%;          /* #fafafa */
-    --foreground-muted: 0 0% 60%;    /* #999999 */
+    --foreground-muted: 260 5% 60%;  /* #999299 - Cinza com leve toque roxo */
     
-    /* Borders */
-    --border: 0 0% 15%;              /* #262626 */
-    --border-hover: 0 0% 25%;        /* #404040 */
+    /* Borders - com toque roxo */
+    --border: 260 10% 15%;           /* #252128 - Borda com toque roxo */
+    --border-hover: 260 8% 25%;      /* #3e3a43 - Hover com toque roxo */
     
     /* Primary - Purple/Indigo gradient */
     --primary: 250 70% 60%;          /* #6366f1 */
@@ -46,11 +46,11 @@
   }
 }
 
-/* Glass Effect Components */
+/* Glass Effect Components - Railway style */
 @layer components {
   .glass-card {
-    @apply bg-background-alt/70 backdrop-blur-xl border border-white/10;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    @apply bg-background-alt/70 backdrop-blur-xl border border-white/8;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 1px rgba(168, 85, 247, 0.1);
   }
   
   .glass-card-hover {
@@ -59,6 +59,7 @@
   
   .glass-card-hover:hover {
     @apply border-primary/50 shadow-2xl;
+    box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2);
   }
   
   /* Glow effects */
@@ -80,11 +81,11 @@
       0 0 40px rgba(16, 185, 129, 0.2);
   }
   
-  /* Grid background */
+  /* Grid background - com leve toque roxo */
   .grid-background {
     background-image: 
-      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
     background-size: 50px 50px;
   }
   
