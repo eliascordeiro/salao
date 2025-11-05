@@ -7,8 +7,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Scissors, AlertCircle } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { GradientButton } from "@/components/ui/gradient-button"
+import { GridBackground } from "@/components/ui/grid-background"
+import { Scissors, AlertCircle, ArrowLeft, Sparkles } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -43,35 +45,45 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center p-4">
+      <GridBackground className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-primary opacity-10" />
+      </GridBackground>
+
+      <div className="w-full max-w-md relative z-10 animate-fadeInUp">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <Scissors className="h-10 w-10 text-blue-600" />
-            <span className="text-3xl font-bold text-gray-900">AgendaSalão</span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative">
+              <Scissors className="h-10 w-10 text-primary group-hover:rotate-12 transition-transform" />
+              <Sparkles className="h-4 w-4 text-accent absolute -top-1 -right-1 animate-pulse" />
+            </div>
+            <span className="text-3xl font-bold text-foreground">AgendaSalão</span>
           </Link>
         </div>
 
         {/* Card de Login */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Entrar na sua conta</CardTitle>
-            <CardDescription>
-              Digite suas credenciais para acessar o sistema
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <GlassCard glow="primary" className="p-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              Bem-vindo de volta
+            </h1>
+            <p className="text-foreground-muted">
+              Entre com suas credenciais para acessar o sistema
+            </p>
+          </div>
+
+          <div>
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
+                <div className="glass-card border-destructive/50 bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-center gap-2 animate-fadeIn">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   <span className="text-sm">{error}</span>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -80,11 +92,12 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="bg-background-alt border-border-hover focus:border-primary transition-colors"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password" className="text-foreground">Senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -93,40 +106,50 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="bg-background-alt border-border-hover focus:border-primary transition-colors"
                 />
               </div>
 
-              <Button
+              <GradientButton
                 type="submit"
-                className="w-full"
+                variant="primary"
+                className="w-full py-3"
                 disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "Entrar"}
-              </Button>
+              </GradientButton>
 
-              <div className="text-sm text-center text-gray-600">
+              <div className="text-sm text-center text-foreground-muted">
                 Ainda não tem uma conta?{" "}
-                <Link href="/register" className="text-blue-600 hover:underline font-medium">
+                <Link href="/register" className="text-primary hover:text-accent font-medium transition-colors">
                   Cadastre-se
                 </Link>
               </div>
             </form>
 
             {/* Credenciais de Teste */}
-            <div className="mt-6 pt-6 border-t">
-              <p className="text-xs text-gray-500 mb-2 font-semibold">Credenciais de teste:</p>
-              <div className="bg-gray-50 p-3 rounded text-xs space-y-1">
-                <p><strong>Admin:</strong> admin@agendasalao.com.br / admin123</p>
-                <p><strong>Cliente:</strong> pedro@exemplo.com / cliente123</p>
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-xs text-foreground-muted mb-3 font-semibold flex items-center gap-2">
+                <Sparkles className="h-3 w-3 text-accent" />
+                Credenciais de teste:
+              </p>
+              <div className="glass-card bg-background-alt/50 p-3 rounded-lg text-xs space-y-2 font-mono">
+                <p className="text-foreground-muted">
+                  <span className="text-primary font-semibold">Admin:</span> admin@agendasalao.com.br / admin123
+                </p>
+                <p className="text-foreground-muted">
+                  <span className="text-accent font-semibold">Cliente:</span> pedro@exemplo.com / cliente123
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </GlassCard>
 
         {/* Link para Home */}
-        <div className="text-center mt-4">
-          <Link href="/" className="text-sm text-gray-600 hover:text-blue-600">
-            ← Voltar para página inicial
+        <div className="text-center mt-6">
+          <Link href="/" className="text-sm text-foreground-muted hover:text-primary transition-colors inline-flex items-center gap-2 group">
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Voltar para página inicial
           </Link>
         </div>
       </div>

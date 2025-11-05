@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Scissors, AlertCircle, CheckCircle2 } from "lucide-react"
+import { GlassCard } from "@/components/ui/glass-card"
+import { GradientButton } from "@/components/ui/gradient-button"
+import { GridBackground } from "@/components/ui/grid-background"
+import { Scissors, AlertCircle, CheckCircle2, ArrowLeft, Sparkles, UserPlus } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -77,44 +78,58 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center p-4">
+      <GridBackground className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-accent opacity-10" />
+      </GridBackground>
+
+      <div className="w-full max-w-md relative z-10 animate-fadeInUp">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2">
-            <Scissors className="h-10 w-10 text-blue-600" />
-            <span className="text-3xl font-bold text-gray-900">AgendaSalão</span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative">
+              <Scissors className="h-10 w-10 text-accent group-hover:rotate-12 transition-transform" />
+              <Sparkles className="h-4 w-4 text-primary absolute -top-1 -right-1 animate-pulse" />
+            </div>
+            <span className="text-3xl font-bold text-foreground">AgendaSalão</span>
           </Link>
         </div>
 
         {/* Card de Registro */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Criar sua conta</CardTitle>
-            <CardDescription>
-              Preencha os dados abaixo para começar
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        <GlassCard glow="accent" className="p-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
+              <UserPlus className="h-8 w-8 text-accent" />
+              Criar sua conta
+            </h1>
+            <p className="text-foreground-muted">
+              Preencha os dados abaixo para começar sua jornada
+            </p>
+          </div>
+
+          <div>
             {success ? (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-6 rounded-md flex flex-col items-center gap-3 text-center">
-                <CheckCircle2 className="h-12 w-12" />
+              <div className="glass-card border-accent/50 bg-accent/10 text-accent px-6 py-8 rounded-lg flex flex-col items-center gap-4 text-center animate-fadeIn">
+                <div className="relative">
+                  <CheckCircle2 className="h-16 w-16 animate-pulse" />
+                  <Sparkles className="h-6 w-6 text-primary absolute -top-2 -right-2 animate-spin" />
+                </div>
                 <div>
-                  <p className="font-semibold">Conta criada com sucesso!</p>
-                  <p className="text-sm mt-1">Redirecionando para o login...</p>
+                  <p className="text-foreground font-semibold text-lg">Conta criada com sucesso!</p>
+                  <p className="text-foreground-muted text-sm mt-2">Redirecionando para o login...</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
+                  <div className="glass-card border-destructive/50 bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-center gap-2 animate-fadeIn">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
                     <span className="text-sm">{error}</span>
                   </div>
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome completo</Label>
+                  <Label htmlFor="name" className="text-foreground">Nome completo</Label>
                   <Input
                     id="name"
                     name="name"
@@ -124,11 +139,12 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-foreground">Email</Label>
                   <Input
                     id="email"
                     name="email"
@@ -138,11 +154,12 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone (opcional)</Label>
+                  <Label htmlFor="phone" className="text-foreground-muted">Telefone <span className="text-xs">(opcional)</span></Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -151,11 +168,12 @@ export default function RegisterPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                  <Label htmlFor="password" className="text-foreground">Senha</Label>
                   <Input
                     id="password"
                     name="password"
@@ -165,12 +183,13 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
-                  <p className="text-xs text-gray-500">Mínimo de 6 caracteres</p>
+                  <p className="text-xs text-foreground-muted">Mínimo de 6 caracteres</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar senha</Label>
+                  <Label htmlFor="confirmPassword" className="text-foreground">Confirmar senha</Label>
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -180,32 +199,35 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
                 </div>
 
-                <Button
+                <GradientButton
                   type="submit"
-                  className="w-full"
+                  variant="accent"
+                  className="w-full py-3 mt-6"
                   disabled={isLoading}
                 >
                   {isLoading ? "Criando conta..." : "Criar conta"}
-                </Button>
+                </GradientButton>
 
-                <div className="text-sm text-center text-gray-600">
+                <div className="text-sm text-center text-foreground-muted pt-2">
                   Já tem uma conta?{" "}
-                  <Link href="/login" className="text-blue-600 hover:underline font-medium">
+                  <Link href="/login" className="text-accent hover:text-primary font-medium transition-colors">
                     Faça login
                   </Link>
                 </div>
               </form>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </GlassCard>
 
         {/* Link para Home */}
-        <div className="text-center mt-4">
-          <Link href="/" className="text-sm text-gray-600 hover:text-blue-600">
-            ← Voltar para página inicial
+        <div className="text-center mt-6">
+          <Link href="/" className="text-sm text-foreground-muted hover:text-accent transition-colors inline-flex items-center gap-2 group">
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Voltar para página inicial
           </Link>
         </div>
       </div>
