@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
-import { AnimatedText } from "@/components/ui/animated-text";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Calendar, Clock, Scissors, Star, Users, Sparkles, Menu, X, ArrowRight, Zap, Shield, TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -112,9 +111,9 @@ export default function Home() {
             
             <h1 className="text-6xl md:text-7xl font-bold text-foreground mb-8 animate-fadeInUp">
               Transforme seu Salão em um{" "}
-              <AnimatedText gradient="primary" animation="fadeInUp" className="inline-block">
+              <span className="text-primary font-bold animate-fadeInUp inline-block" style={{ animationDelay: "100ms" }}>
                 Negócio Digital
-              </AnimatedText>
+              </span>
             </h1>
             
             <p className="text-xl text-foreground-muted mb-12 max-w-3xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: "200ms" }}>
@@ -140,11 +139,11 @@ export default function Home() {
             {/* Stats com glass effect */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-20 animate-fadeInUp" style={{ animationDelay: "600ms" }}>
               <GlassCard hover glow="primary" className="text-center">
-                <div className="text-5xl font-bold gradient-text-primary mb-2">98%</div>
+                <div className="text-5xl font-bold text-primary mb-2">98%</div>
                 <div className="text-foreground-muted font-medium">Satisfação dos Clientes</div>
               </GlassCard>
               <GlassCard hover glow="accent" className="text-center">
-                <div className="text-5xl font-bold gradient-text-accent mb-2">+5k</div>
+                <div className="text-5xl font-bold text-accent mb-2">+5k</div>
                 <div className="text-foreground-muted font-medium">Salões Ativos</div>
               </GlassCard>
               <GlassCard hover glow="success" className="text-center">
@@ -161,7 +160,7 @@ export default function Home() {
         <div className="text-center mb-20">
           <h2 className="text-5xl font-bold text-foreground mb-6">
             Tudo que você precisa para{" "}
-            <AnimatedText gradient="accent">crescer</AnimatedText>
+            <span className="text-accent font-bold">crescer</span>
           </h2>
           <p className="text-xl text-foreground-muted max-w-2xl mx-auto">
             Ferramentas profissionais para gerenciar seu salão com facilidade e tecnologia de ponta
