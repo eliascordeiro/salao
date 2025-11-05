@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Calendar, Clock, User, Phone, Mail, Filter, Search } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, Filter, Search, Sparkles, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
@@ -39,11 +40,11 @@ interface Staff {
 }
 
 const statusConfig = {
-  PENDING: { label: "Pendente", color: "bg-yellow-100 text-yellow-800" },
-  CONFIRMED: { label: "Confirmado", color: "bg-blue-100 text-blue-800" },
-  COMPLETED: { label: "Concluído", color: "bg-green-100 text-green-800" },
-  CANCELLED: { label: "Cancelado", color: "bg-red-100 text-red-800" },
-  NO_SHOW: { label: "Não compareceu", color: "bg-gray-100 text-gray-800" },
+  PENDING: { label: "Pendente", color: "glass-card border-yellow-500/50 bg-yellow-500/10 text-yellow-400", icon: AlertCircle },
+  CONFIRMED: { label: "Confirmado", color: "glass-card border-primary/50 bg-primary/10 text-primary", icon: CheckCircle },
+  COMPLETED: { label: "Concluído", color: "glass-card border-accent/50 bg-accent/10 text-accent", icon: CheckCircle },
+  CANCELLED: { label: "Cancelado", color: "glass-card border-destructive/50 bg-destructive/10 text-destructive", icon: XCircle },
+  NO_SHOW: { label: "Não compareceu", color: "glass-card bg-background-alt/50 text-foreground-muted", icon: XCircle },
 };
 
 export default function AgendamentosPage() {
@@ -140,65 +141,69 @@ export default function AgendamentosPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardHeader user={{ name: "", email: "", role: "CLIENT" }} />
         <div className="flex items-center justify-center h-64">
-          <p>Carregando...</p>
+          <Sparkles className="h-8 w-8 text-primary animate-spin" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Agendamentos</h1>
-          <p className="text-gray-600 mt-2">
-            Gerencie todos os agendamentos do salão
-          </p>
-        </div>
+      <GridBackground>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="mb-8 animate-fadeInUp">
+            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+              <Sparkles className="h-8 w-8 text-primary" />
+              Agendamentos
+            </h1>
+            <p className="text-foreground-muted mt-2">
+              Gerencie todos os agendamentos do salão
+            </p>
+          </div>
 
-        {/* Filtros */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
+          {/* Filtros */}
+          <GlassCard className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <Button
-                variant="outline"
+              <GradientButton
+                variant="primary"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
+                className="px-4 py-2"
               >
                 <Filter className="h-4 w-4" />
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-              </Button>
+              </GradientButton>
 
               <div className="flex items-center gap-2 flex-1 max-w-md ml-4">
-                <Search className="h-4 w-4 text-gray-400" />
+                <Search className="h-4 w-4 text-primary" />
                 <Input
                   placeholder="Buscar por cliente, serviço ou profissional..."
                   value={filters.search}
                   onChange={(e) =>
                     setFilters({ ...filters, search: e.target.value })
                   }
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary"
                 />
               </div>
             </div>
 
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-primary/20">
                 {/* Status */}
                 <div>
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status" className="text-foreground">Status</Label>
                   <select
                     id="status"
                     value={filters.status}
                     onChange={(e) =>
                       setFilters({ ...filters, status: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 glass-card bg-background-alt/50 border-primary/20 text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos</option>
                     <option value="PENDING">Pendente</option>
@@ -211,14 +216,14 @@ export default function AgendamentosPage() {
 
                 {/* Profissional */}
                 <div>
-                  <Label htmlFor="staffId">Profissional</Label>
+                  <Label htmlFor="staffId" className="text-foreground">Profissional</Label>
                   <select
                     id="staffId"
                     value={filters.staffId}
                     onChange={(e) =>
                       setFilters({ ...filters, staffId: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 glass-card bg-background-alt/50 border-primary/20 text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos</option>
                     {staff.map((s) => (
@@ -231,7 +236,7 @@ export default function AgendamentosPage() {
 
                 {/* Data Início */}
                 <div>
-                  <Label htmlFor="startDate">Data Início</Label>
+                  <Label htmlFor="startDate" className="text-foreground">Data Início</Label>
                   <Input
                     id="startDate"
                     type="date"
@@ -239,12 +244,13 @@ export default function AgendamentosPage() {
                     onChange={(e) =>
                       setFilters({ ...filters, startDate: e.target.value })
                     }
+                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary"
                   />
                 </div>
 
                 {/* Data Fim */}
                 <div>
-                  <Label htmlFor="endDate">Data Fim</Label>
+                  <Label htmlFor="endDate" className="text-foreground">Data Fim</Label>
                   <Input
                     id="endDate"
                     type="date"
@@ -252,119 +258,112 @@ export default function AgendamentosPage() {
                     onChange={(e) =>
                       setFilters({ ...filters, endDate: e.target.value })
                     }
+                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </GlassCard>
 
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-600">Total</p>
-              <p className="text-2xl font-bold">{filteredBookings.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-600">Pendentes</p>
-              <p className="text-2xl font-bold text-yellow-600">
+          {/* Estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <GlassCard className="p-6">
+              <p className="text-sm text-foreground-muted">Total</p>
+              <p className="text-2xl font-bold text-foreground">{filteredBookings.length}</p>
+            </GlassCard>
+            <GlassCard className="p-6" glow="primary">
+              <p className="text-sm text-foreground-muted">Pendentes</p>
+              <p className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "PENDING").length}
               </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-600">Confirmados</p>
-              <p className="text-2xl font-bold text-blue-600">
+            </GlassCard>
+            <GlassCard className="p-6" glow="success">
+              <p className="text-sm text-foreground-muted">Confirmados</p>
+              <p className="text-2xl font-bold text-primary flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "CONFIRMED").length}
               </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-600">Concluídos</p>
-              <p className="text-2xl font-bold text-green-600">
+            </GlassCard>
+            <GlassCard className="p-6" glow="accent">
+              <p className="text-sm text-foreground-muted">Concluídos</p>
+              <p className="text-2xl font-bold text-accent flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "COMPLETED").length}
               </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-600">Cancelados</p>
-              <p className="text-2xl font-bold text-red-600">
+            </GlassCard>
+            <GlassCard className="p-6">
+              <p className="text-sm text-foreground-muted">Cancelados</p>
+              <p className="text-2xl font-bold text-destructive flex items-center gap-2">
+                <XCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "CANCELLED").length}
               </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Lista de Agendamentos */}
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Carregando agendamentos...</p>
+            </GlassCard>
           </div>
-        ) : filteredBookings.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+
+          {/* Lista de Agendamentos */}
+          {loading ? (
+            <div className="text-center py-12">
+              <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+              <p className="text-foreground-muted">Carregando agendamentos...</p>
+            </div>
+          ) : filteredBookings.length === 0 ? (
+            <GlassCard className="p-12 text-center">
+              <Calendar className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 Nenhum agendamento encontrado
               </h3>
-              <p className="text-gray-600">
+              <p className="text-foreground-muted">
                 Tente ajustar os filtros ou aguarde novos agendamentos
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {filteredBookings.map((booking) => (
-              <Card key={booking.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
+            </GlassCard>
+          ) : (
+            <div className="space-y-4">
+              {filteredBookings.map((booking, index) => (
+                <GlassCard 
+                  key={booking.id} 
+                  hover 
+                  className="p-6 animate-fadeIn" 
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     {/* Informações principais */}
                     <div className="flex-1 space-y-3">
                       {/* Cabeçalho */}
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-foreground">
                             {booking.service.name}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-foreground-muted">
                             {booking.staff.name}
                             {booking.staff.specialty && (
-                              <span className="text-gray-400">
+                              <span className="text-foreground-muted/70">
                                 {" "}
                                 • {booking.staff.specialty}
                               </span>
                             )}
                           </p>
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            statusConfig[booking.status as keyof typeof statusConfig]
-                              ?.color
-                          }`}
-                        >
-                          {
-                            statusConfig[booking.status as keyof typeof statusConfig]
-                              ?.label
-                          }
+                        <span className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${statusConfig[booking.status as keyof typeof statusConfig]?.color}`}>
+                          {(() => {
+                            const Icon = statusConfig[booking.status as keyof typeof statusConfig]?.icon;
+                            return Icon && <Icon className="h-3 w-3" />;
+                          })()}
+                          {statusConfig[booking.status as keyof typeof statusConfig]?.label}
                         </span>
                       </div>
 
                       {/* Data e Hora */}
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-4 text-sm text-foreground-muted">
                         <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
+                          <Calendar className="h-4 w-4 text-primary" />
                           {format(new Date(booking.date), "dd/MM/yyyy", {
                             locale: ptBR,
                           })}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-4 w-4 text-accent" />
                           {format(new Date(booking.date), "HH:mm")} (
                           {booking.service.duration}min)
                         </div>
@@ -372,19 +371,19 @@ export default function AgendamentosPage() {
 
                       {/* Cliente */}
                       <div className="flex flex-col gap-1 text-sm">
-                        <div className="flex items-center gap-1 text-gray-700">
-                          <User className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-foreground">
+                          <User className="h-4 w-4 text-primary" />
                           <span className="font-medium">
                             {booking.client.name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 text-gray-600 ml-5">
-                          <Mail className="h-3 w-3" />
+                        <div className="flex items-center gap-1 text-foreground-muted ml-5">
+                          <Mail className="h-3 w-3 text-primary" />
                           {booking.client.email}
                         </div>
                         {booking.client.phone && (
-                          <div className="flex items-center gap-1 text-gray-600 ml-5">
-                            <Phone className="h-3 w-3" />
+                          <div className="flex items-center gap-1 text-foreground-muted ml-5">
+                            <Phone className="h-3 w-3 text-accent" />
                             {booking.client.phone}
                           </div>
                         )}
@@ -392,10 +391,10 @@ export default function AgendamentosPage() {
 
                       {/* Preço */}
                       <div className="text-sm">
-                        <span className="font-medium text-gray-700">
+                        <span className="font-medium text-foreground">
                           Valor:{" "}
                         </span>
-                        <span className="text-lg font-bold text-green-600">
+                        <span className="text-lg font-bold text-accent">
                           R$ {booking.totalPrice.toFixed(2)}
                         </span>
                       </div>
@@ -403,10 +402,10 @@ export default function AgendamentosPage() {
                       {/* Notas */}
                       {booking.notes && (
                         <div className="text-sm">
-                          <span className="font-medium text-gray-700">
+                          <span className="font-medium text-foreground">
                             Observações:{" "}
                           </span>
-                          <span className="text-gray-600">{booking.notes}</span>
+                          <span className="text-foreground-muted">{booking.notes}</span>
                         </div>
                       )}
                     </div>
@@ -415,65 +414,67 @@ export default function AgendamentosPage() {
                     <div className="flex flex-col gap-2 lg:w-48">
                       {booking.status === "PENDING" && (
                         <>
-                          <Button
-                            size="sm"
+                          <GradientButton
+                            variant="success"
                             onClick={() =>
                               handleStatusChange(booking.id, "CONFIRMED")
                             }
-                            className="w-full"
+                            className="w-full py-2"
                           >
+                            <CheckCircle className="h-4 w-4" />
                             Confirmar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          </GradientButton>
+                          <GradientButton
+                            variant="accent"
                             onClick={() =>
                               handleStatusChange(booking.id, "CANCELLED")
                             }
-                            className="w-full text-red-600 hover:text-red-700"
+                            className="w-full py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive"
                           >
+                            <XCircle className="h-4 w-4" />
                             Cancelar
-                          </Button>
+                          </GradientButton>
                         </>
                       )}
                       {booking.status === "CONFIRMED" && (
                         <>
-                          <Button
-                            size="sm"
+                          <GradientButton
+                            variant="accent"
                             onClick={() =>
                               handleStatusChange(booking.id, "COMPLETED")
                             }
-                            className="w-full bg-green-600 hover:bg-green-700"
+                            className="w-full py-2"
                           >
+                            <CheckCircle className="h-4 w-4" />
                             Marcar Concluído
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
+                          </GradientButton>
+                          <GradientButton
+                            variant="primary"
                             onClick={() =>
                               handleStatusChange(booking.id, "NO_SHOW")
                             }
-                            className="w-full"
+                            className="w-full py-2"
                           >
+                            <XCircle className="h-4 w-4" />
                             Não Compareceu
-                          </Button>
+                          </GradientButton>
                         </>
                       )}
                       {(booking.status === "COMPLETED" ||
                         booking.status === "CANCELLED" ||
                         booking.status === "NO_SHOW") && (
-                        <p className="text-sm text-gray-500 text-center py-2">
+                        <p className="text-sm text-foreground-muted text-center py-2 glass-card bg-background-alt/30 rounded-lg">
                           Agendamento finalizado
                         </p>
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
+        </main>
+      </GridBackground>
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, User, Phone, Mail, Briefcase, Clock, Calendar, CalendarCheck } from "lucide-react";
+import { Plus, User, Phone, Mail, Briefcase, Clock, Calendar, CalendarCheck, Sparkles, CheckCircle, XCircle, Users } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { GridBackground } from "@/components/ui/grid-background";
 import { prisma } from "@/lib/prisma";
 import { DeleteStaffButton } from "@/components/dashboard/delete-staff-button";
 
@@ -45,103 +46,114 @@ export default async function StaffPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Profissionais</h1>
-            <p className="text-gray-600 mt-2">
-              Gerencie sua equipe de profissionais
-            </p>
+      <GridBackground>
+        <main className="container mx-auto px-4 py-12">
+          {/* Header Railway Style */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 animate-fadeInUp">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+                <Users className="h-8 w-8 text-accent" />
+                Profissionais
+              </h1>
+              <p className="text-foreground-muted text-lg">
+                Gerencie sua equipe de profissionais
+              </p>
+            </div>
+            <Link href="/dashboard/profissionais/novo">
+              <GradientButton variant="accent" className="group">
+                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                Novo Profissional
+              </GradientButton>
+            </Link>
           </div>
-          <Link href="/dashboard/profissionais/novo">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Profissional
-            </Button>
-          </Link>
-        </div>
 
-        {/* Lista de Profissionais */}
-        {staff.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+          {/* Lista de Profissionais Railway */}
+          {staff.length === 0 ? (
+            <GlassCard className="p-12 text-center animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+              <User className="h-16 w-16 text-accent mx-auto mb-4 animate-pulse" />
+              <h3 className="text-xl font-bold text-foreground mb-2">
                 Nenhum profissional cadastrado
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-foreground-muted mb-6">
                 Comece adicionando seu primeiro profissional
               </p>
               <Link href="/dashboard/profissionais/novo">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
+                <GradientButton variant="accent" className="group">
+                  <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                   Adicionar Profissional
-                </Button>
+                </GradientButton>
               </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {staff.map((member) => (
-              <Card key={member.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
+            </GlassCard>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {staff.map((member, index) => (
+                <GlassCard 
+                  key={member.id} 
+                  hover 
+                  glow={member.active ? "success" : undefined}
+                  className="p-6 animate-fadeInUp"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">
+                      <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                        <User className="h-5 w-5 text-accent" />
                         {member.name}
-                      </CardTitle>
+                      </h3>
                       {member.specialty && (
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <div className="flex items-center text-sm text-foreground-muted mb-2">
                           <Briefcase className="h-4 w-4 mr-1" />
                           {member.specialty}
                         </div>
                       )}
                     </div>
-                    <div
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        member.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {member.active ? "Ativo" : "Inativo"}
-                    </div>
+                    {member.active ? (
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent">
+                        <CheckCircle className="h-3 w-3" />
+                        Ativo
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted">
+                        <XCircle className="h-3 w-3" />
+                        Inativo
+                      </span>
+                    )}
                   </div>
-                </CardHeader>
 
-                <CardContent>
+                  {/* Detalhes */}
                   <div className="space-y-3 mb-4">
                     {/* Email */}
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <div className="flex items-center text-sm text-foreground-muted">
+                      <Mail className="h-4 w-4 mr-2 flex-shrink-0 text-primary" />
                       <span className="truncate">{member.email}</span>
                     </div>
 
                     {/* Telefone */}
                     {member.phone && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-center text-sm text-foreground-muted">
+                        <Phone className="h-4 w-4 mr-2 flex-shrink-0 text-accent" />
                         {member.phone}
                       </div>
                     )}
 
                     {/* Salão */}
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">Salão:</span>
+                    <div className="flex items-center text-sm text-foreground-muted">
+                      <span className="font-semibold text-foreground">Salão:</span>
                       <span className="ml-1">{member.salon.name}</span>
                     </div>
 
                     {/* Serviços */}
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">
+                      <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-primary" />
                         Serviços prestados:
                       </p>
                       {member.services.length === 0 ? (
-                        <p className="text-sm text-gray-500 italic">
+                        <p className="text-sm text-foreground-muted/60 italic">
                           Nenhum serviço associado
                         </p>
                       ) : (
@@ -149,13 +161,13 @@ export default async function StaffPage() {
                           {member.services.slice(0, 3).map((s) => (
                             <span
                               key={s.serviceId}
-                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-primary/10 text-primary"
                             >
                               {s.service.name}
                             </span>
                           ))}
                           {member.services.length > 3 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-background-alt/50 text-foreground-muted">
                               +{member.services.length - 3}
                             </span>
                           )}
@@ -164,9 +176,9 @@ export default async function StaffPage() {
                     </div>
 
                     {/* Estatísticas */}
-                    <div className="pt-3 border-t border-gray-200">
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium">
+                    <div className="pt-3 border-t border-border">
+                      <p className="text-sm text-foreground-muted">
+                        <span className="font-bold text-accent">
                           {member._count.bookings}
                         </span>{" "}
                         agendamentos realizados
@@ -177,46 +189,38 @@ export default async function StaffPage() {
                   {/* Ações */}
                   <div className="flex flex-col gap-2">
                     <div className="grid grid-cols-2 gap-2">
-                      <Link
-                        href={`/dashboard/profissionais/${member.id}/editar`}
-                      >
-                        <Button variant="outline" className="w-full text-xs">
+                      <Link href={`/dashboard/profissionais/${member.id}/editar`}>
+                        <GradientButton variant="accent" className="w-full text-xs">
                           Editar
-                        </Button>
+                        </GradientButton>
                       </Link>
-                      <Link
-                        href={`/dashboard/profissionais/${member.id}/horarios`}
-                      >
-                        <Button variant="outline" className="w-full text-xs">
-                          <Clock className="mr-1 h-3 w-3" />
+                      <Link href={`/dashboard/profissionais/${member.id}/horarios`}>
+                        <GradientButton variant="primary" className="w-full text-xs">
+                          <Clock className="h-3 w-3" />
                           Horários
-                        </Button>
+                        </GradientButton>
                       </Link>
-                      <Link
-                        href={`/dashboard/profissionais/${member.id}/slots`}
-                      >
-                        <Button variant="outline" className="w-full text-xs bg-green-50 hover:bg-green-100">
-                          <CalendarCheck className="mr-1 h-3 w-3 text-green-600" />
-                          <span className="text-green-700">Cadastrar Slots</span>
-                        </Button>
+                      <Link href={`/dashboard/profissionais/${member.id}/slots`}>
+                        <GradientButton variant="success" className="w-full text-xs">
+                          <CalendarCheck className="h-3 w-3" />
+                          Cadastrar Slots
+                        </GradientButton>
                       </Link>
-                      <Link
-                        href={`/dashboard/profissionais/${member.id}/disponibilidade`}
-                      >
-                        <Button variant="outline" className="w-full text-xs">
-                          <Calendar className="mr-1 h-3 w-3" />
+                      <Link href={`/dashboard/profissionais/${member.id}/disponibilidade`}>
+                        <GradientButton variant="accent" className="w-full text-xs">
+                          <Calendar className="h-3 w-3" />
                           Bloqueios
-                        </Button>
+                        </GradientButton>
                       </Link>
                     </div>
                     <DeleteStaffButton staffId={member.id} staffName={member.name} />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
+        </main>
+      </GridBackground>
     </div>
   );
 }

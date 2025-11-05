@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, Sparkles, Package, Save } from "lucide-react";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
 interface Salon {
@@ -192,11 +193,11 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
   if (loadingData || !session) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Sparkles className="h-12 w-12 text-primary animate-spin" />
           </div>
         </div>
       </div>
@@ -204,36 +205,41 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard/servicos"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Voltar para Serviços
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Editar Serviço</h1>
-          <p className="text-gray-600 mt-2">
-            Atualize as informações do serviço
-          </p>
-        </div>
+      <GridBackground>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="mb-8 animate-fadeInUp">
+            <Link href="/dashboard/servicos">
+              <GradientButton variant="primary" className="mb-4 px-4 py-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Serviços
+              </GradientButton>
+            </Link>
+            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+              <Sparkles className="h-8 w-8 text-primary" />
+              Editar Serviço
+            </h1>
+            <p className="text-foreground-muted mt-2">
+              Atualize as informações do serviço
+            </p>
+          </div>
 
-        {/* Formulário */}
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Informações do Serviço</CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Formulário */}
+          <GlassCard glow="accent" className="max-w-2xl p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Package className="h-6 w-6 text-accent" />
+                Informações do Serviço
+              </h2>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Nome */}
               <div>
-                <Label htmlFor="name">
-                  Nome do Serviço <span className="text-red-500">*</span>
+                <Label htmlFor="name" className="text-foreground">
+                  Nome do Serviço <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -242,16 +248,16 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: Corte de Cabelo Masculino"
-                  className={errors.name ? "border-red-500" : ""}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.name ? "border-destructive" : ""}`}
                 />
                 {errors.name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.name}</p>
                 )}
               </div>
 
               {/* Descrição */}
               <div>
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="description" className="text-foreground">Descrição</Label>
                 <textarea
                   id="description"
                   value={formData.description}
@@ -260,15 +266,15 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   }
                   placeholder="Descreva o serviço..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               {/* Duração e Preço */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="duration">
-                    Duração (minutos) <span className="text-red-500">*</span>
+                  <Label htmlFor="duration" className="text-foreground">
+                    Duração (minutos) <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="duration"
@@ -279,18 +285,18 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                       setFormData({ ...formData, duration: e.target.value })
                     }
                     placeholder="Ex: 30"
-                    className={errors.duration ? "border-red-500" : ""}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.duration ? "border-destructive" : ""}`}
                   />
                   {errors.duration && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-destructive mt-1">
                       {errors.duration}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="price">
-                    Preço (R$) <span className="text-red-500">*</span>
+                  <Label htmlFor="price" className="text-foreground">
+                    Preço (R$) <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="price"
@@ -302,17 +308,17 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                       setFormData({ ...formData, price: e.target.value })
                     }
                     placeholder="Ex: 45.00"
-                    className={errors.price ? "border-red-500" : ""}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.price ? "border-destructive" : ""}`}
                   />
                   {errors.price && (
-                    <p className="text-sm text-red-500 mt-1">{errors.price}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.price}</p>
                   )}
                 </div>
               </div>
 
               {/* Categoria */}
               <div>
-                <Label htmlFor="category">Categoria</Label>
+                <Label htmlFor="category" className="text-foreground">Categoria</Label>
                 <Input
                   id="category"
                   value={formData.category}
@@ -320,13 +326,14 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                     setFormData({ ...formData, category: e.target.value })
                   }
                   placeholder="Ex: Cabelo, Barba, Tratamentos"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
               </div>
 
               {/* Salão */}
               <div>
-                <Label htmlFor="salonId">
-                  Salão <span className="text-red-500">*</span>
+                <Label htmlFor="salonId" className="text-foreground">
+                  Salão <span className="text-destructive">*</span>
                 </Label>
                 <select
                   id="salonId"
@@ -334,8 +341,8 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   onChange={(e) =>
                     setFormData({ ...formData, salonId: e.target.value })
                   }
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.salonId ? "border-red-500" : "border-gray-300"
+                  className={`w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
+                    errors.salonId ? "border-destructive" : ""
                   }`}
                 >
                   <option value="">Selecione um salão</option>
@@ -346,7 +353,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   ))}
                 </select>
                 {errors.salonId && (
-                  <p className="text-sm text-red-500 mt-1">{errors.salonId}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.salonId}</p>
                 )}
               </div>
 
@@ -359,41 +366,41 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   onChange={(e) =>
                     setFormData({ ...formData, isActive: e.target.checked })
                   }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
                 />
-                <Label htmlFor="isActive" className="cursor-pointer">
+                <Label htmlFor="isActive" className="cursor-pointer text-foreground">
                   Serviço ativo (visível para clientes)
                 </Label>
               </div>
 
               {/* Profissionais */}
               <div>
-                <Label>Profissionais que prestam este serviço</Label>
-                <p className="text-sm text-gray-500 mb-2">
+                <Label className="text-foreground">Profissionais que prestam este serviço</Label>
+                <p className="text-sm text-foreground-muted mb-2">
                   Selecione os profissionais que podem executar este serviço
                 </p>
                 {allStaff.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">
+                  <p className="text-sm text-foreground-muted italic">
                     Nenhum profissional encontrado para este salão
                   </p>
                 ) : (
-                  <div className="border border-gray-300 rounded-md p-4 space-y-2 max-h-48 overflow-y-auto">
+                  <div className="glass-card border-primary/20 rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
                     {allStaff.map((staff) => (
-                      <div key={staff.id} className="flex items-center">
+                      <div key={staff.id} className="flex items-center hover:bg-primary/10 p-2 rounded transition-colors">
                         <input
                           type="checkbox"
                           id={`staff-${staff.id}`}
                           checked={formData.staffIds.includes(staff.id)}
                           onChange={() => handleStaffToggle(staff.id)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
                         />
                         <label
                           htmlFor={`staff-${staff.id}`}
-                          className="ml-2 text-sm cursor-pointer"
+                          className="ml-2 text-sm cursor-pointer text-foreground"
                         >
                           {staff.name}
                           {staff.specialty && (
-                            <span className="text-gray-500 ml-1">
+                            <span className="text-foreground-muted ml-1">
                               ({staff.specialty})
                             </span>
                           )}
@@ -405,31 +412,35 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Botões */}
-              <div className="flex gap-4 pt-4">
-                <Button
+              <div className="flex gap-3 pt-6">
+                <GradientButton
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   onClick={() => router.push("/dashboard/servicos")}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 py-3"
                 >
+                  <ArrowLeft className="h-4 w-4" />
                   Cancelar
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
+                </GradientButton>
+                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3">
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Sparkles className="h-4 w-4 animate-spin" />
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Alterações"
+                    <>
+                      <Save className="h-4 w-4" />
+                      Salvar Alterações
+                    </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      </div>
+          </GlassCard>
+        </main>
+      </GridBackground>
     </div>
   );
 }
