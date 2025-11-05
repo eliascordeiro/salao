@@ -349,16 +349,16 @@ function BookingContent() {
               {/* Step Title */}
               <h2 className="text-3xl font-bold text-foreground mb-8">
                 {currentStep === 1 && (
-                  <AnimatedText gradient="primary">Escolha o Serviço</AnimatedText>
+                  <span className="text-primary font-bold">Escolha o Serviço</span>
                 )}
                 {currentStep === 2 && (
-                  <AnimatedText gradient="accent">Escolha o Profissional</AnimatedText>
+                  <span className="text-accent font-bold">Escolha o Profissional</span>
                 )}
                 {currentStep === 3 && (
-                  <AnimatedText gradient="primary">Escolha Data e Horário</AnimatedText>
+                  <span className="text-primary font-bold">Escolha Data e Horário</span>
                 )}
                 {currentStep === 4 && (
-                  <AnimatedText gradient="accent">Confirme seu Agendamento</AnimatedText>
+                  <span className="text-accent font-bold">Confirme seu Agendamento</span>
                 )}
               </h2>
 

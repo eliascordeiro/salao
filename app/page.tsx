@@ -116,25 +116,10 @@ export default function Home() {
               </span>
             </h1>
             
-            <p className="text-xl text-foreground-muted mb-12 max-w-3xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+            <p className="text-xl text-foreground-muted mb-20 max-w-3xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: "200ms" }}>
               Facilite a vida dos seus clientes com agendamento online 24/7. 
               Aumente seus lucros, reduza faltas e profissionalize sua gestão com tecnologia de ponta.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fadeInUp" style={{ animationDelay: "400ms" }}>
-              <Link href="/register">
-                <GradientButton variant="primary" className="px-8 py-4 text-lg group">
-                  <Calendar className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                  Experimente Grátis
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </GradientButton>
-              </Link>
-              <Link href="#recursos">
-                <Button size="lg" variant="outline" className="text-lg border-border-hover hover:bg-background-alt px-8 py-4">
-                  Ver Demonstração
-                </Button>
-              </Link>
-            </div>
             
             {/* Stats com glass effect */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-20 animate-fadeInUp" style={{ animationDelay: "600ms" }}>
@@ -239,8 +224,9 @@ export default function Home() {
       {/* CTA Section - Railway Style */}
       <section className="relative py-32 overflow-hidden">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-primary opacity-20" />
-        <GridBackground className="absolute inset-0" />
+        <GridBackground className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-primary opacity-20" />
+        </GridBackground>
         
         <div className="container mx-auto px-4 text-center relative z-10">
           <GlassCard glow="primary" className="max-w-4xl mx-auto p-12">
@@ -253,10 +239,10 @@ export default function Home() {
               Comece hoje mesmo e transforme a gestão do seu negócio. 
               Experimente grátis por 30 dias, sem cartão de crédito.
             </p>
-            <Link href="/register">
-              <GradientButton variant="primary" className="px-12 py-5 text-lg group">
+            <Link href="/register" className="inline-block">
+              <GradientButton variant="primary" className="px-12 py-4 text-lg group justify-center">
                 Criar Minha Conta Grátis
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </GradientButton>
             </Link>
             

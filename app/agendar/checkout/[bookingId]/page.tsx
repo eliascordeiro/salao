@@ -81,7 +81,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
               Voltar para agendamentos
             </Link>
             <h1 className="text-4xl font-bold text-foreground mb-2">
-              <AnimatedText gradient="primary">Finalizar Pagamento</AnimatedText>
+              <span className="text-primary font-bold">Finalizar Pagamento</span>
             </h1>
             <p className="text-foreground-muted text-lg">
               Confirme os detalhes e realize o pagamento de forma segura

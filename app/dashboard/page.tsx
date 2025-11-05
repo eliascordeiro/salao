@@ -136,7 +136,7 @@ export default async function DashboardPage() {
           {/* Header Section Railway */}
           <div className="mb-12 animate-fadeInUp">
             <h1 className="text-4xl font-bold text-foreground mb-3">
-              Bem-vindo, <AnimatedText gradient="primary" animation="fadeIn">{session.user.name}</AnimatedText>!
+              Bem-vindo, <span className="text-primary font-bold">{session.user.name}</span>!
             </h1>
             <p className="text-foreground-muted text-lg">
               Aqui está um resumo da sua atividade nos últimos 30 dias

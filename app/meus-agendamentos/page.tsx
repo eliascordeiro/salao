@@ -190,7 +190,7 @@ function MyBookingsContent() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-fadeInUp">
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-3">
-                Meus <AnimatedText gradient="accent" animation="fadeIn">Agendamentos</AnimatedText>
+                Meus <span className="text-accent font-bold">Agendamentos</span>
               </h1>
               <p className="text-foreground-muted text-lg">
                 Gerencie seus agendamentos e horários de forma simples
@@ -198,9 +198,9 @@ function MyBookingsContent() {
             </div>
             <Link href="/servicos">
               <GradientButton variant="primary" className="group">
-                <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
+                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                 Novo Agendamento
-                <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </GradientButton>
             </Link>
           </div>
@@ -306,9 +306,9 @@ function MyBookingsContent() {
             </p>
             <Link href="/servicos">
               <GradientButton variant="primary" className="group">
-                <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
+                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                 Fazer um Agendamento
-                <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </GradientButton>
             </Link>
           </GlassCard>
@@ -443,9 +443,9 @@ function MyBookingsContent() {
                             booking.payment.status === "FAILED") && (
                             <Link href={`/agendar/checkout/${booking.id}`} className="block">
                               <GradientButton variant="success" className="w-full group/pay">
-                                <DollarSign className="h-5 w-5 mr-2 group-hover/pay:scale-110 transition-transform" />
+                                <DollarSign className="h-4 w-4 group-hover/pay:scale-110 transition-transform" />
                                 Realizar Pagamento
-                                <ArrowRight className="h-5 w-5 ml-2 group-hover/pay:translate-x-1 transition-transform" />
+                                <ArrowRight className="h-4 w-4 group-hover/pay:translate-x-1 transition-transform" />
                               </GradientButton>
                             </Link>
                           )}

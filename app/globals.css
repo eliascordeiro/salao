@@ -101,14 +101,14 @@
   
   /* Buttons */
   .btn-gradient-primary {
-    @apply relative overflow-hidden rounded-xl px-8 py-4;
+    @apply relative overflow-hidden rounded-xl;
     @apply font-semibold text-white transition-all duration-300;
     @apply hover:scale-105 hover:shadow-2xl;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
   
   .btn-gradient-accent {
-    @apply relative overflow-hidden rounded-xl px-8 py-4;
+    @apply relative overflow-hidden rounded-xl;
     @apply font-semibold text-white transition-all duration-300;
     @apply hover:scale-105 hover:shadow-2xl;
     background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);

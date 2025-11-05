@@ -106,7 +106,7 @@ export default function ServicesPage() {
           {/* Header Railway */}
           <div className="mb-12 animate-fadeInUp">
             <h1 className="text-4xl font-bold text-foreground mb-3">
-              Nossos <AnimatedText gradient="primary" animation="fadeIn">Serviços</AnimatedText>
+              Nossos <span className="text-primary font-bold">Serviços</span>
             </h1>
             <p className="text-foreground-muted text-lg">
               Escolha o serviço que você deseja agendar e tenha uma experiência incrível

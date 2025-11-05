@@ -1,131 +1,276 @@
-# 💈 AgendaSalão - Sistema de Agendamento para Salões & Barbearias
+# 💈 Sistema de Agendamento para Salões & Barbearias# 💈 AgendaSalão - Sistema de Agendamento para Salões & Barbearias
 
-Sistema completo de agendamento online desenvolvido com Next.js 14, TypeScript, Prisma e Tailwind CSS.
 
-## 🚀 Tecnologias
 
-- **Framework**: Next.js 14 (App Router)
-- **Linguagem**: TypeScript
-- **Banco de Dados**: SQLite com Prisma ORM
-- **Estilização**: Tailwind CSS
-- **Autenticação**: NextAuth.js
-- **Componentes**: shadcn/ui
-- **Ícones**: Lucide React
+Sistema completo de gestão e agendamento online para salões de beleza e barbearias.Sistema completo de agendamento online desenvolvido com Next.js 14, TypeScript, Prisma e Tailwind CSS.
 
-## 📋 Funcionalidades
 
-### Para Clientes:
+
+## 🚀 Tecnologias## 🚀 Tecnologias
+
+
+
+- **Framework:** Next.js 14 (App Router)- **Framework**: Next.js 14 (App Router)
+
+- **Linguagem:** TypeScript- **Linguagem**: TypeScript
+
+- **Estilização:** Tailwind CSS + shadcn/ui- **Banco de Dados**: SQLite com Prisma ORM
+
+- **Banco de Dados:** PostgreSQL- **Estilização**: Tailwind CSS
+
+- **ORM:** Prisma 5.0- **Autenticação**: NextAuth.js
+
+- **Autenticação:** NextAuth.js- **Componentes**: shadcn/ui
+
+- **Pagamentos:** Stripe- **Ícones**: Lucide React
+
+- **Email:** Nodemailer (SMTP)
+
+- **Gráficos:** Recharts## 📋 Funcionalidades
+
+
+
+## ✨ Funcionalidades### Para Clientes:
+
 - ✅ Agendamento online 24/7
-- ✅ Visualização de serviços e preços
-- ✅ Escolha de profissional preferido
-- ✅ Histórico de agendamentos
-- ✅ Lembretes automáticos
 
-### Para Administradores:
-- ✅ Dashboard completo
+### Para Clientes- ✅ Visualização de serviços e preços
+
+- 📅 Agendamento online de serviços- ✅ Escolha de profissional preferido
+
+- 👤 Seleção de profissional preferido- ✅ Histórico de agendamentos
+
+- ⏰ Visualização de horários disponíveis em tempo real- ✅ Lembretes automáticos
+
+- 📧 Notificações por email (confirmação, lembretes)
+
+- 💳 Pagamento online via Stripe### Para Administradores:
+
+- 📱 Interface responsiva- ✅ Dashboard completo
+
 - ✅ Gestão de profissionais
-- ✅ Catálogo de serviços
-- ✅ Controle de agendamentos
-- ✅ Relatórios e análises
-- ✅ Gestão de clientes
 
-## 🛠️ Instalação e Execução
+### Para Administradores- ✅ Catálogo de serviços
 
-### Pré-requisitos
-- Node.js 18.17.0+ instalado (versão mínima requerida pelo Next.js 14)
-- npm ou yarn
+- 🏪 Gestão completa do salão- ✅ Controle de agendamentos
 
-> ⚠️ **Importante**: Se você estiver usando Node.js 18.13.0 ou inferior, será necessário atualizar para v18.17.0 ou superior.
+- 💇 CRUD de serviços (nome, duração, preço)- ✅ Relatórios e análises
+
+- 👨‍💼 CRUD de profissionais- ✅ Gestão de clientes
+
+- 📆 Gestão de agendamentos (confirmar, cancelar, completar)
+
+- ⏱️ Configuração de horários por profissional## 🛠️ Instalação e Execução
+
+- 🚫 Sistema de bloqueio de horários
+
+- 📊 Dashboard com métricas e gráficos### Pré-requisitos
+
+- 💰 Relatórios de receita e desempenho- Node.js 18.17.0+ instalado (versão mínima requerida pelo Next.js 14)
+
+- 📈 Análise de serviços mais populares- npm ou yarn
+
+
+
+## 🚀 Deploy na Railway> ⚠️ **Importante**: Se você estiver usando Node.js 18.13.0 ou inferior, será necessário atualizar para v18.17.0 ou superior.
+
 > 
-> Para verificar sua versão: `node --version`
-> 
-> Para atualizar, visite: https://nodejs.org/
 
-### Passos
+### 1. Criar conta na Railway> Para verificar sua versão: `node --version`
 
-1. **Instale as dependências** (se ainda não instalou)
-```bash
+- Acesse: https://railway.app> 
+
+- Faça login com GitHub> Para atualizar, visite: https://nodejs.org/
+
+
+
+### 2. Criar novo projeto### Passos
+
+- Clique em "New Project"
+
+- Selecione "Deploy from GitHub repo"1. **Instale as dependências** (se ainda não instalou)
+
+- Escolha este repositório```bash
+
 npm install
-```
 
-2. **Configure as variáveis de ambiente**
-```bash
+### 3. Adicionar PostgreSQL```
+
+- No projeto, clique em "+ New"
+
+- Selecione "Database" → "PostgreSQL"2. **Configure as variáveis de ambiente**
+
+- Railway criará automaticamente a variável `DATABASE_URL````bash
+
 cp .env.example .env
-```
+
+### 4. Configurar variáveis de ambiente```
+
+No painel de variáveis, adicione:
 
 3. **Inicialize o banco de dados**
-```bash
-npx prisma generate
-npx prisma db push
-```
 
-4. **Execute o projeto em desenvolvimento**
-```bash
-npm run dev
-```
+```env```bash
 
-Acesse: [http://localhost:3000](http://localhost:3000)
+NEXTAUTH_SECRET=<gere com: openssl rand -base64 32>npx prisma generate
 
-## 📦 Scripts Disponíveis
+NEXTAUTH_URL=https://seu-app.up.railway.appnpx prisma db push
 
-```bash
-npm run dev        # Inicia servidor de desenvolvimento
-npm run build      # Cria build de produção
-npm run start      # Inicia servidor de produção
+SMTP_HOST=smtp.gmail.com```
+
+SMTP_PORT=587
+
+SMTP_USER=seu-email@gmail.com4. **Execute o projeto em desenvolvimento**
+
+SMTP_PASS=sua-senha-de-app```bash
+
+EMAIL_FROM=Seu Salão <noreply@seusalao.com>npm run dev
+
+STRIPE_SECRET_KEY=sk_...```
+
+STRIPE_PUBLISHABLE_KEY=pk_...
+
+STRIPE_WEBHOOK_SECRET=whsec_...Acesse: [http://localhost:3000](http://localhost:3000)
+
+NODE_ENV=production
+
+```## 📦 Scripts Disponíveis
+
+
+
+### 5. Deploy automático```bash
+
+- Railway detecta automaticamente o `railway.json`npm run dev        # Inicia servidor de desenvolvimento
+
+- O deploy inicia automaticamentenpm run build      # Cria build de produção
+
+- Migrations rodam no primeiro deploynpm run start      # Inicia servidor de produção
+
 npm run lint       # Executa linter
-npx prisma studio  # Abre interface visual do banco de dados
+
+### 6. Popular banco de dadosnpx prisma studio  # Abre interface visual do banco de dados
+
+Após o primeiro deploy, execute via Railway CLI:```
+
+```bash
+
+railway run npm run db:seed## 🗂️ Estrutura do Projeto
+
 ```
 
-## 🗂️ Estrutura do Projeto
-
 ```
-empresa_de_apps/
+
+## 📦 Instalação Localempresa_de_apps/
+
 ├── app/                    # Páginas e rotas (App Router)
-│   ├── page.tsx           # Página inicial (Landing Page)
-│   ├── layout.tsx         # Layout global
-│   └── globals.css        # Estilos globais
-├── components/            # Componentes React reutilizáveis
+
+```bash│   ├── page.tsx           # Página inicial (Landing Page)
+
+# Clonar repositório│   ├── layout.tsx         # Layout global
+
+git clone https://github.com/seu-usuario/sistema-agendamento-salao.git│   └── globals.css        # Estilos globais
+
+cd sistema-agendamento-salao├── components/            # Componentes React reutilizáveis
+
 │   └── ui/               # Componentes UI (Button, Card, etc)
-├── lib/                  # Utilitários e configurações
-│   ├── prisma.ts        # Cliente Prisma
+
+# Instalar dependências├── lib/                  # Utilitários e configurações
+
+npm install│   ├── prisma.ts        # Cliente Prisma
+
 │   └── utils.ts         # Funções auxiliares
-├── prisma/              # Schema e migrações do banco
-│   └── schema.prisma    # Definição dos models
-└── public/              # Arquivos estáticos
+
+# Configurar variáveis de ambiente├── prisma/              # Schema e migrações do banco
+
+cp .env.example .env│   └── schema.prisma    # Definição dos models
+
+# Edite o .env com suas credenciais└── public/              # Arquivos estáticos
+
 ```
 
-## 🎨 Schema do Banco de Dados
+# Rodar migrations
 
-### Models Principais:
-- **User**: Clientes e administradores
+npx prisma migrate dev## 🎨 Schema do Banco de Dados
+
+
+
+# Popular banco com dados de exemplo### Models Principais:
+
+npm run db:seed- **User**: Clientes e administradores
+
 - **Salon**: Salões/barbearias
-- **Staff**: Profissionais (barbeiros, cabeleireiros)
-- **Service**: Serviços oferecidos
-- **Booking**: Agendamentos
+
+# Iniciar servidor de desenvolvimento- **Staff**: Profissionais (barbeiros, cabeleireiros)
+
+npm run dev- **Service**: Serviços oferecidos
+
+```- **Booking**: Agendamentos
+
 - **ServiceStaff**: Relação entre serviços e profissionais
+
+## 👤 Credenciais Padrão (após seed)
 
 ## 🎯 Roadmap
 
-- [x] Estrutura do projeto Next.js
-- [x] Schema do banco de dados
+**Admin:**
+
+- Email: admin@agendasalao.com.br- [x] Estrutura do projeto Next.js
+
+- Senha: admin123- [x] Schema do banco de dados
+
 - [x] Landing page
-- [x] Sistema de autenticação (NextAuth.js)
-  - [x] Login
-  - [x] Registro
+
+**Cliente:**- [x] Sistema de autenticação (NextAuth.js)
+
+- Email: pedro@exemplo.com  - [x] Login
+
+- Senha: cliente123  - [x] Registro
+
   - [x] Proteção de rotas
-  - [x] Dashboard básico
+
+⚠️ **IMPORTANTE:** Altere estas senhas em produção!  - [x] Dashboard básico
+
 - [ ] Dashboard administrativo completo
-- [ ] Página de agendamento interativa
+
+## 📧 Sistema de Notificações- [ ] Página de agendamento interativa
+
 - [ ] Integração com WhatsApp
-- [ ] Sistema de pagamento online
-- [ ] Aplicativo mobile
+
+Emails automáticos enviados em:- [ ] Sistema de pagamento online
+
+- ✅ Criação de agendamento (PENDING)- [ ] Aplicativo mobile
+
+- ✅ Confirmação de agendamento (CONFIRMED)
+
+- ❌ Cancelamento de agendamento---
+
+- ⏰ Lembrete 24h antes
+
+- 💳 Confirmação de pagamento**Desenvolvido com ❤️ para transformar salões em negócios digitais**
+
+
+
+## 💳 Pagamentos com Stripe## Deploy on Vercel
+
+
+
+### Modo TesteThe easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Cartão de teste: `4242 4242 4242 4242`
+
+- Qualquer CVC (3 dígitos)Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+- Qualquer data futura
+
+### Modo Produção
+1. Crie conta no Stripe: https://stripe.com
+2. Configure webhooks apontando para: `https://seu-dominio.com/api/webhooks/stripe`
+3. Use as chaves de produção no `.env`
+
+## 📄 Licença
+
+MIT License - Sinta-se livre para usar este projeto!
 
 ---
 
-**Desenvolvido com ❤️ para transformar salões em negócios digitais**
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+⭐ Se este projeto foi útil, considere dar uma estrela!
