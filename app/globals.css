@@ -49,7 +49,8 @@
 /* Glass Effect Components - Railway style */
 @layer components {
   .glass-card {
-    @apply bg-background-alt/70 backdrop-blur-xl border border-white/8;
+    @apply bg-background-alt/70 backdrop-blur-xl border;
+    border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 1px rgba(168, 85, 247, 0.1);
   }
   
