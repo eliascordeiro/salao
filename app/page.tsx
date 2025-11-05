@@ -247,7 +247,7 @@ export default function Home() {
           <GlassCard glow="primary" className="max-w-4xl mx-auto p-12">
             <h2 className="text-5xl font-bold text-foreground mb-6">
               Pronto para{" "}
-              <AnimatedText gradient="primary">modernizar</AnimatedText>
+              <span className="text-primary font-bold">modernizar</span>
               {" "}seu salão?
             </h2>
             <p className="text-xl text-foreground-muted mb-10 max-w-2xl mx-auto leading-relaxed">
