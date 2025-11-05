@@ -190,7 +190,7 @@ function MyBookingsContent() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 animate-fadeInUp">
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-3">
-                Meus <AnimatedText gradient="accent" animation="gradient">Agendamentos</AnimatedText>
+                Meus <AnimatedText gradient="accent" animation="fadeIn">Agendamentos</AnimatedText>
               </h1>
               <p className="text-foreground-muted text-lg">
                 Gerencie seus agendamentos e horários de forma simples

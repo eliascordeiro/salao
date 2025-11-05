@@ -112,7 +112,7 @@ export default function Home() {
             
             <h1 className="text-6xl md:text-7xl font-bold text-foreground mb-8 animate-fadeInUp">
               Transforme seu Salão em um{" "}
-              <AnimatedText gradient="primary" animation="gradient" className="inline-block">
+              <AnimatedText gradient="primary" animation="fadeInUp" className="inline-block">
                 Negócio Digital
               </AnimatedText>
             </h1>
