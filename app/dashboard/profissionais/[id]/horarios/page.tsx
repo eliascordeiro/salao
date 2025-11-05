@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Clock, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Sparkles, Clock, Calendar, Save } from "lucide-react";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
 interface Staff {
@@ -204,13 +205,13 @@ export default function StaffSchedulePage({
 
   if (loadingData) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardHeader
           user={session?.user || { name: "", email: "", role: "CLIENT" }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Sparkles className="h-12 w-12 text-primary animate-spin" />
           </div>
         </div>
       </div>
@@ -218,42 +219,45 @@ export default function StaffSchedulePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard/profissionais"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Voltar para Profissionais
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Horários de Trabalho
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Configure os horários de <strong>{staff?.name}</strong>
-          </p>
-        </div>
+      <GridBackground>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="mb-8 animate-fadeInUp">
+            <Link href="/dashboard/profissionais">
+              <GradientButton variant="primary" className="mb-4 px-4 py-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </GradientButton>
+            </Link>
+            <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
+              <Clock className="h-8 w-8 text-accent" />
+              Horários de Trabalho
+            </h1>
+            <p className="text-foreground-muted">
+              Configure os horários de <strong className="text-accent">{staff?.name}</strong>
+            </p>
+          </div>
 
-        {/* Formulário */}
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Configurar Horários
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Formulário */}
+          <GlassCard glow="accent" className="max-w-2xl p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Calendar className="h-6 w-6 text-accent" />
+                Configurar Horários
+              </h2>
+              <p className="text-foreground-muted mt-1">
+                Defina os dias e horários de trabalho
+              </p>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Dias de Trabalho */}
               <div>
-                <Label className="flex items-center gap-2 mb-3">
-                  <Calendar className="h-4 w-4" />
-                  Dias de Trabalho <span className="text-red-500">*</span>
+                <Label className="flex items-center gap-2 mb-3 text-foreground">
+                  <Calendar className="h-4 w-4 text-accent" />
+                  Dias de Trabalho <span className="text-destructive">*</span>
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {DAYS_OF_WEEK.map((day) => (
@@ -261,30 +265,30 @@ export default function StaffSchedulePage({
                       key={day.value}
                       className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition ${
                         formData.workDays.includes(day.value)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:bg-gray-50"
+                          ? "border-primary bg-primary/10 shadow-sm"
+                          : "border-primary/20 hover:bg-background-alt/50"
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={formData.workDays.includes(day.value)}
                         onChange={() => handleDayToggle(day.value)}
-                        className="rounded"
+                        className="rounded accent-primary"
                       />
-                      <span className="text-sm">{day.label}</span>
+                      <span className="text-sm text-foreground">{day.label}</span>
                     </label>
                   ))}
                 </div>
                 {errors.workDays && (
-                  <p className="text-sm text-red-500 mt-2">{errors.workDays}</p>
+                  <p className="text-sm text-destructive mt-2">{errors.workDays}</p>
                 )}
               </div>
 
               {/* Horário de Trabalho */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="workStart">
-                    Início do Expediente <span className="text-red-500">*</span>
+                  <Label htmlFor="workStart" className="text-foreground">
+                    Início do Expediente <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="workStart"
@@ -293,18 +297,20 @@ export default function StaffSchedulePage({
                     onChange={(e) =>
                       setFormData({ ...formData, workStart: e.target.value })
                     }
-                    className={errors.workStart ? "border-red-500" : ""}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                      errors.workStart ? "border-destructive" : ""
+                    }`}
                   />
                   {errors.workStart && (
-                    <p className="text-sm text-red-500 mt-1">
+                    <p className="text-sm text-destructive mt-1">
                       {errors.workStart}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="workEnd">
-                    Fim do Expediente <span className="text-red-500">*</span>
+                  <Label htmlFor="workEnd" className="text-foreground">
+                    Fim do Expediente <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="workEnd"
@@ -313,25 +319,29 @@ export default function StaffSchedulePage({
                     onChange={(e) =>
                       setFormData({ ...formData, workEnd: e.target.value })
                     }
-                    className={errors.workEnd ? "border-red-500" : ""}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                      errors.workEnd ? "border-destructive" : ""
+                    }`}
                   />
                   {errors.workEnd && (
-                    <p className="text-sm text-red-500 mt-1">{errors.workEnd}</p>
+                    <p className="text-sm text-destructive mt-1">{errors.workEnd}</p>
                   )}
                 </div>
               </div>
 
               {/* Horário de Almoço (Opcional) */}
               <div>
-                <Label className="mb-3 block">
+                <Label className="mb-3 block text-foreground">
                   Horário de Almoço (Opcional)
                 </Label>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-foreground-muted mb-3">
                   Configure um intervalo de almoço onde não haverá atendimentos
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="lunchStart">Início do Almoço</Label>
+                    <Label htmlFor="lunchStart" className="text-foreground">
+                      Início do Almoço
+                    </Label>
                     <Input
                       id="lunchStart"
                       type="time"
@@ -339,17 +349,21 @@ export default function StaffSchedulePage({
                       onChange={(e) =>
                         setFormData({ ...formData, lunchStart: e.target.value })
                       }
-                      className={errors.lunchStart ? "border-red-500" : ""}
+                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                        errors.lunchStart ? "border-destructive" : ""
+                      }`}
                     />
                     {errors.lunchStart && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {errors.lunchStart}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="lunchEnd">Fim do Almoço</Label>
+                    <Label htmlFor="lunchEnd" className="text-foreground">
+                      Fim do Almoço
+                    </Label>
                     <Input
                       id="lunchEnd"
                       type="time"
@@ -357,10 +371,12 @@ export default function StaffSchedulePage({
                       onChange={(e) =>
                         setFormData({ ...formData, lunchEnd: e.target.value })
                       }
-                      className={errors.lunchEnd ? "border-red-500" : ""}
+                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
+                        errors.lunchEnd ? "border-destructive" : ""
+                      }`}
                     />
                     {errors.lunchEnd && (
-                      <p className="text-sm text-red-500 mt-1">
+                      <p className="text-sm text-destructive mt-1">
                         {errors.lunchEnd}
                       </p>
                     )}
@@ -369,12 +385,15 @@ export default function StaffSchedulePage({
               </div>
 
               {/* Resumo */}
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-2">📋 Resumo</h3>
-                  <ul className="text-sm space-y-1 text-gray-700">
-                    <li>
-                      <strong>Dias:</strong>{" "}
+              <div className="glass-card bg-accent/5 border-accent/20 p-6 rounded-lg">
+                <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-accent" />
+                  Resumo da Configuração
+                </h3>
+                <ul className="text-sm space-y-2 text-foreground-muted">
+                  <li className="flex gap-2">
+                    <span className="font-medium text-foreground">Dias:</span>
+                    <span>
                       {formData.workDays.length > 0
                         ? formData.workDays
                             .map(
@@ -384,46 +403,55 @@ export default function StaffSchedulePage({
                             )
                             .join(", ")
                         : "Nenhum dia selecionado"}
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="font-medium text-foreground">Expediente:</span>
+                    <span>{formData.workStart} às {formData.workEnd}</span>
+                  </li>
+                  {formData.lunchStart && formData.lunchEnd && (
+                    <li className="flex gap-2">
+                      <span className="font-medium text-foreground">Almoço:</span>
+                      <span>{formData.lunchStart} às {formData.lunchEnd}</span>
                     </li>
-                    <li>
-                      <strong>Expediente:</strong> {formData.workStart} às{" "}
-                      {formData.workEnd}
-                    </li>
-                    {formData.lunchStart && formData.lunchEnd && (
-                      <li>
-                        <strong>Almoço:</strong> {formData.lunchStart} às{" "}
-                        {formData.lunchEnd}
-                      </li>
-                    )}
-                  </ul>
-                </CardContent>
-              </Card>
+                  )}
+                </ul>
+              </div>
 
               {/* Botões */}
               <div className="flex gap-4">
-                <Button
+                <GradientButton
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   onClick={() => router.push("/dashboard/profissionais")}
                   className="flex-1"
                 >
+                  <ArrowLeft className="h-4 w-4" />
                   Cancelar
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
+                </GradientButton>
+                <GradientButton
+                  type="submit"
+                  variant="accent"
+                  disabled={loading}
+                  className="flex-1"
+                >
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Sparkles className="h-4 w-4 animate-spin" />
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Horários"
+                    <>
+                      <Save className="h-4 w-4" />
+                      Salvar Horários
+                    </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      </div>
+          </GlassCard>
+        </div>
+      </GridBackground>
     </div>
   );
 }

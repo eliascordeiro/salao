@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, Sparkles, UserPlus, Save } from "lucide-react";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
 interface Salon {
@@ -146,13 +147,13 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
 
   if (loadingData || !session) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardHeader
           user={session?.user || { name: "", email: "", role: "CLIENT" }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Sparkles className="h-12 w-12 text-primary animate-spin" />
           </div>
         </div>
       </div>
@@ -160,38 +161,41 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard/profissionais"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Voltar para Profissionais
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Editar Profissional
-          </h1>
-          <p className="text-gray-600 mt-2">
+      <GridBackground>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="mb-8 animate-fadeInUp">
+            <Link href="/dashboard/profissionais">
+              <GradientButton variant="primary" className="mb-4 px-4 py-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Profissionais
+              </GradientButton>
+            </Link>
+            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+              <Sparkles className="h-8 w-8 text-primary" />
+              Editar Profissional
+            </h1>
+            <p className="text-foreground-muted mt-2">
             Atualize as informações do profissional
           </p>
-        </div>
+          </div>
 
-        {/* Formulário */}
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Informações do Profissional</CardTitle>
-          </CardHeader>
-          <CardContent>
+          {/* Formulário */}
+          <GlassCard glow="accent" className="max-w-2xl p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <UserPlus className="h-6 w-6 text-accent" />
+                Informações do Profissional
+              </h2>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Nome */}
               <div>
-                <Label htmlFor="name">
-                  Nome Completo <span className="text-red-500">*</span>
+                <Label htmlFor="name" className="text-foreground">
+                  Nome Completo <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
@@ -200,17 +204,17 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: João Silva"
-                  className={errors.name ? "border-red-500" : ""}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.name ? "border-destructive" : ""}`}
                 />
                 {errors.name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.name}</p>
                 )}
               </div>
 
               {/* Email */}
               <div>
-                <Label htmlFor="email">
-                  Email <span className="text-red-500">*</span>
+                <Label htmlFor="email" className="text-foreground">
+                  Email <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="email"
@@ -220,16 +224,16 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="joao@exemplo.com"
-                  className={errors.email ? "border-red-500" : ""}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.email ? "border-destructive" : ""}`}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.email}</p>
                 )}
               </div>
 
               {/* Telefone */}
               <div>
-                <Label htmlFor="phone">Telefone</Label>
+                <Label htmlFor="phone" className="text-foreground">Telefone</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -238,12 +242,13 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="(11) 98765-4321"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
               </div>
 
               {/* Especialidade */}
               <div>
-                <Label htmlFor="specialty">Especialidade</Label>
+                <Label htmlFor="specialty" className="text-foreground">Especialidade</Label>
                 <Input
                   id="specialty"
                   value={formData.specialty}
@@ -251,13 +256,14 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                     setFormData({ ...formData, specialty: e.target.value })
                   }
                   placeholder="Ex: Barbeiro, Cabeleireiro, Manicure"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
               </div>
 
               {/* Salão */}
               <div>
-                <Label htmlFor="salonId">
-                  Salão <span className="text-red-500">*</span>
+                <Label htmlFor="salonId" className="text-foreground">
+                  Salão <span className="text-destructive">*</span>
                 </Label>
                 <select
                   id="salonId"
@@ -265,8 +271,8 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                   onChange={(e) =>
                     setFormData({ ...formData, salonId: e.target.value })
                   }
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.salonId ? "border-red-500" : "border-gray-300"
+                  className={`w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
+                    errors.salonId ? "border-destructive" : ""
                   }`}
                 >
                   <option value="">Selecione um salão</option>
@@ -277,7 +283,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                   ))}
                 </select>
                 {errors.salonId && (
-                  <p className="text-sm text-red-500 mt-1">{errors.salonId}</p>
+                  <p className="text-sm text-destructive mt-1">{errors.salonId}</p>
                 )}
               </div>
 
@@ -290,39 +296,43 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                   onChange={(e) =>
                     setFormData({ ...formData, active: e.target.checked })
                   }
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
                 />
-                <Label htmlFor="active" className="cursor-pointer">
+                <Label htmlFor="active" className="cursor-pointer text-foreground">
                   Profissional ativo (disponível para agendamentos)
                 </Label>
               </div>
 
               {/* Botões */}
-              <div className="flex gap-4 pt-4">
-                <Button
+              <div className="flex gap-3 pt-6">
+                <GradientButton
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   onClick={() => router.push("/dashboard/profissionais")}
                   disabled={loading}
-                  className="flex-1"
+                  className="flex-1 py-3"
                 >
+                  <ArrowLeft className="h-4 w-4" />
                   Cancelar
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
+                </GradientButton>
+                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3">
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Sparkles className="h-4 w-4 animate-spin" />
                       Salvando...
                     </>
                   ) : (
-                    "Salvar Alterações"
+                    <>
+                      <Save className="h-4 w-4" />
+                      Salvar Alterações
+                    </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </form>
-          </CardContent>
-        </Card>
-      </div>
+          </GlassCard>
+        </main>
+      </GridBackground>
     </div>
   );
 }

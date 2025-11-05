@@ -33,7 +33,13 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(service)
+    // Transformar a resposta para ter o formato esperado pelo frontend
+    const transformedService = {
+      ...service,
+      staff: service.staff.map(ss => ss.staff)
+    }
+
+    return NextResponse.json(transformedService)
   } catch (error) {
     console.error("Erro ao buscar serviço:", error)
     return NextResponse.json(
@@ -55,7 +61,7 @@ export async function PUT(
     }
 
     const data = await request.json()
-    const { name, description, duration, price, category, active, staffIds } = data
+    const { name, description, duration, price, category, salonId, active, staffIds } = data
 
     // Atualizar serviço
     const service = await prisma.service.update({
@@ -66,6 +72,7 @@ export async function PUT(
         duration: parseInt(duration),
         price: parseFloat(price),
         category: category || null,
+        salonId,
         active: active !== undefined ? active : true,
       }
     })

@@ -30,7 +30,8 @@ interface Service {
   duration: number;
   price: number;
   category?: string;
-  isActive: boolean;
+  active: boolean;
+  isActive?: boolean; // Para compatibilidade
   salonId: string;
   staff: Staff[];
 }
@@ -81,14 +82,14 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
         // Preencher formulário com dados existentes
         setFormData({
-          name: service.name,
+          name: service.name || "",
           description: service.description || "",
-          duration: service.duration.toString(),
-          price: service.price.toString(),
+          duration: service.duration?.toString() || "",
+          price: service.price?.toString() || "",
           category: service.category || "",
-          salonId: service.salonId,
-          isActive: service.isActive,
-          staffIds: service.staff.map((s) => s.id),
+          salonId: service.salonId || "",
+          isActive: service.active ?? true,
+          staffIds: service.staff?.map((s) => s.id) || [],
         });
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -157,12 +158,12 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
         },
         body: JSON.stringify({
           name: formData.name,
-          description: formData.description || null,
+          description: formData.description,
           duration: parseInt(formData.duration),
           price: parseFloat(formData.price),
-          category: formData.category || null,
-          isActive: formData.isActive,
+          category: formData.category,
           salonId: formData.salonId,
+          active: formData.isActive,
           staffIds: formData.staffIds,
         }),
       });
