@@ -54,7 +54,6 @@ const config: Config = {
         'fadeIn': 'fadeIn 0.4s ease-out',
         'shimmer': 'shimmer 2s linear infinite',
         'pulseGlow': 'pulseGlow 2s ease-in-out infinite',
-        'gradient': 'gradient 8s linear infinite',
         'slideInLeft': 'slideInLeft 0.5s ease-out',
         'slideInRight': 'slideInRight 0.5s ease-out',
       },
@@ -91,14 +90,6 @@ const config: Config = {
           },
           '50%': {
             boxShadow: '0 0 40px rgba(99, 102, 241, 0.6)',
-          },
-        },
-        gradient: {
-          '0%, 100%': {
-            backgroundPosition: '0% 50%',
-          },
-          '50%': {
-            backgroundPosition: '100% 50%',
           },
         },
         slideInLeft: {
