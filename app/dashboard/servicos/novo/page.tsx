@@ -37,13 +37,22 @@ export default function NewServicePage() {
       const response = await fetch("/api/salons")
       if (response.ok) {
         const data = await response.json()
-        setSalons(data)
-        if (data.length > 0) {
-          setFormData(prev => ({ ...prev, salonId: data[0].id }))
+        if (Array.isArray(data)) {
+          setSalons(data)
+          if (data.length > 0) {
+            setFormData(prev => ({ ...prev, salonId: data[0].id }))
+          }
+        } else {
+          console.error("Resposta inválida da API de salões:", data)
+          setSalons([])
         }
+      } else {
+        console.error("Erro ao carregar salões:", response.status)
+        setSalons([])
       }
     } catch (error) {
       console.error("Erro ao carregar salões:", error)
+      setSalons([])
     }
   }
 

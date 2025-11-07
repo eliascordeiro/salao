@@ -39,15 +39,30 @@ export default function NewStaffPage() {
     const fetchSalons = async () => {
       try {
         const response = await fetch("/api/salons");
+        
+        if (!response.ok) {
+          console.error("Erro ao carregar salões:", response.status);
+          setSalons([]);
+          return;
+        }
+        
         const data = await response.json();
-        setSalons(data);
+        
+        // Verificar se data é um array
+        if (Array.isArray(data)) {
+          setSalons(data);
 
-        // Se houver apenas um salão, selecionar automaticamente
-        if (data.length === 1) {
-          setFormData((prev) => ({ ...prev, salonId: data[0].id }));
+          // Se houver apenas um salão, selecionar automaticamente
+          if (data.length === 1) {
+            setFormData((prev) => ({ ...prev, salonId: data[0].id }));
+          }
+        } else {
+          console.error("Resposta inválida da API:", data);
+          setSalons([]);
         }
       } catch (error) {
         console.error("Erro ao carregar salões:", error);
+        setSalons([]);
       }
     };
 

@@ -60,8 +60,18 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
 
         // Buscar salões
         const salonsRes = await fetch("/api/salons");
-        const salonsData = await salonsRes.json();
-        setSalons(salonsData);
+        if (salonsRes.ok) {
+          const salonsData = await salonsRes.json();
+          if (Array.isArray(salonsData)) {
+            setSalons(salonsData);
+          } else {
+            console.error("Resposta inválida da API de salões:", salonsData);
+            setSalons([]);
+          }
+        } else {
+          console.error("Erro ao carregar salões:", salonsRes.status);
+          setSalons([]);
+        }
 
         // Preencher formulário
         setFormData({

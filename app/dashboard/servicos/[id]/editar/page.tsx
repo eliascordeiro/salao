@@ -72,13 +72,33 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
         // Buscar salões
         const salonsRes = await fetch("/api/salons");
-        const salonsData = await salonsRes.json();
-        setSalons(salonsData);
+        if (salonsRes.ok) {
+          const salonsData = await salonsRes.json();
+          if (Array.isArray(salonsData)) {
+            setSalons(salonsData);
+          } else {
+            console.error("Resposta inválida da API de salões:", salonsData);
+            setSalons([]);
+          }
+        } else {
+          console.error("Erro ao carregar salões:", salonsRes.status);
+          setSalons([]);
+        }
 
         // Buscar profissionais do salão
         const staffRes = await fetch(`/api/staff?salonId=${service.salonId}`);
-        const staffData = await staffRes.json();
-        setAllStaff(staffData);
+        if (staffRes.ok) {
+          const staffData = await staffRes.json();
+          if (Array.isArray(staffData)) {
+            setAllStaff(staffData);
+          } else {
+            console.error("Resposta inválida da API de profissionais:", staffData);
+            setAllStaff([]);
+          }
+        } else {
+          console.error("Erro ao carregar profissionais:", staffRes.status);
+          setAllStaff([]);
+        }
 
         // Preencher formulário com dados existentes
         setFormData({
