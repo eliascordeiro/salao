@@ -26,13 +26,14 @@ model User {
   bookings      Booking[]
   ownedSalons   Salon[]
   payments      Payment[]
+  reviews       Review[]
 }
 
 // Modelo de Salão/Barbearia
 model Salon {
   id          String    @id @default(cuid())
   name        String
-  description String?
+  description String?   @db.Text
   address     String
   phone       String
   email       String?
@@ -42,6 +43,32 @@ model Salon {
   workDays    String    // Ex: "1,2,3,4,5" (Seg-Sex)
   bookingType String    @default("BOTH") // DYNAMIC, SLOT_BASED, BOTH
   active      Boolean   @default(true)
+  
+  // Localização (NOVOS CAMPOS)
+  city        String?   // Cidade
+  state       String?   // Estado (UF)
+  zipCode     String?   // CEP
+  latitude    Float?    // Para mapas
+  longitude   Float?    // Para mapas
+  
+  // Mídia (NOVOS CAMPOS)
+  coverPhoto  String?   // Foto de capa
+  photos      String[]  @default([]) // Array de URLs de fotos
+  
+  // Avaliações (NOVOS CAMPOS)
+  rating      Float     @default(0) // Média das avaliações (0-5)
+  reviewsCount Int      @default(0) // Total de avaliações
+  
+  // Destaque (NOVOS CAMPOS)
+  featured    Boolean   @default(false) // Salão em destaque
+  verified    Boolean   @default(false) // Salão verificado
+  
+  // Marketing (NOVOS CAMPOS)
+  specialties String[]  @default([]) // Ex: ["corte masculino", "coloração"]
+  
+  // Controle (NOVOS CAMPOS)
+  publishedAt DateTime? // Data de publicação (quando aparece na busca pública)
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
@@ -52,6 +79,7 @@ model Salon {
   services    Service[]
   staff       Staff[]
   bookings    Booking[]
+  reviews     Review[]
 }
 
 // Modelo de Profissional/Barbeiro
@@ -144,6 +172,9 @@ model Booking {
   
   // Relação com pagamento
   payment     Payment?
+  
+  // Relação com avaliação
+  review      Review?
   
   @@index([date])
   @@index([clientId])
@@ -265,4 +296,30 @@ model Availability {
   @@index([dayOfWeek])
   @@index([staffId, date])
   @@index([staffId, dayOfWeek])
+}
+
+// Modelo de Avaliação/Review de Salão
+model Review {
+  id          String    @id @default(cuid())
+  rating      Int       // 1 a 5 estrelas
+  comment     String?   @db.Text
+  
+  // Relações
+  salonId     String
+  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  bookingId   String?   @unique
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  
+  // Controle
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([salonId])
+  @@index([userId])
+  @@index([rating])
+  @@index([salonId, rating])
 }
