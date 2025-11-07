@@ -1,0 +1,482 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { GridBackground } from "@/components/ui/grid-background";
+import { Briefcase, Loader2, ArrowLeft, Store, User, MapPin, Phone, Mail, Lock, CheckCircle } from "lucide-react";
+import Link from "next/link";
+
+export default function CadastroSalaoPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  
+  // Dados do proprietário
+  const [ownerName, setOwnerName] = useState("");
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [ownerPassword, setOwnerPassword] = useState("");
+  const [ownerPasswordConfirm, setOwnerPasswordConfirm] = useState("");
+  
+  // Dados do salão
+  const [salonName, setSalonName] = useState("");
+  const [salonPhone, setSalonPhone] = useState("");
+  const [salonAddress, setSalonAddress] = useState("");
+  const [salonCity, setSalonCity] = useState("");
+  const [salonState, setSalonState] = useState("");
+  const [salonZipCode, setSalonZipCode] = useState("");
+  const [salonDescription, setSalonDescription] = useState("");
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Validar passo 1 (dados do proprietário)
+  function validateStep1(): boolean {
+    const newErrors: Record<string, string> = {};
+    
+    if (!ownerName.trim()) {
+      newErrors.ownerName = "Nome é obrigatório";
+    }
+    
+    if (!ownerEmail.trim()) {
+      newErrors.ownerEmail = "Email é obrigatório";
+    } else if (!/\S+@\S+\.\S+/.test(ownerEmail)) {
+      newErrors.ownerEmail = "Email inválido";
+    }
+    
+    if (!ownerPassword) {
+      newErrors.ownerPassword = "Senha é obrigatória";
+    } else if (ownerPassword.length < 6) {
+      newErrors.ownerPassword = "Senha deve ter no mínimo 6 caracteres";
+    }
+    
+    if (ownerPassword !== ownerPasswordConfirm) {
+      newErrors.ownerPasswordConfirm = "As senhas não coincidem";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+  
+  // Validar passo 2 (dados do salão)
+  function validateStep2(): boolean {
+    const newErrors: Record<string, string> = {};
+    
+    if (!salonName.trim()) {
+      newErrors.salonName = "Nome do salão é obrigatório";
+    }
+    
+    if (!salonPhone.trim()) {
+      newErrors.salonPhone = "Telefone é obrigatório";
+    }
+    
+    if (!salonAddress.trim()) {
+      newErrors.salonAddress = "Endereço é obrigatório";
+    }
+    
+    if (!salonCity.trim()) {
+      newErrors.salonCity = "Cidade é obrigatória";
+    }
+    
+    if (!salonState.trim()) {
+      newErrors.salonState = "Estado é obrigatório";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+  
+  // Avançar para passo 2
+  function handleNextStep() {
+    if (validateStep1()) {
+      setStep(2);
+      setErrors({});
+    }
+  }
+  
+  // Submeter cadastro
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    
+    if (!validateStep2()) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Criar conta e salão
+      const response = await fetch("/api/auth/register-salon", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // Dados do proprietário
+          ownerName,
+          ownerEmail,
+          ownerPassword,
+          // Dados do salão
+          salonName,
+          salonPhone,
+          salonAddress,
+          salonCity,
+          salonState,
+          salonZipCode,
+          salonDescription,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Login automático
+        const signInResult = await signIn("credentials", {
+          email: ownerEmail,
+          password: ownerPassword,
+          redirect: false,
+        });
+        
+        if (signInResult?.ok) {
+          // Redirecionar para dashboard com mensagem de sucesso
+          router.push("/dashboard?welcome=true");
+        } else {
+          // Se login automático falhar, redirecionar para página de login
+          router.push("/login?registered=true");
+        }
+      } else {
+        setErrors({ submit: result.error || "Erro ao criar cadastro" });
+      }
+    } catch (error) {
+      console.error("Erro ao cadastrar:", error);
+      setErrors({ submit: "Erro ao criar cadastro. Tente novamente." });
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  const estados = [
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+    "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+    "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+  ];
+  
+  return (
+    <GridBackground>
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        {/* Header */}
+        <div className="space-y-4 mb-8">
+          <Link href="/">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para início
+            </Button>
+          </Link>
+          
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <Store className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold">Cadastre seu Salão</h1>
+            </div>
+            <p className="text-muted-foreground">
+              Junte-se à maior plataforma de agendamentos para salões e barbearias
+            </p>
+          </div>
+        </div>
+        
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
+              step >= 1 ? "bg-primary text-primary-foreground" : "bg-muted"
+            }`}
+          >
+            {step > 1 ? <CheckCircle className="h-5 w-5" /> : "1"}
+          </div>
+          <div className={`w-20 h-1 ${step > 1 ? "bg-primary" : "bg-muted"}`} />
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
+              step >= 2 ? "bg-primary text-primary-foreground" : "bg-muted"
+            }`}
+          >
+            2
+          </div>
+        </div>
+        
+        <Card className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* PASSO 1: Dados do Proprietário */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                  <User className="h-5 w-5" />
+                  <span>Dados do Proprietário</span>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ownerName">Nome completo *</Label>
+                  <Input
+                    id="ownerName"
+                    value={ownerName}
+                    onChange={(e) => setOwnerName(e.target.value)}
+                    placeholder="Seu nome completo"
+                  />
+                  {errors.ownerName && (
+                    <p className="text-sm text-destructive">{errors.ownerName}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ownerEmail">Email *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="ownerEmail"
+                      type="email"
+                      value={ownerEmail}
+                      onChange={(e) => setOwnerEmail(e.target.value)}
+                      placeholder="seu@email.com"
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.ownerEmail && (
+                    <p className="text-sm text-destructive">{errors.ownerEmail}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ownerPassword">Senha *</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="ownerPassword"
+                      type="password"
+                      value={ownerPassword}
+                      onChange={(e) => setOwnerPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.ownerPassword && (
+                    <p className="text-sm text-destructive">{errors.ownerPassword}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ownerPasswordConfirm">Confirmar senha *</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="ownerPasswordConfirm"
+                      type="password"
+                      value={ownerPasswordConfirm}
+                      onChange={(e) => setOwnerPasswordConfirm(e.target.value)}
+                      placeholder="Digite a senha novamente"
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.ownerPasswordConfirm && (
+                    <p className="text-sm text-destructive">
+                      {errors.ownerPasswordConfirm}
+                    </p>
+                  )}
+                </div>
+                
+                <Button type="button" onClick={handleNextStep} className="w-full">
+                  Continuar
+                </Button>
+                
+                <p className="text-center text-sm text-muted-foreground">
+                  Já tem uma conta?{" "}
+                  <Link href="/login" className="text-primary hover:underline">
+                    Faça login
+                  </Link>
+                </p>
+              </div>
+            )}
+            
+            {/* PASSO 2: Dados do Salão */}
+            {step === 2 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-lg font-semibold mb-4">
+                  <Briefcase className="h-5 w-5" />
+                  <span>Dados do Salão</span>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonName">Nome do salão *</Label>
+                  <Input
+                    id="salonName"
+                    value={salonName}
+                    onChange={(e) => setSalonName(e.target.value)}
+                    placeholder="Nome fantasia do seu salão"
+                  />
+                  {errors.salonName && (
+                    <p className="text-sm text-destructive">{errors.salonName}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonPhone">Telefone *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="salonPhone"
+                      value={salonPhone}
+                      onChange={(e) => setSalonPhone(e.target.value)}
+                      placeholder="(00) 00000-0000"
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.salonPhone && (
+                    <p className="text-sm text-destructive">{errors.salonPhone}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonAddress">Endereço completo *</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="salonAddress"
+                      value={salonAddress}
+                      onChange={(e) => setSalonAddress(e.target.value)}
+                      placeholder="Rua, número, bairro"
+                      className="pl-9"
+                    />
+                  </div>
+                  {errors.salonAddress && (
+                    <p className="text-sm text-destructive">{errors.salonAddress}</p>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="salonCity">Cidade *</Label>
+                    <Input
+                      id="salonCity"
+                      value={salonCity}
+                      onChange={(e) => setSalonCity(e.target.value)}
+                      placeholder="Cidade"
+                    />
+                    {errors.salonCity && (
+                      <p className="text-sm text-destructive">{errors.salonCity}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="salonState">Estado *</Label>
+                    <select
+                      id="salonState"
+                      value={salonState}
+                      onChange={(e) => setSalonState(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="">Selecione...</option>
+                      {estados.map((estado) => (
+                        <option key={estado} value={estado}>
+                          {estado}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.salonState && (
+                      <p className="text-sm text-destructive">{errors.salonState}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonZipCode">CEP</Label>
+                  <Input
+                    id="salonZipCode"
+                    value={salonZipCode}
+                    onChange={(e) => setSalonZipCode(e.target.value)}
+                    placeholder="00000-000"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonDescription">Descrição (opcional)</Label>
+                  <Textarea
+                    id="salonDescription"
+                    value={salonDescription}
+                    onChange={(e) => setSalonDescription(e.target.value)}
+                    placeholder="Conte um pouco sobre seu salão..."
+                    rows={4}
+                  />
+                </div>
+                
+                {errors.submit && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-sm text-destructive">{errors.submit}</p>
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setStep(1);
+                      setErrors({});
+                    }}
+                    className="flex-1"
+                  >
+                    Voltar
+                  </Button>
+                  <Button type="submit" disabled={loading} className="flex-1">
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Cadastrando...
+                      </>
+                    ) : (
+                      "Criar Cadastro"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </form>
+        </Card>
+        
+        {/* Benefícios */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-4 text-center space-y-2">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mx-auto">
+              <Calendar className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold">Agendamentos Online</h3>
+            <p className="text-sm text-muted-foreground">
+              Receba agendamentos 24/7
+            </p>
+          </Card>
+          
+          <Card className="p-4 text-center space-y-2">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mx-auto">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold">Mais Clientes</h3>
+            <p className="text-sm text-muted-foreground">
+              Seja descoberto por novos clientes
+            </p>
+          </Card>
+          
+          <Card className="p-4 text-center space-y-2">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mx-auto">
+              <Briefcase className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold">Gestão Completa</h3>
+            <p className="text-sm text-muted-foreground">
+              Gerencie serviços e profissionais
+            </p>
+          </Card>
+        </div>
+      </div>
+    </GridBackground>
+  );
+}
