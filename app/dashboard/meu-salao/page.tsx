@@ -156,7 +156,7 @@ export default function MeuSalaoPage() {
     return (
       <div className="min-h-screen bg-background">
         <GridBackground />
-        <DashboardHeader />
+        <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -170,7 +170,7 @@ export default function MeuSalaoPage() {
     return (
       <div className="min-h-screen bg-background">
         <GridBackground />
-        <DashboardHeader />
+        <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
         <div className="container mx-auto px-4 py-8">
           <GlassCard className="max-w-2xl mx-auto p-8 text-center">
             <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
@@ -188,7 +188,7 @@ export default function MeuSalaoPage() {
   return (
     <div className="min-h-screen bg-background">
       <GridBackground />
-      <DashboardHeader />
+      <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

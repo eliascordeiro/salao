@@ -11,7 +11,10 @@ import { authOptions } from "@/lib/auth"
 export async function getUserSalon() {
   const session = await getServerSession(authOptions)
   
+  console.log('[getUserSalon] Session:', session?.user?.email)
+  
   if (!session?.user?.id) {
+    console.log('[getUserSalon] Sem sessão ou user ID')
     return null
   }
 
@@ -27,25 +30,33 @@ export async function getUserSalon() {
       }
     })
 
+    console.log('[getUserSalon] User encontrado:', user?.email)
+    console.log('[getUserSalon] Salões:', user?.ownedSalons?.length || 0)
+
     if (!user) {
+      console.log('[getUserSalon] User não encontrado')
       return null
     }
 
     // Se o usuário tem salão próprio, retornar o primeiro
     if (user.ownedSalons && user.ownedSalons.length > 0) {
+      console.log('[getUserSalon] Retornando salão próprio:', user.ownedSalons[0].name)
       return user.ownedSalons[0]
     }
 
     // Se o usuário não tem salão próprio mas é ADMIN, 
     // retornar o primeiro salão ativo do sistema
     if (user.role === 'ADMIN') {
+      console.log('[getUserSalon] Admin sem salão, buscando primeiro do sistema...')
       const firstSalon = await prisma.salon.findFirst({
         where: { active: true },
         orderBy: { createdAt: 'asc' }
       })
+      console.log('[getUserSalon] Primeiro salão:', firstSalon?.name || 'nenhum')
       return firstSalon
     }
 
+    console.log('[getUserSalon] Nenhum salão encontrado')
     return null
   } catch (error) {
     console.error('Erro ao buscar salão do usuário:', error)
