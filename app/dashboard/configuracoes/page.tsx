@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { Settings, Calendar, CheckCircle2, Sparkles, ArrowLeft } from "lucide-react";
 
 interface Salon {
@@ -33,44 +34,37 @@ export default function ConfiguracoesPage() {
 
   if (status === "loading" || loading) {
     return (
-      <GridBackground>
-        <div className="min-h-screen flex items-center justify-center">
-          <GlassCard glow="primary" className="p-8">
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-lg">Carregando configurações...</p>
-            </div>
-          </GlassCard>
-        </div>
-      </GridBackground>
+      <div className="min-h-screen bg-background">
+        <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
+        <GridBackground>
+          <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+            <GlassCard glow="primary" className="p-8">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-6 w-6 animate-spin text-primary" />
+                <p className="text-lg">Carregando configurações...</p>
+              </div>
+            </GlassCard>
+          </div>
+        </GridBackground>
+      </div>
     );
   }
 
   return (
-    <GridBackground>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Botão Voltar */}
-        <div className="mb-6">
-          <GradientButton
-            variant="ghost"
-            onClick={() => router.push("/dashboard")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar ao Dashboard
-          </GradientButton>
-        </div>
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-foreground flex items-center gap-3">
-            <Settings className="h-10 w-10 text-primary" />
-            Configurações do Salão
-          </h1>
-          <p className="text-foreground-muted text-lg">
-            Configure como seus clientes farão agendamentos
-          </p>
-        </div>
+    <div className="min-h-screen bg-background">
+      <DashboardHeader user={session?.user || { name: "", email: "", role: "ADMIN" }} />
+      <GridBackground>
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2 text-foreground flex items-center gap-3">
+              <Settings className="h-10 w-10 text-primary" />
+              Configurações do Salão
+            </h1>
+            <p className="text-foreground-muted text-lg">
+              Configure como seus clientes farão agendamentos
+            </p>
+          </div>
 
         {/* Main Card */}
         <GlassCard glow="primary" className="p-8">
@@ -155,6 +149,7 @@ export default function ConfiguracoesPage() {
           </ul>
         </GlassCard>
       </div>
-    </GridBackground>
+      </GridBackground>
+    </div>
   );
 }

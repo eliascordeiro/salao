@@ -155,13 +155,14 @@ export default function MeuSalaoPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <GridBackground />
         <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GridBackground>
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
           </div>
-        </div>
+        </GridBackground>
       </div>
     );
   }
@@ -169,37 +170,37 @@ export default function MeuSalaoPage() {
   if (error && !salon) {
     return (
       <div className="min-h-screen bg-background">
-        <GridBackground />
         <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
-        <div className="container mx-auto px-4 py-8">
-          <GlassCard className="max-w-2xl mx-auto p-8 text-center">
-            <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Erro</h2>
-            <p className="text-foreground-muted mb-6">{error}</p>
-            <GradientButton onClick={() => router.push("/dashboard")}>
-              Voltar ao Dashboard
-            </GradientButton>
-          </GlassCard>
-        </div>
+        <GridBackground>
+          <div className="container mx-auto px-4 py-8">
+            <GlassCard className="max-w-2xl mx-auto p-8 text-center">
+              <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Erro</h2>
+              <p className="text-foreground-muted mb-6">{error}</p>
+              <GradientButton onClick={() => router.push("/dashboard")}>
+                Voltar ao Dashboard
+              </GradientButton>
+            </GlassCard>
+          </div>
+        </GridBackground>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <GridBackground />
       <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Informações do Salão
-            </h1>
-            <p className="text-foreground-muted">
-              Gerencie as informações do seu estabelecimento
-            </p>
-          </div>
+      <GridBackground>
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Informações do Salão
+              </h1>
+              <p className="text-foreground-muted">
+                Gerencie as informações do seu estabelecimento
+              </p>
+            </div>
 
           {success && (
             <div className="mb-6 p-4 rounded-lg bg-success/10 border border-success/30 text-success flex items-center gap-2">
@@ -428,6 +429,7 @@ export default function MeuSalaoPage() {
           </form>
         </div>
       </div>
+      </GridBackground>
     </div>
   );
 }
