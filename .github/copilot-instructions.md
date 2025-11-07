@@ -18,6 +18,7 @@
 - [x] Sistema multi-tenant (salão por usuário)
 - [x] Associação de profissionais aos serviços
 - [x] Padronização de inputs com glass-card
+- [x] Simplificação para slots apenas (removido agendamento dinâmico)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -139,6 +140,13 @@
   - Cores do tema (bg-background-alt/50, border-primary/20)
   - Suporte completo a dark/light theme
   - Documentação de padrões (docs/PADROES_UI.md)
+✅ Simplificação do Sistema de Agendamento:
+  - Sistema agora usa APENAS horários pré-definidos (slots)
+  - Removida opção de agendamento dinâmico da UI
+  - Página de configuração simplificada (apenas informativa)
+  - Cliente sempre redirecionado para /agendar-slots
+  - Experiência mais direta e simples
+  - Documentação completa (docs/SIMPLIFICACAO_SLOTS.md)
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
