@@ -11,24 +11,22 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const activeOnly = searchParams.get("activeOnly") === "true"
 
-    // Obter salão do usuário logado automaticamente
-    const userSalonId = await getUserSalonId()
-    
-    // Se não for admin e não tiver salão, retornar erro
-    if (!userSalonId && (!session || session.user.role !== "ADMIN")) {
-      return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
-    }
-
     // Construir filtros
     const where: any = {}
-    
-    // Sempre filtrar pelo salão do usuário (se tiver)
-    if (userSalonId) {
+
+    // Se for ADMIN, filtrar por salão do usuário
+    if (session && session.user.role === "ADMIN") {
+      const userSalonId = await getUserSalonId()
+      
+      if (!userSalonId) {
+        return NextResponse.json({ error: "Admin não possui salão associado" }, { status: 400 })
+      }
+      
       where.salonId = userSalonId
     }
+    // Se for CLIENTE ou não autenticado, mostrar serviços de todos os salões ativos
 
-    // Se não for admin, mostrar apenas serviços ativos
-    // Se for admin, mostrar todos (a menos que activeOnly seja true)
+    // Filtrar por serviços ativos (sempre para clientes, opcional para admin)
     if (!session || session.user.role !== "ADMIN" || activeOnly) {
       where.active = true
     }
