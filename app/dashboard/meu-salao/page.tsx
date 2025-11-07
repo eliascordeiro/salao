@@ -233,6 +233,7 @@ export default function MeuSalaoPage() {
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                       minLength={3}
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
 
@@ -243,6 +244,7 @@ export default function MeuSalaoPage() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
 
@@ -250,7 +252,7 @@ export default function MeuSalaoPage() {
                     <Label htmlFor="description">Descrição</Label>
                     <textarea
                       id="description"
-                      className="w-full px-4 py-3 rounded-xl border border-border bg-background-alt text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px]"
+                      className="w-full px-4 py-3 rounded-xl border glass-card bg-background-alt/50 border-primary/20 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] placeholder:text-foreground-muted/50"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Descrição do seu salão..."
@@ -274,6 +276,7 @@ export default function MeuSalaoPage() {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="(11) 99999-9999"
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
 
@@ -284,6 +287,7 @@ export default function MeuSalaoPage() {
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       placeholder="Rua, número - Bairro - Cidade/UF"
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
                 </div>
@@ -304,6 +308,7 @@ export default function MeuSalaoPage() {
                       type="time"
                       value={formData.openTime}
                       onChange={(e) => setFormData({ ...formData, openTime: e.target.value })}
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
 
@@ -314,6 +319,7 @@ export default function MeuSalaoPage() {
                       type="time"
                       value={formData.closeTime}
                       onChange={(e) => setFormData({ ...formData, closeTime: e.target.value })}
+                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
                 </div>
