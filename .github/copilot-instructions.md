@@ -14,6 +14,7 @@
 - [x] Sistema de pagamentos
 - [x] Sistema de horários dos profissionais
 - [x] Sistema de gestão de disponibilidade (bloqueios)
+- [x] Validação de conflito de horário do cliente
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -56,6 +57,7 @@
   - Página "Meus Agendamentos" com filtros (próximos/anteriores/cancelados)
   - Sistema de horários disponíveis (evita conflitos)
   - Cancelamento de agendamentos pelo cliente
+  - Validação de conflito de horário (impede cliente agendar dois serviços no mesmo horário)
 ✅ Sistema de Notificações por Email:
   - Email ao criar agendamento (status PENDING)
   - Email ao confirmar agendamento
@@ -107,6 +109,17 @@
   - Suporte a reembolsos (estrutura preparada)
   - Models: Payment (6 status) e Transaction
   - Documentação completa (SISTEMA_PAGAMENTOS.md)
+✅ Correção de Bug de Timezone:
+  - Uso de UTC para armazenamento e cálculo
+  - setUTCHours() e getUTCHours() para consistência
+  - Grade de horários mostra slots ocupados corretamente (vermelho 🔴)
+  - Sistema respeita intervalos gravados no banco
+✅ Validação de Conflito de Horário do Cliente:
+  - Impede cliente agendar dois serviços no mesmo horário
+  - Verifica conflitos mesmo com profissionais diferentes
+  - Detecta sobreposições parciais e totais
+  - Alerta detalhado com informações do agendamento conflitante
+  - Funciona em ambos os modos (dinâmico e slots)
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123

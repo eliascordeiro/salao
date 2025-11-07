@@ -28,6 +28,7 @@ export async function GET(
             name: true,
             specialty: true,
             active: true,
+            salonId: true,
           },
         },
       },
@@ -39,6 +40,7 @@ export async function GET(
       name: ss.staff.name,
       specialty: ss.staff.specialty,
       isActive: ss.staff.active,
+      salonId: ss.staff.salonId,
     }));
 
     return NextResponse.json(staff);

@@ -49,9 +49,11 @@ export default function StaffSchedulePage({
     workEnd: "18:00",
     lunchStart: "",
     lunchEnd: "",
+    slotDuration: "30", // Duração do slot em minutos
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [generatingSlots, setGeneratingSlots] = useState(false);
 
   // Carregar dados do profissional
   useEffect(() => {
@@ -74,6 +76,7 @@ export default function StaffSchedulePage({
           workEnd: data.workEnd || "18:00",
           lunchStart: data.lunchStart || "",
           lunchEnd: data.lunchEnd || "",
+          slotDuration: "30", // Duração padrão de 30 minutos
         });
       } catch (error) {
         console.error("Erro ao carregar profissional:", error);
@@ -196,6 +199,166 @@ export default function StaffSchedulePage({
     } finally {
       setLoading(false);
     }
+  };
+
+  // Função para gerar slots automaticamente
+  const handleGenerateSlots = async () => {
+    // Validar se os horários estão salvos
+    if (!staff?.workStart || !staff?.workEnd) {
+      alert("Por favor, salve os horários de trabalho primeiro!");
+      return;
+    }
+
+    if (!formData.slotDuration || parseInt(formData.slotDuration) < 15) {
+      alert("A duração do slot deve ser de pelo menos 15 minutos");
+      return;
+    }
+
+    const confirm = window.confirm(
+      `Isso irá gerar slots de ${formData.slotDuration} minutos para todos os dias de trabalho.\n\n` +
+      `Deseja continuar?`
+    );
+
+    if (!confirm) return;
+
+    setGeneratingSlots(true);
+
+    try {
+      // Gerar slots para cada dia da semana
+      const slotDuration = parseInt(formData.slotDuration);
+      const slotsToCreate: Array<{
+        dayOfWeek: number;
+        startTime: string;
+        endTime: string;
+      }> = [];
+
+      formData.workDays.forEach((day) => {
+        const dayNum = parseInt(day);
+        const slots = generateSlotsForDay(
+          formData.workStart,
+          formData.workEnd,
+          formData.lunchStart,
+          formData.lunchEnd,
+          slotDuration
+        );
+
+        slots.forEach((slot) => {
+          slotsToCreate.push({
+            dayOfWeek: dayNum,
+            startTime: slot.start,
+            endTime: slot.end,
+          });
+        });
+      });
+
+      console.log(`📊 Gerando ${slotsToCreate.length} slots...`);
+
+      // Enviar todos os slots de uma vez
+      const response = await fetch(`/api/availabilities/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          staffId: params.id,
+          slots: slotsToCreate,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Erro ao gerar slots");
+      }
+
+      const result = await response.json();
+      alert(`✅ ${result.count} slots gerados com sucesso!`);
+      router.push(`/dashboard/profissionais/${params.id}/slots`);
+    } catch (error) {
+      console.error("❌ Erro ao gerar slots:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erro ao gerar slots automaticamente"
+      );
+    } finally {
+      setGeneratingSlots(false);
+    }
+  };
+
+  // Função auxiliar para gerar slots de um dia
+  const generateSlotsForDay = (
+    workStart: string,
+    workEnd: string,
+    lunchStart: string,
+    lunchEnd: string,
+    duration: number
+  ): Array<{ start: string; end: string }> => {
+    const slots: Array<{ start: string; end: string }> = [];
+    
+    const [startHour, startMin] = workStart.split(":").map(Number);
+    const [endHour, endMin] = workEnd.split(":").map(Number);
+    
+    let currentTime = startHour * 60 + startMin; // Converter para minutos
+    const endTime = endHour * 60 + endMin;
+    
+    // Converter horário de almoço para minutos (se existir)
+    let lunchStartMin = 0;
+    let lunchEndMin = 0;
+    if (lunchStart && lunchEnd) {
+      const [lunchStartH, lunchStartM] = lunchStart.split(":").map(Number);
+      const [lunchEndH, lunchEndM] = lunchEnd.split(":").map(Number);
+      lunchStartMin = lunchStartH * 60 + lunchStartM;
+      lunchEndMin = lunchEndH * 60 + lunchEndM;
+    }
+    
+    while (currentTime + duration <= endTime) {
+      const slotEnd = currentTime + duration;
+      
+      // Verificar se o slot não cai no horário de almoço
+      const isInLunch = lunchStartMin > 0 && (
+        (currentTime >= lunchStartMin && currentTime < lunchEndMin) ||
+        (slotEnd > lunchStartMin && slotEnd <= lunchEndMin) ||
+        (currentTime < lunchStartMin && slotEnd > lunchEndMin)
+      );
+      
+      if (!isInLunch) {
+        slots.push({
+          start: formatTime(currentTime),
+          end: formatTime(slotEnd),
+        });
+      }
+      
+      currentTime += duration;
+      
+      // Se chegou no início do almoço, pular para o fim
+      if (lunchStartMin > 0 && currentTime >= lunchStartMin && currentTime < lunchEndMin) {
+        currentTime = lunchEndMin;
+      }
+    }
+    
+    return slots;
+  };
+
+  // Função auxiliar para formatar tempo (minutos → HH:mm)
+  const formatTime = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+  };
+
+  // Função para calcular quantos slots serão gerados (estimativa)
+  const calculateEstimatedSlots = (): number => {
+    if (!formData.workStart || !formData.workEnd || !formData.slotDuration) {
+      return 0;
+    }
+
+    const slotsPerDay = generateSlotsForDay(
+      formData.workStart,
+      formData.workEnd,
+      formData.lunchStart,
+      formData.lunchEnd,
+      parseInt(formData.slotDuration)
+    ).length;
+
+    return slotsPerDay * formData.workDays.length;
   };
 
   if (!session || session.user.role !== "ADMIN") {
@@ -384,6 +547,42 @@ export default function StaffSchedulePage({
                 </div>
               </div>
 
+              {/* Duração do Slot (para geração automática) */}
+              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg">
+                <div className="mb-4">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-success" />
+                    Geração Automática de Slots
+                  </h3>
+                  <p className="text-sm text-foreground-muted mt-1">
+                    Gere automaticamente os horários disponíveis baseado no expediente
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="slotDuration" className="text-foreground">
+                    Duração de cada atendimento (minutos)
+                  </Label>
+                  <Input
+                    id="slotDuration"
+                    type="number"
+                    min="15"
+                    max="240"
+                    step="15"
+                    value={formData.slotDuration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, slotDuration: e.target.value })
+                    }
+                    className="glass-card bg-background-alt/50 border-success/20 focus:border-success text-foreground"
+                  />
+                  <p className="text-xs text-foreground-muted mt-2">
+                    💡 <strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.
+                  </p>
+                  <p className="text-xs text-foreground-muted mt-1">
+                    ⚠️ O horário de almoço será automaticamente excluído dos slots gerados.
+                  </p>
+                </div>
+              </div>
+
               {/* Resumo */}
               <div className="glass-card bg-accent/5 border-accent/20 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
@@ -449,6 +648,50 @@ export default function StaffSchedulePage({
                 </GradientButton>
               </div>
             </form>
+
+            {/* Botão de Geração Automática (fora do form) */}
+            {staff?.workStart && staff?.workEnd && (
+              <div className="mt-8 pt-8 border-t border-primary/20">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      🤖 Gerar Slots Automaticamente
+                    </h3>
+                    <p className="text-sm text-foreground-muted mb-4">
+                      Com base nos horários de trabalho salvos, gere automaticamente todos os
+                      slots disponíveis para agendamento. Os slots serão criados com a duração
+                      configurada ({formData.slotDuration} minutos) e excluindo o horário de almoço.
+                    </p>
+                    <div className="flex items-center gap-2 text-sm text-foreground-muted mb-4">
+                      <span>✅ Dias: {formData.workDays.length} selecionados</span>
+                      <span>•</span>
+                      <span>⏰ Duração: {formData.slotDuration} min</span>
+                      <span>•</span>
+                      <span>📊 ~{calculateEstimatedSlots()} slots serão criados</span>
+                    </div>
+                  </div>
+                </div>
+                <GradientButton
+                  type="button"
+                  variant="success"
+                  onClick={handleGenerateSlots}
+                  disabled={generatingSlots}
+                  className="w-full"
+                >
+                  {generatingSlots ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-spin" />
+                      Gerando Slots...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="h-4 w-4" />
+                      Gerar Slots Automaticamente
+                    </>
+                  )}
+                </GradientButton>
+              </div>
+            )}
           </GlassCard>
         </div>
       </GridBackground>

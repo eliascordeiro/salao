@@ -169,11 +169,14 @@ export async function POST(request: NextRequest) {
     console.log("[bookings POST] Combinando data/hora:", { date, time });
     const [hours, minutes] = time.split(":").map(Number);
     const bookingDate = new Date(date);
-    bookingDate.setHours(hours, minutes, 0, 0);
-    console.log("[bookings POST] BookingDate criado:", bookingDate);
+    // IMPORTANTE: Usar setUTCHours para manter consistência com timezone UTC
+    // date vem como "2025-11-08", hora vem como "10:00"
+    // Resultado será "2025-11-08T10:00:00.000Z" (UTC)
+    bookingDate.setUTCHours(hours, minutes, 0, 0);
+    console.log("[bookings POST] BookingDate criado (UTC):", bookingDate.toISOString());
 
-    // Verificar se o horário está disponível
-    const existingBooking = await prisma.booking.findFirst({
+    // VALIDAÇÃO 1: Verificar se o profissional já tem agendamento neste horário
+    const existingBookingStaff = await prisma.booking.findFirst({
       where: {
         staffId,
         date: bookingDate,
@@ -183,11 +186,80 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (existingBooking) {
+    if (existingBookingStaff) {
       return NextResponse.json(
-        { error: "Horário não disponível" },
+        { error: "Horário não disponível para este profissional" },
         { status: 409 }
       );
+    }
+
+    // VALIDAÇÃO 2: Verificar se o CLIENTE já tem agendamento no mesmo horário
+    // (mesmo que seja com outro profissional ou outro serviço)
+    const startOfDay = new Date(date + "T00:00:00");
+    const endOfDay = new Date(date + "T23:59:59");
+
+    const clientBookings = await prisma.booking.findMany({
+      where: {
+        clientId: session.user.id,
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        status: {
+          in: ["PENDING", "CONFIRMED"],
+        },
+      },
+      include: {
+        service: {
+          select: {
+            name: true,
+            duration: true,
+          },
+        },
+        staff: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Verificar conflito de horário com agendamentos do cliente
+    const requestedStartMin = bookingDate.getUTCHours() * 60 + bookingDate.getUTCMinutes();
+    const requestedEndMin = requestedStartMin + service.duration;
+
+    for (const clientBooking of clientBookings) {
+      const existingStartMin = clientBooking.date.getUTCHours() * 60 + clientBooking.date.getUTCMinutes();
+      const existingEndMin = existingStartMin + clientBooking.service.duration;
+
+      // Verificar se há sobreposição de horários
+      const hasConflict =
+        (requestedStartMin >= existingStartMin && requestedStartMin < existingEndMin) || // Início dentro
+        (requestedEndMin > existingStartMin && requestedEndMin <= existingEndMin) || // Fim dentro
+        (requestedStartMin <= existingStartMin && requestedEndMin >= existingEndMin); // Envolve
+
+      if (hasConflict) {
+        const formatTime = (min: number) => {
+          const h = Math.floor(min / 60).toString().padStart(2, "0");
+          const m = (min % 60).toString().padStart(2, "0");
+          return `${h}:${m}`;
+        };
+
+        return NextResponse.json(
+          {
+            error: "Conflito de horário",
+            message: `Você já possui um agendamento neste horário:\n${clientBooking.service.name} com ${clientBooking.staff.name}\nHorário: ${formatTime(existingStartMin)} - ${formatTime(existingEndMin)}`,
+            conflictingBooking: {
+              id: clientBooking.id,
+              serviceName: clientBooking.service.name,
+              staffName: clientBooking.staff.name,
+              time: formatTime(existingStartMin),
+              duration: clientBooking.service.duration,
+            },
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // Criar o agendamento

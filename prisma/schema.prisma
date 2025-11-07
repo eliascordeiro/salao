@@ -40,6 +40,7 @@ model Salon {
   openTime    String    // Ex: "09:00"
   closeTime   String    // Ex: "19:00"
   workDays    String    // Ex: "1,2,3,4,5" (Seg-Sex)
+  bookingType String    @default("BOTH") // DYNAMIC, SLOT_BASED, BOTH
   active      Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
