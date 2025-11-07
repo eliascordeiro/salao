@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
-import { AnimatedText } from "@/components/ui/animated-text";
 import { Settings, Calendar, Clock, CheckCircle2, Sparkles } from "lucide-react";
 
 interface Salon {
@@ -101,9 +100,10 @@ export default function ConfiguracoesPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <AnimatedText className="text-4xl font-bold mb-2">
-            ⚙️ Configurações do Salão
-          </AnimatedText>
+          <h1 className="text-4xl font-bold mb-2 text-foreground flex items-center gap-3">
+            <Settings className="h-10 w-10 text-primary" />
+            Configurações do Salão
+          </h1>
           <p className="text-foreground-muted text-lg">
             Configure como seus clientes farão agendamentos
           </p>
