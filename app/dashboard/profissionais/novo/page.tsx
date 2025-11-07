@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -12,62 +12,20 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
-interface Salon {
-  id: string;
-  name: string;
-}
-
 export default function NewStaffPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [salons, setSalons] = useState<Salon[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     specialty: "",
-    salonId: "",
     active: true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Carregar salões
-  useEffect(() => {
-    const fetchSalons = async () => {
-      try {
-        const response = await fetch("/api/salons");
-        
-        if (!response.ok) {
-          console.error("Erro ao carregar salões:", response.status);
-          setSalons([]);
-          return;
-        }
-        
-        const data = await response.json();
-        
-        // Verificar se data é um array
-        if (Array.isArray(data)) {
-          setSalons(data);
-
-          // Se houver apenas um salão, selecionar automaticamente
-          if (data.length === 1) {
-            setFormData((prev) => ({ ...prev, salonId: data[0].id }));
-          }
-        } else {
-          console.error("Resposta inválida da API:", data);
-          setSalons([]);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar salões:", error);
-        setSalons([]);
-      }
-    };
-
-    fetchSalons();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,10 +42,6 @@ export default function NewStaffPage() {
       newErrors.email = "Email é obrigatório";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email inválido";
-    }
-
-    if (!formData.salonId) {
-      newErrors.salonId = "Salão é obrigatório";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -109,7 +63,6 @@ export default function NewStaffPage() {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
-          salonId: formData.salonId,
         }),
       });
 
@@ -239,33 +192,6 @@ export default function NewStaffPage() {
                   placeholder="Ex: Barbeiro, Cabeleireiro, Manicure"
                   className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
-              </div>
-
-              {/* Salão */}
-              <div>
-                <Label htmlFor="salonId" className="text-foreground">
-                  Salão <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="salonId"
-                  value={formData.salonId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, salonId: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-                    errors.salonId ? "border-destructive" : ""
-                  }`}
-                >
-                  <option value="">Selecione um salão</option>
-                  {salons.map((salon) => (
-                    <option key={salon.id} value={salon.id}>
-                      {salon.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.salonId && (
-                  <p className="text-sm text-destructive mt-1">{errors.salonId}</p>
-                )}
               </div>
 
               {/* Status */}

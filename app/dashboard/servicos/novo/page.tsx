@@ -14,7 +14,6 @@ import Link from "next/link"
 export default function NewServicePage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [salons, setSalons] = useState<any[]>([])
   const [staff, setStaff] = useState<any[]>([])
   const [selectedStaff, setSelectedStaff] = useState<string[]>([])
   const [formData, setFormData] = useState({
@@ -23,38 +22,12 @@ export default function NewServicePage() {
     duration: "30",
     price: "",
     category: "",
-    salonId: "",
   })
 
-  // Carregar salões e profissionais
+  // Carregar profissionais
   useEffect(() => {
-    fetchSalons()
     fetchStaff()
   }, [])
-
-  const fetchSalons = async () => {
-    try {
-      const response = await fetch("/api/salons")
-      if (response.ok) {
-        const data = await response.json()
-        if (Array.isArray(data)) {
-          setSalons(data)
-          if (data.length > 0) {
-            setFormData(prev => ({ ...prev, salonId: data[0].id }))
-          }
-        } else {
-          console.error("Resposta inválida da API de salões:", data)
-          setSalons([])
-        }
-      } else {
-        console.error("Erro ao carregar salões:", response.status)
-        setSalons([])
-      }
-    } catch (error) {
-      console.error("Erro ao carregar salões:", error)
-      setSalons([])
-    }
-  }
 
   const fetchStaff = async () => {
     try {
@@ -220,27 +193,6 @@ export default function NewServicePage() {
                   className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
               </div>
-
-              {salons.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="salonId" className="text-foreground">Salão *</Label>
-                  <select
-                    id="salonId"
-                    name="salonId"
-                    value={formData.salonId}
-                    onChange={handleChange}
-                    className="flex h-10 w-full rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    required
-                    disabled={isLoading}
-                  >
-                    {salons.map((salon) => (
-                      <option key={salon.id} value={salon.id}>
-                        {salon.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               {staff.length > 0 && (
                 <div className="space-y-2">

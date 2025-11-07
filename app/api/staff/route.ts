@@ -2,8 +2,9 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserSalonId } from "@/lib/salon-helper"
 
-// GET - Listar todos os profissionais
+// GET - Listar todos os profissionais do salão do usuário
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -11,11 +12,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const salonId = searchParams.get("salonId")
+    // Obter salão do usuário logado automaticamente
+    const userSalonId = await getUserSalonId()
+    
+    if (!userSalonId) {
+      return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
+    }
 
     const staff = await prisma.staff.findMany({
-      where: salonId ? { salonId } : {},
+      where: { salonId: userSalonId },
       include: {
         salon: true,
         services: {
@@ -44,7 +49,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST - Criar novo profissional
+// POST - Criar novo profissional no salão do usuário
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -52,13 +57,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    // Obter salão do usuário logado automaticamente
+    const userSalonId = await getUserSalonId()
+    
+    if (!userSalonId) {
+      return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
+    }
+
     const data = await request.json()
-    const { name, email, phone, specialty, salonId } = data
+    const { name, email, phone, specialty } = data
 
     // Validações
-    if (!name || !salonId) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Nome e salão são obrigatórios" },
+        { error: "Nome é obrigatório" },
         { status: 400 }
       )
     }
@@ -69,7 +81,7 @@ export async function POST(request: Request) {
         email: email || null,
         phone: phone || null,
         specialty: specialty || null,
-        salonId,
+        salonId: userSalonId, // Usar salão do usuário automaticamente
       },
       include: {
         salon: true,

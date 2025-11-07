@@ -2,20 +2,29 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserSalonId } from "@/lib/salon-helper"
 
-// GET - Listar todos os serviços
+// GET - Listar todos os serviços do salão do usuário
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     const { searchParams } = new URL(request.url)
-    const salonId = searchParams.get("salonId")
     const activeOnly = searchParams.get("activeOnly") === "true"
+
+    // Obter salão do usuário logado automaticamente
+    const userSalonId = await getUserSalonId()
+    
+    // Se não for admin e não tiver salão, retornar erro
+    if (!userSalonId && (!session || session.user.role !== "ADMIN")) {
+      return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
+    }
 
     // Construir filtros
     const where: any = {}
     
-    if (salonId) {
-      where.salonId = salonId
+    // Sempre filtrar pelo salão do usuário (se tiver)
+    if (userSalonId) {
+      where.salonId = userSalonId
     }
 
     // Se não for admin, mostrar apenas serviços ativos
@@ -54,7 +63,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST - Criar novo serviço
+// POST - Criar novo serviço no salão do usuário
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -62,18 +71,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    // Obter salão do usuário logado automaticamente
+    const userSalonId = await getUserSalonId()
+    
+    if (!userSalonId) {
+      return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
+    }
+
     const data = await request.json()
-    const { name, description, duration, price, category, salonId, staffIds } = data
+    const { name, description, duration, price, category, staffIds } = data
 
     // Validações
-    if (!name || !duration || !price || !salonId) {
+    if (!name || !duration || !price) {
       return NextResponse.json(
-        { error: "Nome, duração, preço e salão são obrigatórios" },
+        { error: "Nome, duração e preço são obrigatórios" },
         { status: 400 }
       )
     }
 
-    // Criar serviço
+    // Criar serviço no salão do usuário automaticamente
     const service = await prisma.service.create({
       data: {
         name,
@@ -81,7 +97,7 @@ export async function POST(request: Request) {
         duration: parseInt(duration),
         price: parseFloat(price),
         category: category || null,
-        salonId,
+        salonId: userSalonId, // Usar salão do usuário automaticamente
       }
     })
 

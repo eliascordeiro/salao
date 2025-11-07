@@ -12,11 +12,6 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
-interface Salon {
-  id: string;
-  name: string;
-}
-
 interface Staff {
   id: string;
   name: string;
@@ -41,7 +36,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [salons, setSalons] = useState<Salon[]>([]);
   const [allStaff, setAllStaff] = useState<Staff[]>([]);
   
   const [formData, setFormData] = useState({
@@ -50,14 +44,13 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
     duration: "",
     price: "",
     category: "",
-    salonId: "",
     isActive: true,
     staffIds: [] as string[],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Carregar dados do serviço, salões e profissionais
+  // Carregar dados do serviço e profissionais
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -70,23 +63,8 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
         }
         const service: Service = await serviceRes.json();
 
-        // Buscar salões
-        const salonsRes = await fetch("/api/salons");
-        if (salonsRes.ok) {
-          const salonsData = await salonsRes.json();
-          if (Array.isArray(salonsData)) {
-            setSalons(salonsData);
-          } else {
-            console.error("Resposta inválida da API de salões:", salonsData);
-            setSalons([]);
-          }
-        } else {
-          console.error("Erro ao carregar salões:", salonsRes.status);
-          setSalons([]);
-        }
-
-        // Buscar profissionais do salão
-        const staffRes = await fetch(`/api/staff?salonId=${service.salonId}`);
+        // Buscar profissionais (já filtrados pelo salão do usuário)
+        const staffRes = await fetch(`/api/staff`);
         if (staffRes.ok) {
           const staffData = await staffRes.json();
           if (Array.isArray(staffData)) {
@@ -107,7 +85,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
           duration: service.duration?.toString() || "",
           price: service.price?.toString() || "",
           category: service.category || "",
-          salonId: service.salonId || "",
           isActive: service.active ?? true,
           staffIds: service.staff?.map((s) => s.id) || [],
         });
@@ -122,23 +99,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
     fetchData();
   }, [params.id, router]);
-
-  // Quando o salão muda, atualizar lista de profissionais
-  useEffect(() => {
-    const fetchStaff = async () => {
-      if (formData.salonId) {
-        try {
-          const response = await fetch(`/api/staff?salonId=${formData.salonId}`);
-          const data = await response.json();
-          setAllStaff(data);
-        } catch (error) {
-          console.error("Erro ao carregar profissionais:", error);
-        }
-      }
-    };
-
-    fetchStaff();
-  }, [formData.salonId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,10 +117,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
       newErrors.price = "Preço deve ser maior que 0";
-    }
-
-    if (!formData.salonId) {
-      newErrors.salonId = "Salão é obrigatório";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -182,7 +138,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
           duration: parseInt(formData.duration),
           price: parseFloat(formData.price),
           category: formData.category,
-          salonId: formData.salonId,
           active: formData.isActive,
           staffIds: formData.staffIds,
         }),
@@ -349,33 +304,6 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   placeholder="Ex: Cabelo, Barba, Tratamentos"
                   className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
-              </div>
-
-              {/* Salão */}
-              <div>
-                <Label htmlFor="salonId" className="text-foreground">
-                  Salão <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="salonId"
-                  value={formData.salonId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, salonId: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-                    errors.salonId ? "border-destructive" : ""
-                  }`}
-                >
-                  <option value="">Selecione um salão</option>
-                  {salons.map((salon) => (
-                    <option key={salon.id} value={salon.id}>
-                      {salon.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.salonId && (
-                  <p className="text-sm text-destructive mt-1">{errors.salonId}</p>
-                )}
               </div>
 
               {/* Status */}

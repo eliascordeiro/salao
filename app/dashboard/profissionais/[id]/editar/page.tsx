@@ -12,11 +12,6 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
 
-interface Salon {
-  id: string;
-  name: string;
-}
-
 interface Staff {
   id: string;
   name: string;
@@ -32,20 +27,18 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [salons, setSalons] = useState<Salon[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     specialty: "",
-    salonId: "",
     active: true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Carregar dados do profissional e salões
+  // Carregar dados do profissional
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,28 +51,12 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
         }
         const staff: Staff = await staffRes.json();
 
-        // Buscar salões
-        const salonsRes = await fetch("/api/salons");
-        if (salonsRes.ok) {
-          const salonsData = await salonsRes.json();
-          if (Array.isArray(salonsData)) {
-            setSalons(salonsData);
-          } else {
-            console.error("Resposta inválida da API de salões:", salonsData);
-            setSalons([]);
-          }
-        } else {
-          console.error("Erro ao carregar salões:", salonsRes.status);
-          setSalons([]);
-        }
-
         // Preencher formulário
         setFormData({
           name: staff.name,
           email: staff.email,
           phone: staff.phone || "",
           specialty: staff.specialty || "",
-          salonId: staff.salonId,
           active: staff.active,
         });
       } catch (error) {
@@ -111,10 +88,6 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
       newErrors.email = "Email inválido";
     }
 
-    if (!formData.salonId) {
-      newErrors.salonId = "Salão é obrigatório";
-    }
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -134,7 +107,6 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
-          salonId: formData.salonId,
         }),
       });
 
@@ -268,33 +240,6 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                   placeholder="Ex: Barbeiro, Cabeleireiro, Manicure"
                   className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                 />
-              </div>
-
-              {/* Salão */}
-              <div>
-                <Label htmlFor="salonId" className="text-foreground">
-                  Salão <span className="text-destructive">*</span>
-                </Label>
-                <select
-                  id="salonId"
-                  value={formData.salonId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, salonId: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary ${
-                    errors.salonId ? "border-destructive" : ""
-                  }`}
-                >
-                  <option value="">Selecione um salão</option>
-                  {salons.map((salon) => (
-                    <option key={salon.id} value={salon.id}>
-                      {salon.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.salonId && (
-                  <p className="text-sm text-destructive mt-1">{errors.salonId}</p>
-                )}
               </div>
 
               {/* Status */}
