@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { name, email, phone, specialty } = data
+    const { name, email, phone, specialty, serviceIds = [] } = data
 
     // Validações
     if (!name) {
@@ -82,6 +82,11 @@ export async function POST(request: Request) {
         phone: phone || null,
         specialty: specialty || null,
         salonId: userSalonId, // Usar salão do usuário automaticamente
+        services: {
+          create: serviceIds.map((serviceId: string) => ({
+            serviceId,
+          })),
+        },
       },
       include: {
         salon: true,

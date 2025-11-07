@@ -4,13 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Sparkles, UserPlus, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Briefcase } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { DashboardHeader } from "@/components/dashboard/header";
+
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
 
 interface Staff {
   id: string;
@@ -20,6 +27,10 @@ interface Staff {
   specialty?: string;
   active: boolean;
   salonId: string;
+  services: Array<{
+    serviceId: string;
+    service: Service;
+  }>;
 }
 
 export default function EditStaffPage({ params }: { params: { id: string } }) {
@@ -27,6 +38,8 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -34,6 +47,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
     phone: "",
     specialty: "",
     active: true,
+    serviceIds: [] as string[],
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,6 +57,14 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
     const fetchData = async () => {
       try {
         setLoadingData(true);
+
+        // Buscar serviços disponíveis
+        const servicesRes = await fetch("/api/services");
+        if (servicesRes.ok) {
+          const data = await servicesRes.json();
+          setServices(data.filter((s: Service) => s.id));
+        }
+        setLoadingServices(false);
 
         // Buscar profissional
         const staffRes = await fetch(`/api/staff/${params.id}`);
@@ -58,6 +80,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
           phone: staff.phone || "",
           specialty: staff.specialty || "",
           active: staff.active,
+          serviceIds: staff.services?.map((s) => s.serviceId) || [],
         });
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -70,6 +93,15 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
 
     fetchData();
   }, [params.id, router]);
+
+  const toggleService = (serviceId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      serviceIds: prev.serviceIds.includes(serviceId)
+        ? prev.serviceIds.filter((id) => id !== serviceId)
+        : [...prev.serviceIds, serviceId],
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +139,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
+          serviceIds: formData.serviceIds,
         }),
       });
 
@@ -256,6 +289,49 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
                 <Label htmlFor="active" className="cursor-pointer text-foreground">
                   Profissional ativo (disponível para agendamentos)
                 </Label>
+              </div>
+
+              {/* Serviços */}
+              <div>
+                <Label className="text-foreground mb-3 flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-primary" />
+                  Serviços que este profissional presta
+                </Label>
+                {loadingServices ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Sparkles className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                ) : services.length === 0 ? (
+                  <p className="text-sm text-foreground-muted">
+                    Nenhum serviço cadastrado. Cadastre serviços primeiro.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {services.map((service) => (
+                      <label
+                        key={service.id}
+                        className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.serviceIds.includes(service.id)
+                            ? "border-primary bg-primary/5"
+                            : "border-border bg-background-alt hover:border-primary/50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.serviceIds.includes(service.id)}
+                          onChange={() => toggleService(service.id)}
+                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
+                        />
+                        <div className="flex-1">
+                          <div className="font-semibold text-foreground">{service.name}</div>
+                          <div className="text-xs text-foreground-muted mt-1">
+                            {service.duration} min · R$ {service.price.toFixed(2)}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Botões */}

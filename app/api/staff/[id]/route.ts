@@ -55,7 +55,25 @@ export async function PUT(
     }
 
     const data = await request.json()
-    const { name, email, phone, specialty, active } = data
+    const { name, email, phone, specialty, active, serviceIds } = data
+
+    // Se serviceIds foi fornecido, atualizar as associações
+    if (serviceIds !== undefined) {
+      // Primeiro, remover todas as associações antigas
+      await prisma.serviceStaff.deleteMany({
+        where: { staffId: params.id }
+      })
+
+      // Criar novas associações
+      if (serviceIds.length > 0) {
+        await prisma.serviceStaff.createMany({
+          data: serviceIds.map((serviceId: string) => ({
+            staffId: params.id,
+            serviceId,
+          })),
+        })
+      }
+    }
 
     const staff = await prisma.staff.update({
       where: { id: params.id },
