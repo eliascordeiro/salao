@@ -15,6 +15,9 @@
 - [x] Sistema de horários dos profissionais
 - [x] Sistema de gestão de disponibilidade (bloqueios)
 - [x] Validação de conflito de horário do cliente
+- [x] Sistema multi-tenant (salão por usuário)
+- [x] Associação de profissionais aos serviços
+- [x] Padronização de inputs com glass-card
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -48,7 +51,12 @@
 ✅ Gestão de sessões com JWT
 ✅ CRUD completo de Serviços (listar, criar, editar, deletar)
 ✅ CRUD completo de Profissionais (listar, criar, editar, deletar)
-✅ Associação de profissionais aos serviços
+✅ Associação de profissionais aos serviços (N:N via ServiceStaff):
+  - Seleção múltipla de serviços no cadastro/edição
+  - Interface com checkboxes estilizados (glass-card)
+  - Exibe duração e preço de cada serviço
+  - Badges de serviços na listagem de profissionais
+  - API suporta criação e atualização de associações
 ✅ Status ativo/inativo para serviços e profissionais
 ✅ Gestão de Agendamentos (Admin) - listar, filtrar, alterar status
 ✅ Interface de agendamento do cliente:
@@ -120,6 +128,17 @@
   - Detecta sobreposições parciais e totais
   - Alerta detalhado com informações do agendamento conflitante
   - Funciona em ambos os modos (dinâmico e slots)
+✅ Sistema multi-tenant (salão por usuário):
+  - Helpers para obter salão do usuário logado (lib/salon-helper.ts)
+  - APIs auto-filtram por salão (staff, services, bookings)
+  - Página de gestão do salão (/dashboard/meu-salao)
+  - Remoção de seletores manuais de salão nos CRUDs
+  - Documentação completa (docs/SISTEMA_MULTI_TENANT.md)
+✅ Padronização de UI com glass-card:
+  - Componente Input base atualizado
+  - Cores do tema (bg-background-alt/50, border-primary/20)
+  - Suporte completo a dark/light theme
+  - Documentação de padrões (docs/PADROES_UI.md)
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
@@ -136,9 +155,12 @@
 7. ✅ ~~Relatórios e dashboard avançado~~ COMPLETO
 8. ✅ ~~Sistema de pagamentos online~~ COMPLETO
 9. ✅ ~~Sistema de horários dos profissionais~~ COMPLETO
-10. Sistema de reembolsos (admin)
-11. Notificações SMS (opcional)
-12. App mobile (opcional)
+10. ✅ ~~Sistema multi-tenant~~ COMPLETO
+11. ✅ ~~Associação profissional ↔ serviços~~ COMPLETO
+12. ✅ ~~Padronização de UI (glass-card)~~ COMPLETO
+13. Sistema de reembolsos (admin)
+14. Notificações SMS (opcional)
+15. App mobile (opcional)
 
 ## Observações Técnicas
 - Node.js 18.17.0+ necessário
