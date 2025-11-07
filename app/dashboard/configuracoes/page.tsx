@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
-import { Settings, Calendar, CheckCircle2, Sparkles } from "lucide-react";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { Settings, Calendar, CheckCircle2, Sparkles, ArrowLeft } from "lucide-react";
 
 interface Salon {
   id: string;
@@ -48,6 +49,18 @@ export default function ConfiguracoesPage() {
   return (
     <GridBackground>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Botão Voltar */}
+        <div className="mb-6">
+          <GradientButton
+            variant="ghost"
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </GradientButton>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-foreground flex items-center gap-3">
