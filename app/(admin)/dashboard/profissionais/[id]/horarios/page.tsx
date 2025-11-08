@@ -591,19 +591,23 @@ export default function StaffSchedulePage({
                 </div>
               </div>
 
-              {/* Duração do Slot (para geração automática) */}
-              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+              {/* Duração do Slot e Geração Automática */}
+              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg space-y-6">
+                {/* Header do Card */}
+                <div>
+                  <h3 className="font-semibold text-foreground flex items-center gap-2 text-lg">
                     <Calendar className="h-5 w-5 text-success" />
                     Geração Automática de Slots
                   </h3>
                   <p className="text-sm text-foreground-muted mt-1">
-                    Gere automaticamente os horários disponíveis baseado no expediente
+                    Configure e gere automaticamente os horários disponíveis para agendamento
                   </p>
                 </div>
+
+                {/* Duração do Slot */}
                 <div>
-                  <Label htmlFor="slotDuration" className="text-foreground">
+                  <Label htmlFor="slotDuration" className="text-foreground flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-success" />
                     Duração de cada atendimento (minutos)
                   </Label>
                   <Input
@@ -617,14 +621,90 @@ export default function StaffSchedulePage({
                       setFormData({ ...formData, slotDuration: e.target.value })
                     }
                     className="glass-card bg-background-alt/50 border-success/20 focus:border-success text-foreground"
+                    placeholder="Ex: 30"
                   />
-                  <p className="text-xs text-foreground-muted mt-2">
-                    💡 <strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.
-                  </p>
-                  <p className="text-xs text-foreground-muted mt-1">
-                    ⚠️ O horário de almoço será automaticamente excluído dos slots gerados.
+                  <p className="text-xs text-foreground-muted mt-2 flex items-start gap-1">
+                    <span>💡</span>
+                    <span><strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.</span>
                   </p>
                 </div>
+
+                {/* Informações da Geração */}
+                {staff?.workStart && staff?.workEnd && (
+                  <div className="glass-card bg-success/10 border-success/30 p-4 rounded-lg space-y-3">
+                    <p className="text-sm text-foreground-muted">
+                      📋 <strong className="text-foreground">Baseado nas configurações atuais:</strong>
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground-muted">📅 Dias:</span>
+                        <span className="font-medium text-foreground">{formData.workDays.length} selecionados</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground-muted">⏰ Duração:</span>
+                        <span className="font-medium text-foreground">{formData.slotDuration} min</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground-muted">🕐 Expediente:</span>
+                        <span className="font-medium text-foreground">{formData.workStart}-{formData.workEnd}</span>
+                      </div>
+                      {formData.lunchStart && formData.lunchEnd && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground-muted">🍽️ Almoço:</span>
+                          <span className="font-medium text-foreground">{formData.lunchStart}-{formData.lunchEnd}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="pt-3 border-t border-success/20">
+                      <p className="text-sm font-medium text-success flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Aproximadamente {calculateEstimatedSlots()} slots serão criados
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Avisos */}
+                <div className="space-y-2">
+                  <p className="text-xs text-foreground-muted flex items-start gap-1">
+                    <span>⚠️</span>
+                    <span><strong>Importante:</strong> O horário de almoço será automaticamente excluído dos slots.</span>
+                  </p>
+                  <p className="text-xs text-foreground-muted flex items-start gap-1">
+                    <span>🔄</span>
+                    <span><strong>Regeneração:</strong> Ao gerar novamente, todos os slots antigos serão substituídos.</span>
+                  </p>
+                </div>
+
+                {/* Botão de Geração - Dentro do Card */}
+                {staff?.workStart && staff?.workEnd ? (
+                  <GradientButton
+                    type="button"
+                    variant="success"
+                    onClick={handleGenerateSlots}
+                    disabled={generatingSlots}
+                    className="w-full py-4"
+                  >
+                    {generatingSlots ? (
+                      <>
+                        <Sparkles className="h-5 w-5 animate-spin" />
+                        Gerando Slots...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        Gerar Slots Automaticamente
+                      </>
+                    )}
+                  </GradientButton>
+                ) : (
+                  <div className="glass-card bg-warning/10 border-warning/30 p-4 rounded-lg">
+                    <p className="text-sm text-foreground-muted text-center flex items-center justify-center gap-2">
+                      <span>⚠️</span>
+                      <span>Salve os horários de trabalho primeiro para habilitar a geração automática</span>
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Resumo */}
@@ -692,50 +772,6 @@ export default function StaffSchedulePage({
                 </GradientButton>
               </div>
             </form>
-
-            {/* Botão de Geração Automática (fora do form) */}
-            {staff?.workStart && staff?.workEnd && (
-              <div className="mt-8 pt-8 border-t border-primary/20">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      🤖 Gerar Slots Automaticamente
-                    </h3>
-                    <p className="text-sm text-foreground-muted mb-4">
-                      Com base nos horários de trabalho salvos, gere automaticamente todos os
-                      slots disponíveis para agendamento. Os slots serão criados com a duração
-                      configurada ({formData.slotDuration} minutos) e excluindo o horário de almoço.
-                    </p>
-                    <div className="flex items-center gap-2 text-sm text-foreground-muted mb-4">
-                      <span>✅ Dias: {formData.workDays.length} selecionados</span>
-                      <span>•</span>
-                      <span>⏰ Duração: {formData.slotDuration} min</span>
-                      <span>•</span>
-                      <span>📊 ~{calculateEstimatedSlots()} slots serão criados</span>
-                    </div>
-                  </div>
-                </div>
-                <GradientButton
-                  type="button"
-                  variant="success"
-                  onClick={handleGenerateSlots}
-                  disabled={generatingSlots}
-                  className="w-full"
-                >
-                  {generatingSlots ? (
-                    <>
-                      <Sparkles className="h-4 w-4 animate-spin" />
-                      Gerando Slots...
-                    </>
-                  ) : (
-                    <>
-                      <Calendar className="h-4 w-4" />
-                      Gerar Slots Automaticamente
-                    </>
-                  )}
-                </GradientButton>
-              </div>
-            )}
           </GlassCard>
         </div>
       </GridBackground>
