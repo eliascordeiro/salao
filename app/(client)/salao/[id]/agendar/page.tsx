@@ -8,6 +8,8 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Badge } from "@/components/ui/badge";
 import { GridBackground } from "@/components/ui/grid-background";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   Check,
@@ -51,6 +53,7 @@ interface Salon {
 
 interface TimeSlot {
   time: string;
+  timeMinutes?: number;
   available: boolean;
   isClientConflict?: boolean;
   conflictDetails?: {
@@ -80,6 +83,7 @@ export default function AgendarSalaoPage() {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [notes, setNotes] = useState<string>(""); // Campo de observações
   
   // Slots disponíveis
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
@@ -145,12 +149,18 @@ export default function AgendarSalaoPage() {
       console.log("✅ Resposta da API:", result);
       
       if (result.availableSlots) {
-        // Converter array de strings para formato { time, available }
-        const slots = result.availableSlots.map((time: string) => ({
-          time,
-          available: true
-        }));
-        setAvailableSlots(slots);
+        // Converter array de strings para formato { time, available, timeMinutes }
+        const slots = result.availableSlots.map((time: string) => {
+          const [hours, minutes] = time.split(':').map(Number);
+          return {
+            time,
+            timeMinutes: hours * 60 + minutes,
+            available: true
+          };
+        });
+        
+        // Buscar agendamentos do cliente e marcar conflitos
+        await fetchClientBookings(dateStr, slots);
       } else if (result.error) {
         console.error("❌ Erro da API:", result.error);
         setAvailableSlots([]);
@@ -160,6 +170,107 @@ export default function AgendarSalaoPage() {
       setAvailableSlots([]);
     } finally {
       setLoadingSlots(false);
+    }
+  }
+  
+  // Buscar agendamentos do cliente e marcar conflitos nos slots
+  async function fetchClientBookings(date: string, timeSlots: TimeSlot[]) {
+    if (!session?.user?.id) {
+      console.log("👤 Usuário não logado, exibindo todos os slots sem marcação de conflito");
+      setAvailableSlots(timeSlots);
+      return;
+    }
+
+    try {
+      console.log("🔍 Buscando agendamentos do cliente para data:", date);
+      const response = await fetch(`/api/bookings?clientOnly=true`);
+      
+      if (!response.ok) {
+        console.warn("⚠️ Erro ao buscar agendamentos do cliente, exibindo slots normalmente");
+        setAvailableSlots(timeSlots);
+        return;
+      }
+
+      const allBookings = await response.json();
+      console.log("📅 Total de agendamentos do cliente:", allBookings.length);
+      
+      // Filtrar apenas os da data selecionada
+      const bookings = allBookings.filter((b: any) => {
+        const bookingDate = new Date(b.date);
+        const selectedDateObj = new Date(date + "T00:00:00Z");
+        return (
+          bookingDate.getUTCFullYear() === selectedDateObj.getUTCFullYear() &&
+          bookingDate.getUTCMonth() === selectedDateObj.getUTCMonth() &&
+          bookingDate.getUTCDate() === selectedDateObj.getUTCDate()
+        );
+      });
+      
+      console.log("📅 Agendamentos do cliente na data", date, ":", bookings.length);
+
+      if (!bookings || bookings.length === 0) {
+        console.log("✅ Cliente não tem agendamentos nesta data");
+        setAvailableSlots(timeSlots);
+        return;
+      }
+
+      // Processar agendamentos do cliente
+      const clientBookingsData = bookings
+        .filter((b: any) => b.status === "PENDING" || b.status === "CONFIRMED")
+        .map((b: any) => {
+          const bookingDate = new Date(b.date);
+          const hours = bookingDate.getUTCHours();
+          const minutes = bookingDate.getUTCMinutes();
+          const time = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+          
+          return {
+            time,
+            startMinutes: hours * 60 + minutes,
+            endMinutes: hours * 60 + minutes + b.service.duration,
+            serviceName: b.service.name,
+            staffName: b.staff.name,
+            duration: b.service.duration,
+          };
+        });
+
+      // Marcar slots com conflito do cliente
+      const updatedSlots = timeSlots.map(slot => {
+        // Verificar se este slot conflita com algum agendamento do cliente
+        const conflict = clientBookingsData.find((booking: any) => {
+          const slotStart = slot.timeMinutes || 0;
+          const slotEnd = slotStart + (selectedService?.duration || 0);
+          
+          // Verificar sobreposição
+          const hasOverlap =
+            (slotStart >= booking.startMinutes && slotStart < booking.endMinutes) ||
+            (slotEnd > booking.startMinutes && slotEnd <= booking.endMinutes) ||
+            (slotStart <= booking.startMinutes && slotEnd >= booking.endMinutes);
+          
+          return hasOverlap;
+        });
+
+        if (conflict) {
+          return {
+            ...slot,
+            available: false,
+            isClientConflict: true,
+            conflictDetails: {
+              serviceName: conflict.serviceName,
+              staffName: conflict.staffName,
+              duration: conflict.duration,
+            },
+          };
+        }
+
+        return slot;
+      });
+
+      console.log("🟠 Slots marcados com conflito:", updatedSlots.filter(s => s.isClientConflict).length);
+      setAvailableSlots(updatedSlots);
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar agendamentos do cliente:", error);
+      // Em caso de erro, exibir slots normalmente
+      setAvailableSlots(timeSlots);
     }
   }
   
@@ -242,6 +353,7 @@ export default function AgendarSalaoPage() {
           staffId: selectedStaff.id,
           date: dateStr,
           time: selectedTime,
+          notes: notes || undefined, // Incluir observações se houver
         }),
       });
       
@@ -563,25 +675,80 @@ export default function AgendarSalaoPage() {
                       </div>
                     </GlassCard>
                   ) : availableSlots.length > 0 ? (
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                      {availableSlots.map((slot) => (
-                        <Button
-                          key={slot.time}
-                          variant={selectedTime === slot.time ? "default" : "outline"}
-                          disabled={!slot.available}
-                          onClick={() => setSelectedTime(slot.time)}
-                          className={`h-auto py-3 ${
-                            selectedTime === slot.time 
-                              ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
-                              : "glass-card hover:bg-background-alt"
-                          } ${
-                            !slot.available ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                        >
-                          {slot.time}
-                        </Button>
-                      ))}
-                    </div>
+                    <>
+                      {/* Legenda Visual */}
+                      <div className="mb-4 flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded border-2 border-success/30 bg-success/5"></div>
+                          <span className="text-foreground-muted">Disponível</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded border-2 border-primary bg-primary/20"></div>
+                          <span className="text-foreground-muted">Selecionado</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded border-2 border-orange-500/40 bg-orange-500/10"></div>
+                          <span className="text-foreground-muted">Você já tem agendamento</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded border-2 border-foreground-muted/20 bg-background-alt/30"></div>
+                          <span className="text-foreground-muted">Indisponível</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                        {availableSlots.map((slot) => {
+                          const isClientConflict = slot.isClientConflict === true;
+                          
+                          return (
+                            <div key={slot.time} className="relative group">
+                              <Button
+                                variant={selectedTime === slot.time ? "default" : "outline"}
+                                disabled={!slot.available}
+                                onClick={() => slot.available && setSelectedTime(slot.time)}
+                                className={`h-auto py-3 w-full ${
+                                  selectedTime === slot.time 
+                                    ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
+                                    : slot.available
+                                    ? "glass-card hover:bg-background-alt"
+                                    : isClientConflict
+                                    ? "border-2 border-orange-500/40 bg-orange-500/10 text-orange-600/70 cursor-not-allowed"
+                                    : "opacity-50 cursor-not-allowed"
+                                }`}
+                              >
+                                {slot.time}
+                                {isClientConflict && <span className="ml-1">🟠</span>}
+                              </Button>
+                              
+                              {/* Tooltip para conflito do cliente */}
+                              {isClientConflict && slot.conflictDetails && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-background border-2 border-orange-500/40 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                                  <div className="text-xs space-y-1">
+                                    <p className="font-bold text-orange-500 flex items-center gap-1">
+                                      <AlertCircle className="h-3 w-3" />
+                                      Você já tem agendamento
+                                    </p>
+                                    <p className="text-foreground-muted">
+                                      <strong className="text-foreground">Serviço:</strong> {slot.conflictDetails.serviceName}
+                                    </p>
+                                    <p className="text-foreground-muted">
+                                      <strong className="text-foreground">Profissional:</strong> {slot.conflictDetails.staffName}
+                                    </p>
+                                    <p className="text-foreground-muted">
+                                      <strong className="text-foreground">Duração:</strong> {slot.conflictDetails.duration} min
+                                    </p>
+                                  </div>
+                                  {/* Seta do tooltip */}
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-[2px]">
+                                    <div className="border-4 border-transparent border-t-orange-500/40"></div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
                   ) : (
                     <GlassCard className="p-8 text-center space-y-3">
                       <div className="w-16 h-16 rounded-full bg-foreground-muted/10 flex items-center justify-center mx-auto">
@@ -698,6 +865,31 @@ export default function AgendarSalaoPage() {
                     </div>
                   </div>
                 )}
+              </GlassCard>
+              
+              {/* Campo de Observações */}
+              <div className="space-y-2">
+                <Label htmlFor="notes" className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-foreground-muted" />
+                  Observações (opcional)
+                </Label>
+                <Input
+                  id="notes"
+                  placeholder="Digite alguma observação ou preferência especial..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="glass-card"
+                />
+              </div>
+              
+              {/* Mensagem de Atenção */}
+              <GlassCard className="p-4 bg-primary/5 border border-primary/20">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-foreground">
+                    <strong className="text-primary">Atenção:</strong> Seu agendamento será confirmado após análise. Você receberá uma notificação por email em breve.
+                  </div>
+                </div>
               </GlassCard>
               
               <div className="flex gap-3 pt-2">
