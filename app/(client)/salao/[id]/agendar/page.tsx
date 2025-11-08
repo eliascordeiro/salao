@@ -382,13 +382,15 @@ export default function AgendarSalaoPage() {
       
       console.log("📋 Resultado:", result);
       
-      if (result.success) {
+      // Se status 201 (Created), foi sucesso
+      if (response.status === 201 && result.id) {
         console.log("✅ Agendamento criado com sucesso!");
         // Limpar dados salvos
         localStorage.removeItem("pendingBooking");
         // Redirecionar para meus agendamentos
         router.push("/meus-agendamentos?success=true");
       } else {
+        // Se chegou aqui, houve erro
         console.error("❌ Erro:", result.error);
         alert(result.error || "Erro ao criar agendamento");
       }
