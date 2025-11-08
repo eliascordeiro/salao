@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
       select: { 
         id: true, 
         name: true,
+        workDays: true,
+        workStart: true,
+        workEnd: true,
         lunchStart: true,
         lunchEnd: true,
       },
@@ -52,6 +55,18 @@ export async function GET(request: NextRequest) {
     // Extrair dia da semana da data selecionada
     const selectedDate = new Date(date);
     const dayOfWeek = selectedDate.getDay(); // 0 = Domingo, 6 = Sábado
+
+    // Verificar se o profissional trabalha neste dia
+    const workDaysArray = staff.workDays?.split(',').map(d => parseInt(d.trim())) || [];
+    const professionalWorksThisDay = workDaysArray.includes(dayOfWeek);
+
+    if (!professionalWorksThisDay) {
+      console.log(`⚠️ Profissional não trabalha no dia ${dayOfWeek} (${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dayOfWeek]})`);
+      return NextResponse.json({ 
+        availableSlots: [],
+        message: `Profissional não trabalha neste dia da semana`
+      });
+    }
 
     // Buscar slots recorrentes cadastrados para este dia da semana
     const recurringSlots = await prisma.availability.findMany({
