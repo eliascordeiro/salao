@@ -76,17 +76,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             ) : (
               <>
                 <Link
-                  href="/servicos"
+                  href="/salao/cmhpdo1c40007of60yed697zp/agendar"
                   className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
                 >
-                  Serviços
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/agendar"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Agendar
+                  Novo Agendamento
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
