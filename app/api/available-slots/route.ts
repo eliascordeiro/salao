@@ -31,10 +31,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar o profissional
+    // Buscar o profissional com horários de trabalho e almoço
     const staff = await prisma.staff.findUnique({
       where: { id: staffId },
-      select: { id: true, name: true },
+      select: { 
+        id: true, 
+        name: true,
+        lunchStart: true,
+        lunchEnd: true,
+      },
     });
 
     if (!staff) {
@@ -131,6 +136,22 @@ export async function GET(request: NextRequest) {
           reason: "Horário já passou"
         });
         continue;
+      }
+
+      // Verificar se está no horário de almoço
+      if (staff.lunchStart && staff.lunchEnd) {
+        const slotTime = slot.startTime;
+        const isLunchTime = slotTime >= staff.lunchStart && slotTime < staff.lunchEnd;
+        
+        if (isLunchTime) {
+          console.log(`    🍽️ Slot no horário de almoço (${staff.lunchStart} - ${staff.lunchEnd})`);
+          allSlots.push({
+            time: slot.startTime,
+            available: false,
+            reason: "Horário de almoço"
+          });
+          continue;
+        }
       }
 
       // Verificar se o horário conflita com agendamentos existentes
