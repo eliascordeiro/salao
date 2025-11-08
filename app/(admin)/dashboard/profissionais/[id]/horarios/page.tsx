@@ -202,7 +202,7 @@ export default function StaffSchedulePage({
   };
 
   // Função para gerar slots automaticamente
-  const handleGenerateSlots = async () => {
+  const handleGenerateSlots = async (force = false) => {
     // Validar se os horários estão salvos
     if (!staff?.workStart || !staff?.workEnd) {
       alert("Por favor, salve os horários de trabalho primeiro!");
@@ -214,12 +214,15 @@ export default function StaffSchedulePage({
       return;
     }
 
-    const confirm = window.confirm(
-      `Isso irá gerar slots de ${formData.slotDuration} minutos para todos os dias de trabalho.\n\n` +
-      `Deseja continuar?`
-    );
+    if (!force) {
+      const confirm = window.confirm(
+        `⚠️ ATENÇÃO: Isso irá APAGAR TODOS os slots existentes e criar novos!\n\n` +
+        `Serão gerados slots de ${formData.slotDuration} minutos para todos os dias de trabalho.\n\n` +
+        `Deseja continuar?`
+      );
 
-    if (!confirm) return;
+      if (!confirm) return;
+    }
 
     setGeneratingSlots(true);
 
@@ -260,17 +263,58 @@ export default function StaffSchedulePage({
         body: JSON.stringify({
           staffId: params.id,
           slots: slotsToCreate,
+          force, // Indica se o usuário confirmou mesmo com conflitos
         }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Erro ao gerar slots");
+      const result = await response.json();
+
+      // Se requer confirmação (status 409), mostrar detalhes dos conflitos
+      if (response.status === 409 && result.requiresConfirmation) {
+        const conflicts = result.bookings.filter((b: any) => b.willHaveConflict);
+        
+        let message = result.message + '\n\n';
+        
+        if (conflicts.length > 0) {
+          message += '🔴 AGENDAMENTOS QUE FICARÃO SEM SLOT:\n\n';
+          conflicts.slice(0, 5).forEach((booking: any) => {
+            const date = new Date(booking.date);
+            message += `• ${date.toLocaleDateString('pt-BR')} ${booking.time} - ${booking.service}\n`;
+            message += `  Cliente: ${booking.client} (${booking.email})\n\n`;
+          });
+          
+          if (conflicts.length > 5) {
+            message += `... e mais ${conflicts.length - 5} agendamentos\n\n`;
+          }
+          
+          message += '⚠️ Esses agendamentos permanecerão no sistema, mas os clientes não poderão remarcar para esses horários!\n\n';
+        } else {
+          message += '✅ Todos os agendamentos têm slots correspondentes na nova grade.\n\n';
+        }
+        
+        message += 'Deseja continuar mesmo assim?';
+        
+        const forceConfirm = window.confirm(message);
+        
+        if (forceConfirm) {
+          // Tentar novamente com force=true
+          await handleGenerateSlots(true);
+        }
+        return;
       }
 
-      const result = await response.json();
-      alert(`✅ ${result.count} slots gerados com sucesso!`);
-      router.push(`/dashboard/profissionais/${params.id}/slots`);
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao gerar slots");
+      }
+
+      let successMessage = result.message;
+      
+      if (result.bookingsCount > 0) {
+        successMessage += `\n\n📅 ${result.bookingsCount} agendamentos futuros foram preservados.`;
+      }
+
+      alert(successMessage);
+      router.push("/dashboard/profissionais");
     } catch (error) {
       console.error("❌ Erro ao gerar slots:", error);
       alert(
