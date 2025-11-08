@@ -336,39 +336,64 @@ export default function AgendarSalaoPage() {
       return;
     }
     
+    // Verificar se o horário selecionado tem conflito com agendamento do cliente
+    const selectedSlot = availableSlots.find(s => s.time === selectedTime);
+    if (selectedSlot?.isClientConflict) {
+      alert(
+        `⚠️ CONFLITO DE HORÁRIO\n\n` +
+        `Você já possui um agendamento neste horário:\n\n` +
+        `📅 Serviço: ${selectedSlot.conflictDetails?.serviceName}\n` +
+        `👤 Profissional: ${selectedSlot.conflictDetails?.staffName}\n` +
+        `⏰ Duração: ${selectedSlot.conflictDetails?.duration} min\n\n` +
+        `❌ Não é possível marcar dois serviços no mesmo horário.\n\n` +
+        `💡 Escolha outro horário disponível.`
+      );
+      return;
+    }
+    
     setSubmitting(true);
     
     try {
       // Formatar data e hora separadamente como a API espera
       const dateStr = format(selectedDate, "yyyy-MM-dd");
       
+      const payload = {
+        salonId,
+        serviceId: selectedService.id,
+        staffId: selectedStaff.id,
+        date: dateStr,
+        time: selectedTime,
+        notes: notes || undefined,
+      };
+      
+      console.log("📤 Enviando agendamento:", payload);
+      
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          salonId,
-          serviceId: selectedService.id,
-          staffId: selectedStaff.id,
-          date: dateStr,
-          time: selectedTime,
-          notes: notes || undefined, // Incluir observações se houver
-        }),
+        body: JSON.stringify(payload),
       });
+      
+      console.log("📥 Status da resposta:", response.status);
       
       const result = await response.json();
       
+      console.log("📋 Resultado:", result);
+      
       if (result.success) {
+        console.log("✅ Agendamento criado com sucesso!");
         // Limpar dados salvos
         localStorage.removeItem("pendingBooking");
         // Redirecionar para meus agendamentos
         router.push("/meus-agendamentos?success=true");
       } else {
+        console.error("❌ Erro:", result.error);
         alert(result.error || "Erro ao criar agendamento");
       }
     } catch (error) {
-      console.error("Erro ao criar agendamento:", error);
+      console.error("❌ Erro ao criar agendamento:", error);
       alert("Erro ao criar agendamento. Tente novamente.");
     } finally {
       setSubmitting(false);
@@ -699,17 +724,18 @@ export default function AgendarSalaoPage() {
                       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                         {availableSlots.map((slot) => {
                           const isClientConflict = slot.isClientConflict === true;
+                          const isDisabled = !slot.available || isClientConflict;
                           
                           return (
                             <div key={slot.time} className="relative group">
                               <Button
                                 variant={selectedTime === slot.time ? "default" : "outline"}
-                                disabled={!slot.available}
-                                onClick={() => slot.available && setSelectedTime(slot.time)}
+                                disabled={isDisabled}
+                                onClick={() => !isDisabled && setSelectedTime(slot.time)}
                                 className={`h-auto py-3 w-full ${
                                   selectedTime === slot.time 
                                     ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
-                                    : slot.available
+                                    : slot.available && !isClientConflict
                                     ? "glass-card hover:bg-background-alt"
                                     : isClientConflict
                                     ? "border-2 border-orange-500/40 bg-orange-500/10 text-orange-600/70 cursor-not-allowed"
