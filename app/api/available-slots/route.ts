@@ -176,7 +176,12 @@ export async function GET(request: NextRequest) {
     console.log('  Slots disponíveis:', allSlots.filter(s => s.available).length);
     console.log('  Slots ocupados:', allSlots.filter(s => !s.available).length);
 
-    return NextResponse.json({ slots: allSlots });
+    // Retornar apenas os horários disponíveis (strings)
+    const availableSlots = allSlots
+      .filter(s => s.available)
+      .map(s => s.time);
+
+    return NextResponse.json({ availableSlots });
   } catch (error) {
     console.error("Erro ao buscar horários disponíveis:", error);
     return NextResponse.json(
