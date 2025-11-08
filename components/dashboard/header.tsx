@@ -73,24 +73,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
                 </Link>
               </>
-            ) : (
-              <>
-                <Link
-                  href="/salao/cmhpdo1c40007of60yed697zp/agendar"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Novo Agendamento
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/meus-agendamentos"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Meus Agendamentos
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-              </>
-            )}
+            ) : null}
           </nav>
 
           {/* User Menu Railway Style */}
