@@ -196,7 +196,7 @@ function MyBookingsContent() {
                 Gerencie seus agendamentos e horários de forma simples
               </p>
             </div>
-            <Link href="/servicos">
+            <Link href="/salao/cmhpdo1c40007of60yed697zp/agendar">
               <GradientButton variant="primary" className="group">
                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                 Novo Agendamento
@@ -304,7 +304,7 @@ function MyBookingsContent() {
               {filter === "past" && "Você ainda não tem histórico de agendamentos anteriores."}
               {filter === "cancelled" && "Você não tem agendamentos cancelados."}
             </p>
-            <Link href="/servicos">
+            <Link href="/salao/cmhpdo1c40007of60yed697zp/agendar">
               <GradientButton variant="primary" className="group">
                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
                 Fazer um Agendamento
