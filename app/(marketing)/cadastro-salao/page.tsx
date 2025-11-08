@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { GridBackground } from "@/components/ui/grid-background";
-import { Briefcase, Loader2, ArrowLeft, Store, User, MapPin, Phone, Mail, Lock, CheckCircle } from "lucide-react";
+import { Briefcase, Loader2, ArrowLeft, Store, User, MapPin, Phone, Mail, Lock, CheckCircle, Calendar, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function CadastroSalaoPage() {
@@ -149,7 +149,16 @@ export default function CadastroSalaoPage() {
           router.push("/login?registered=true");
         }
       } else {
-        setErrors({ submit: result.error || "Erro ao criar cadastro" });
+        // Verificar se é erro de email duplicado
+        if (result.error?.includes("email já está cadastrado") || result.error?.includes("Email já cadastrado")) {
+          setErrors({ 
+            ownerEmail: "Este email já está cadastrado. Use outro email ou faça login.",
+            submit: result.error 
+          });
+          setStep(1); // Voltar para o passo 1
+        } else {
+          setErrors({ submit: result.error || "Erro ao criar cadastro" });
+        }
       }
     } catch (error) {
       console.error("Erro ao cadastrar:", error);
@@ -244,7 +253,22 @@ export default function CadastroSalaoPage() {
                     />
                   </div>
                   {errors.ownerEmail && (
-                    <p className="text-sm text-destructive">{errors.ownerEmail}</p>
+                    <div className="space-y-1">
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {errors.ownerEmail}
+                      </p>
+                      {errors.ownerEmail?.includes("já está cadastrado") && (
+                        <Link 
+                          href="/login" 
+                          className="text-sm text-primary underline hover:text-primary/80 inline-block"
+                        >
+                          Fazer login com esta conta →
+                        </Link>
+                      )}
+                    </div>
                   )}
                 </div>
                 
@@ -411,8 +435,25 @@ export default function CadastroSalaoPage() {
                 </div>
                 
                 {errors.submit && (
-                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-sm text-destructive">{errors.submit}</p>
+                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5">
+                        <svg className="w-5 h-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-destructive">{errors.submit}</p>
+                        {errors.submit?.includes("email já está cadastrado") && (
+                          <Link 
+                            href="/login" 
+                            className="text-sm text-destructive underline hover:text-destructive/80 mt-1 inline-block"
+                          >
+                            Fazer login com esta conta →
+                          </Link>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
                 

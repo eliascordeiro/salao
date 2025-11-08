@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Badge } from "@/components/ui/badge";
 import { GridBackground } from "@/components/ui/grid-background";
 import {
@@ -17,6 +18,7 @@ import {
   User,
   Briefcase,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -50,6 +52,12 @@ interface Salon {
 interface TimeSlot {
   time: string;
   available: boolean;
+  isClientConflict?: boolean;
+  conflictDetails?: {
+    serviceName: string;
+    staffName: string;
+    duration: number;
+  };
 }
 
 export default function AgendarSalaoPage() {
@@ -122,16 +130,34 @@ export default function AgendarSalaoPage() {
     setLoadingSlots(true);
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
+      console.log("📅 Buscando slots:", { 
+        staffId: selectedStaff.id, 
+        date: dateStr, 
+        serviceId: selectedService.id,
+        duration: selectedService.duration 
+      });
+      
       const response = await fetch(
-        `/api/bookings/available-slots?staffId=${selectedStaff.id}&date=${dateStr}&duration=${selectedService.duration}`
+        `/api/available-slots?staffId=${selectedStaff.id}&date=${dateStr}&serviceId=${selectedService.id}`
       );
       const result = await response.json();
       
-      if (result.success) {
-        setAvailableSlots(result.slots);
+      console.log("✅ Resposta da API:", result);
+      
+      if (result.availableSlots) {
+        // Converter array de strings para formato { time, available }
+        const slots = result.availableSlots.map((time: string) => ({
+          time,
+          available: true
+        }));
+        setAvailableSlots(slots);
+      } else if (result.error) {
+        console.error("❌ Erro da API:", result.error);
+        setAvailableSlots([]);
       }
     } catch (error) {
-      console.error("Erro ao carregar horários:", error);
+      console.error("❌ Erro ao carregar horários:", error);
+      setAvailableSlots([]);
     } finally {
       setLoadingSlots(false);
     }
@@ -202,10 +228,8 @@ export default function AgendarSalaoPage() {
     setSubmitting(true);
     
     try {
-      // Combinar data e hora
-      const [hours, minutes] = selectedTime.split(":").map(Number);
-      const scheduledDate = new Date(selectedDate);
-      scheduledDate.setHours(hours, minutes, 0, 0);
+      // Formatar data e hora separadamente como a API espera
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
       
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -216,7 +240,8 @@ export default function AgendarSalaoPage() {
           salonId,
           serviceId: selectedService.id,
           staffId: selectedStaff.id,
-          scheduledDate: scheduledDate.toISOString(),
+          date: dateStr,
+          time: selectedTime,
         }),
       });
       
@@ -283,77 +308,85 @@ export default function AgendarSalaoPage() {
         </div>
         
         {/* Progress Steps */}
-        <Card className="p-4">
+        <GlassCard className="p-6" glow="primary">
           <div className="flex items-center justify-between">
             {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex items-center gap-2">
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
+                  className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all ${
                     currentStep >= step
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-gradient-primary text-white shadow-lg shadow-primary/30"
+                      : "bg-background-alt border border-border"
                   }`}
                 >
                   {currentStep > step ? <Check className="h-5 w-5" /> : step}
                 </div>
                 {step < 4 && (
                   <div
-                    className={`hidden md:block w-16 h-1 ${
-                      currentStep > step ? "bg-primary" : "bg-muted"
+                    className={`hidden md:block w-16 h-1 rounded-full transition-all ${
+                      currentStep > step ? "bg-gradient-primary" : "bg-background-alt"
                     }`}
                   />
                 )}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-4 gap-2 mt-2 text-xs text-center text-muted-foreground">
+          <div className="grid grid-cols-4 gap-2 mt-4 text-xs text-center text-foreground-muted">
             <span>Serviço</span>
             <span>Profissional</span>
             <span>Data/Hora</span>
             <span>Confirmar</span>
           </div>
-        </Card>
+        </GlassCard>
         
         {/* Step Content */}
         <div className="space-y-4">
           {/* STEP 1: Escolher Serviço */}
           {currentStep === 1 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                <Briefcase className="h-5 w-5" />
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-3 text-lg font-semibold">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                </div>
                 <span>Escolha o serviço</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {services.map((service) => (
-                  <Card
+                  <GlassCard
                     key={service.id}
-                    className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
+                    hover
+                    glow={selectedService?.id === service.id ? "primary" : undefined}
+                    className={`p-6 cursor-pointer group transition-all ${
                       selectedService?.id === service.id
-                        ? "ring-2 ring-primary"
+                        ? "ring-2 ring-primary shadow-lg shadow-primary/20"
                         : ""
                     }`}
                     onClick={() => handleSelectService(service)}
                   >
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg">{service.name}</h3>
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                        {service.name}
+                      </h3>
                       {service.description && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground-muted">
                           {service.description}
                         </p>
                       )}
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>{service.duration} min</span>
+                      <div className="flex items-center justify-between pt-3 border-t border-border">
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                            <Clock className="h-4 w-4 text-accent" />
+                          </div>
+                          <span className="text-foreground-muted">{service.duration} min</span>
                         </div>
-                        <div className="flex items-center gap-1 text-lg font-semibold text-primary">
-                          <DollarSign className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-xl font-bold text-primary">
+                          <span className="text-sm">R$</span>
                           <span>{service.price.toFixed(2)}</span>
                         </div>
                       </div>
                     </div>
-                  </Card>
+                  </GlassCard>
                 ))}
               </div>
             </div>
@@ -361,50 +394,66 @@ export default function AgendarSalaoPage() {
           
           {/* STEP 2: Escolher Profissional */}
           {currentStep === 2 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                <User className="h-5 w-5" />
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-3 text-lg font-semibold">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
                 <span>Escolha o profissional</span>
               </div>
               
               {selectedService && (
-                <Card className="p-4 bg-muted/50">
+                <GlassCard className="p-4 bg-primary/5">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Serviço selecionado</p>
-                      <p className="font-semibold">{selectedService.name}</p>
+                      <p className="text-sm text-foreground-muted">Serviço selecionado</p>
+                      <p className="font-semibold text-foreground">{selectedService.name}</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setCurrentStep(1)}
+                      className="hover:bg-primary/10"
+                    >
                       Alterar
                     </Button>
                   </div>
-                </Card>
+                </GlassCard>
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {staff.map((member) => (
-                  <Card
+                  <GlassCard
                     key={member.id}
-                    className={`p-4 cursor-pointer transition-all hover:shadow-lg ${
+                    hover
+                    glow={selectedStaff?.id === member.id ? "primary" : undefined}
+                    className={`p-6 cursor-pointer group transition-all ${
                       selectedStaff?.id === member.id
-                        ? "ring-2 ring-primary"
+                        ? "ring-2 ring-primary shadow-lg shadow-primary/20"
                         : ""
                     }`}
                     onClick={() => handleSelectStaff(member)}
                   >
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-lg">{member.name}</h3>
+                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                        {member.name}
+                      </h3>
                       {member.specialty && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground-muted">
                           {member.specialty}
                         </p>
                       )}
                     </div>
-                  </Card>
+                  </GlassCard>
                 ))}
               </div>
               
-              <Button variant="outline" onClick={prevStep} className="w-full">
+              <Button 
+                variant="outline" 
+                onClick={prevStep} 
+                className="w-full glass-card hover:bg-background-alt"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar
               </Button>
             </div>
@@ -412,37 +461,52 @@ export default function AgendarSalaoPage() {
           
           {/* STEP 3: Escolher Data e Hora */}
           {currentStep === 3 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                <Calendar className="h-5 w-5" />
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-3 text-lg font-semibold">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
                 <span>Escolha data e horário</span>
               </div>
               
               {/* Resumo */}
-              <Card className="p-4 bg-muted/50 space-y-2">
-                <div className="flex items-center justify-between">
+              <GlassCard className="p-4 bg-primary/5 space-y-3">
+                <div className="flex items-center justify-between pb-2">
                   <div>
-                    <p className="text-sm text-muted-foreground">Serviço</p>
-                    <p className="font-semibold">{selectedService?.name}</p>
+                    <p className="text-sm text-foreground-muted">Serviço</p>
+                    <p className="font-semibold text-foreground">{selectedService?.name}</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setCurrentStep(1)}
+                    className="hover:bg-primary/10"
+                  >
                     Alterar
                   </Button>
                 </div>
-                <div className="flex items-center justify-between border-t pt-2">
+                <div className="flex items-center justify-between border-t border-border pt-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Profissional</p>
-                    <p className="font-semibold">{selectedStaff?.name}</p>
+                    <p className="text-sm text-foreground-muted">Profissional</p>
+                    <p className="font-semibold text-foreground">{selectedStaff?.name}</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setCurrentStep(2)}
+                    className="hover:bg-primary/10"
+                  >
                     Alterar
                   </Button>
                 </div>
-              </Card>
+              </GlassCard>
               
               {/* Seletor de Data */}
               <div>
-                <p className="font-semibold mb-2">Selecione a data</p>
+                <p className="font-semibold mb-3 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Selecione a data
+                </p>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
                   {next14Days.map((date) => {
                     const isSelected =
@@ -453,20 +517,30 @@ export default function AgendarSalaoPage() {
                       <Button
                         key={date.toISOString()}
                         variant={isSelected ? "default" : "outline"}
-                        className="flex flex-col h-auto py-2"
+                        className={`flex flex-col h-auto py-3 transition-all ${
+                          isSelected 
+                            ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
+                            : "glass-card hover:bg-background-alt hover:border-primary/30"
+                        }`}
                         onClick={() => handleSelectDate(date)}
                       >
-                        <span className="text-xs text-muted-foreground">
+                        <span className={`text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
                           {format(date, "EEE", { locale: ptBR })}
                         </span>
-                        <span className="text-lg font-bold">
+                        <span className="text-lg font-bold my-1">
                           {format(date, "dd", { locale: ptBR })}
                         </span>
-                        <span className="text-xs">
+                        <span className={`text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
                           {format(date, "MMM", { locale: ptBR })}
                         </span>
                         {isToday && (
-                          <Badge className="mt-1 text-[10px] px-1 py-0">Hoje</Badge>
+                          <Badge className={`mt-1 text-[10px] px-2 py-0.5 ${
+                            isSelected 
+                              ? 'bg-white/20 text-white border-white/30' 
+                              : 'bg-primary/20 text-primary border-primary/30'
+                          }`}>
+                            Hoje
+                          </Badge>
                         )}
                       </Button>
                     );
@@ -477,12 +551,17 @@ export default function AgendarSalaoPage() {
               {/* Seletor de Horário */}
               {selectedDate && (
                 <div>
-                  <p className="font-semibold mb-2">Selecione o horário</p>
+                  <p className="font-semibold mb-3 flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-accent" />
+                    Selecione o horário
+                  </p>
                   
                   {loadingSlots ? (
-                    <div className="flex items-center justify-center py-10">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
+                    <GlassCard className="p-10">
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    </GlassCard>
                   ) : availableSlots.length > 0 ? (
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                       {availableSlots.map((slot) => (
@@ -491,90 +570,113 @@ export default function AgendarSalaoPage() {
                           variant={selectedTime === slot.time ? "default" : "outline"}
                           disabled={!slot.available}
                           onClick={() => setSelectedTime(slot.time)}
-                          className="h-auto py-3"
+                          className={`h-auto py-3 ${
+                            selectedTime === slot.time 
+                              ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
+                              : "glass-card hover:bg-background-alt"
+                          } ${
+                            !slot.available ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
                         >
                           {slot.time}
                         </Button>
                       ))}
                     </div>
                   ) : (
-                    <Card className="p-6 text-center space-y-2">
-                      <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">
+                    <GlassCard className="p-8 text-center space-y-3">
+                      <div className="w-16 h-16 rounded-full bg-foreground-muted/10 flex items-center justify-center mx-auto">
+                        <AlertCircle className="h-8 w-8 text-foreground-muted" />
+                      </div>
+                      <p className="text-sm text-foreground-muted">
                         Nenhum horário disponível para esta data
                       </p>
-                    </Card>
+                    </GlassCard>
                   )}
                 </div>
               )}
               
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prevStep} className="flex-1">
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={prevStep} 
+                  className="flex-1 glass-card hover:bg-background-alt"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
                 </Button>
-                <Button
+                <GradientButton
+                  variant="primary"
                   onClick={nextStep}
                   disabled={!selectedDate || !selectedTime}
-                  className="flex-1"
+                  className="flex-1 group"
                 >
                   Continuar
-                </Button>
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </GradientButton>
               </div>
             </div>
           )}
           
           {/* STEP 4: Confirmar */}
           {currentStep === 4 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                <Check className="h-5 w-5" />
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-3 text-lg font-semibold">
+                <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center">
+                  <Check className="h-5 w-5 text-success" />
+                </div>
                 <span>Confirmar agendamento</span>
               </div>
               
-              <Card className="p-6 space-y-4">
-                <div className="text-center pb-4 border-b">
-                  <h3 className="text-2xl font-bold">{salon.name}</h3>
-                  <p className="text-sm text-muted-foreground">
+              <GlassCard className="p-6 space-y-6" glow="primary">
+                <div className="text-center pb-4 border-b border-border">
+                  <h3 className="text-2xl font-bold text-foreground">{salon.name}</h3>
+                  <p className="text-sm text-foreground-muted mt-1">
                     {salon.address} • {salon.city}, {salon.state}
                   </p>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <Briefcase className="h-5 w-5 text-primary mt-0.5" />
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-primary/5">
+                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="h-5 w-5 text-primary" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Serviço</p>
-                      <p className="font-semibold">{selectedService?.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-foreground-muted uppercase tracking-wider mb-1">Serviço</p>
+                      <p className="font-semibold text-lg text-foreground">{selectedService?.name}</p>
+                      <p className="text-sm text-foreground-muted mt-1">
                         {selectedService?.duration} minutos • R$ {selectedService?.price.toFixed(2)}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-accent/5">
+                    <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
+                      <User className="h-5 w-5 text-accent" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Profissional</p>
-                      <p className="font-semibold">{selectedStaff?.name}</p>
+                      <p className="text-xs text-foreground-muted uppercase tracking-wider mb-1">Profissional</p>
+                      <p className="font-semibold text-lg text-foreground">{selectedStaff?.name}</p>
                       {selectedStaff?.specialty && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground-muted mt-1">
                           {selectedStaff.specialty}
                         </p>
                       )}
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="flex items-start gap-4 p-4 rounded-lg bg-success/5">
+                    <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center flex-shrink-0">
+                      <Calendar className="h-5 w-5 text-success" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Data e horário</p>
-                      <p className="font-semibold">
+                      <p className="text-xs text-foreground-muted uppercase tracking-wider mb-1">Data e horário</p>
+                      <p className="font-semibold text-lg text-foreground">
                         {selectedDate &&
                           format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", {
                             locale: ptBR,
                           })}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-foreground-muted mt-1">
                         às {selectedTime}
                       </p>
                     </div>
@@ -582,30 +684,36 @@ export default function AgendarSalaoPage() {
                 </div>
                 
                 {status === "unauthenticated" && (
-                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg backdrop-blur-sm">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-semibold text-amber-700 dark:text-amber-400">
                           Login necessário
                         </p>
-                        <p className="text-sm text-amber-600 dark:text-amber-300">
+                        <p className="text-sm text-amber-600 dark:text-amber-300 mt-1">
                           Você será redirecionado para fazer login antes de confirmar
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
-              </Card>
+              </GlassCard>
               
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={prevStep} className="flex-1">
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  onClick={prevStep} 
+                  className="flex-1 glass-card hover:bg-background-alt"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
                 </Button>
-                <Button
+                <GradientButton
+                  variant="success"
                   onClick={handleConfirmBooking}
                   disabled={submitting}
-                  className="flex-1"
+                  className="flex-1 group"
                 >
                   {submitting ? (
                     <>
@@ -613,9 +721,12 @@ export default function AgendarSalaoPage() {
                       Confirmando...
                     </>
                   ) : (
-                    "Confirmar Agendamento"
+                    <>
+                      <Check className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                      Confirmar Agendamento
+                    </>
                   )}
-                </Button>
+                </GradientButton>
               </div>
             </div>
           )}

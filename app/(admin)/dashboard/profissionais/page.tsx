@@ -9,6 +9,7 @@ import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { prisma } from "@/lib/prisma";
 import { DeleteStaffButton } from "@/components/dashboard/delete-staff-button";
+import { getUserSalonId } from "@/lib/salon-helper";
 
 export default async function StaffPage() {
   const session = await getServerSession(authOptions);
@@ -17,8 +18,18 @@ export default async function StaffPage() {
     redirect("/login");
   }
 
-  // Buscar todos os profissionais
+  // Obter salão do usuário logado
+  const userSalonId = await getUserSalonId();
+  
+  if (!userSalonId) {
+    redirect("/dashboard");
+  }
+
+  // Buscar profissionais do salão do usuário
   const staff = await prisma.staff.findMany({
+    where: {
+      salonId: userSalonId,
+    },
     include: {
       salon: {
         select: {

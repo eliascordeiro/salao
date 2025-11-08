@@ -48,8 +48,8 @@ export default function SaloesPage() {
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedState, setSelectedState] = useState<string>("");
-  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [selectedState, setSelectedState] = useState<string>("ALL");
+  const [selectedCity, setSelectedCity] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState("rating");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   
@@ -102,14 +102,18 @@ export default function SaloesPage() {
   }, [selectedCity, selectedState, sortBy, showFeaturedOnly]);
   
   // Filtrar por busca local (nome)
-  const filteredSalons = salons.filter((salon) =>
-    salon.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSalons = salons.filter((salon) => {
+    const matchesSearch = salon.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesState = !selectedState || selectedState === "ALL" || salon.state === selectedState;
+    const matchesCity = !selectedCity || selectedCity === "ALL" || salon.city === selectedCity;
+    
+    return matchesSearch && matchesState && matchesCity;
+  });
   
   // Limpar cidade ao mudar estado
   const handleStateChange = (state: string) => {
     setSelectedState(state);
-    setSelectedCity(""); // Reset city when state changes
+    setSelectedCity("ALL"); // Reset city when state changes
   };
   
   // Cidades disponíveis para o estado selecionado
@@ -161,7 +165,7 @@ export default function SaloesPage() {
                   <SelectValue placeholder="Todos os estados" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os estados</SelectItem>
+                  <SelectItem value="ALL">Todos os estados</SelectItem>
                   {locations.states.map((state) => (
                     <SelectItem key={state} value={state}>
                       {state}
@@ -183,7 +187,7 @@ export default function SaloesPage() {
                   <SelectValue placeholder="Todas as cidades" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as cidades</SelectItem>
+                  <SelectItem value="ALL">Todas as cidades</SelectItem>
                   {availableCities.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}

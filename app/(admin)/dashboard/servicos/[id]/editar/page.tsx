@@ -65,16 +65,22 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
 
         // Buscar profissionais (já filtrados pelo salão do usuário)
         const staffRes = await fetch(`/api/staff`);
+        console.log('📊 Status da API /api/staff:', staffRes.status);
+        
         if (staffRes.ok) {
           const staffData = await staffRes.json();
+          console.log('👥 Profissionais recebidos:', staffData);
+          
           if (Array.isArray(staffData)) {
             setAllStaff(staffData);
+            console.log('✅ AllStaff definido com', staffData.length, 'profissionais');
           } else {
             console.error("Resposta inválida da API de profissionais:", staffData);
             setAllStaff([]);
           }
         } else {
-          console.error("Erro ao carregar profissionais:", staffRes.status);
+          const errorText = await staffRes.text();
+          console.error("❌ Erro ao carregar profissionais:", staffRes.status, errorText);
           setAllStaff([]);
         }
 

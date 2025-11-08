@@ -96,8 +96,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Converter slots recorrentes em lista de horários
-    const availableSlots: string[] = [];
+    // Converter slots recorrentes em lista de horários com status
+    interface TimeSlot {
+      time: string;
+      available: boolean;
+      reason?: string;
+    }
+    
+    const allSlots: TimeSlot[] = [];
     const now = new Date();
 
     console.log('[available-slots] Debug info:');
@@ -116,14 +122,19 @@ export async function GET(request: NextRequest) {
         isPast: slotDateTime < now,
       });
 
-      // Verificar se não está no passado
+      // Verificar se está no passado
       if (slotDateTime < now) {
-        console.log(`    ❌ Slot no passado, pulando`);
+        console.log(`    ❌ Slot no passado, marcando como indisponível`);
+        allSlots.push({
+          time: slot.startTime,
+          available: false,
+          reason: "Horário já passou"
+        });
         continue;
       }
 
-      // Verificar se o horário não conflita com agendamentos existentes
-      const isAvailable = !existingBookings.some((booking) => {
+      // Verificar se o horário conflita com agendamentos existentes
+      const conflictingBooking = existingBookings.find((booking) => {
         const bookingStart = new Date(booking.date);
         const bookingEnd = new Date(booking.date);
         bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration);
@@ -145,16 +156,27 @@ export async function GET(request: NextRequest) {
         return hasOverlap;
       });
 
-      if (isAvailable) {
+      if (conflictingBooking) {
+        console.log(`    🔴 Slot ocupado (agendamento existente)`);
+        allSlots.push({
+          time: slot.startTime,
+          available: false,
+          reason: "Horário ocupado"
+        });
+      } else {
         console.log(`    ✅ Slot disponível`);
-        availableSlots.push(slot.startTime);
+        allSlots.push({
+          time: slot.startTime,
+          available: true
+        });
       }
     }
 
-    console.log('  Total de slots disponíveis:', availableSlots.length);
-    console.log('  Slots:', availableSlots);
+    console.log('  Total de slots:', allSlots.length);
+    console.log('  Slots disponíveis:', allSlots.filter(s => s.available).length);
+    console.log('  Slots ocupados:', allSlots.filter(s => !s.available).length);
 
-    return NextResponse.json({ availableSlots });
+    return NextResponse.json({ slots: allSlots });
   } catch (error) {
     console.error("Erro ao buscar horários disponíveis:", error);
     return NextResponse.json(

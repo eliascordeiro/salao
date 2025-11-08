@@ -9,6 +9,7 @@ import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckC
 import { DashboardHeader } from "@/components/dashboard/header"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
+import { getUserSalonId } from "@/lib/salon-helper"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -17,26 +18,37 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
+  // Obter salão do usuário logado
+  const userSalonId = await getUserSalonId()
+  
+  if (!userSalonId) {
+    redirect("/login")
+  }
+
   // Datas para comparação
   const today = new Date()
   const last30Days = subDays(today, 30)
   const previous30Days = subDays(today, 60)
 
-  // Buscar estatísticas básicas
+  // Buscar estatísticas básicas DO SALÃO DO USUÁRIO
   const stats = {
-    totalBookings: await prisma.booking.count(),
-    totalClients: await prisma.user.count({ where: { role: "CLIENT" } }),
-    totalServices: await prisma.service.count(),
-    totalSalons: await prisma.salon.count(),
+    totalBookings: await prisma.booking.count({ where: { salonId: userSalonId } }),
+    totalClients: await prisma.user.count({ where: { role: "CLIENT" } }), // Clientes são globais
+    totalServices: await prisma.service.count({ where: { salonId: userSalonId } }),
+    totalSalons: 1, // O usuário vê apenas seu salão
   }
 
   // Estatísticas dos últimos 30 dias
   const bookingsLast30 = await prisma.booking.count({
-    where: { createdAt: { gte: last30Days } }
+    where: { 
+      salonId: userSalonId,
+      createdAt: { gte: last30Days } 
+    }
   })
   
   const bookingsPrevious30 = await prisma.booking.count({
     where: { 
+      salonId: userSalonId,
       createdAt: { 
         gte: previous30Days,
         lt: last30Days 
@@ -47,6 +59,7 @@ export default async function DashboardPage() {
   // Calcular receita
   const revenueLast30Result = await prisma.booking.aggregate({
     where: {
+      salonId: userSalonId,
       createdAt: { gte: last30Days },
       status: "COMPLETED"
     },
@@ -55,6 +68,7 @@ export default async function DashboardPage() {
 
   const revenuePrevious30Result = await prisma.booking.aggregate({
     where: {
+      salonId: userSalonId,
       createdAt: { 
         gte: previous30Days,
         lt: last30Days 
@@ -79,6 +93,7 @@ export default async function DashboardPage() {
   // Taxa de conclusão últimos 30 dias
   const completedLast30 = await prisma.booking.count({
     where: {
+      salonId: userSalonId,
       createdAt: { gte: last30Days },
       status: "COMPLETED"
     }
@@ -88,10 +103,11 @@ export default async function DashboardPage() {
     ? (completedLast30 / bookingsLast30) * 100 
     : 0
 
-  // Buscar top profissional
+  // Buscar top profissional DO SALÃO
   const topStaffData = await prisma.booking.groupBy({
     by: ['staffId'],
     where: {
+      salonId: userSalonId,
       createdAt: { gte: last30Days },
       status: 'COMPLETED'
     },
@@ -108,9 +124,10 @@ export default async function DashboardPage() {
     })
   }
 
-  // Buscar próximos agendamentos
+  // Buscar próximos agendamentos DO SALÃO
   const upcomingBookings = await prisma.booking.findMany({
     where: {
+      salonId: userSalonId,
       date: {
         gte: new Date()
       }

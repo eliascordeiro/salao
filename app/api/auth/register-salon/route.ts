@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 /**
@@ -13,6 +13,8 @@ import bcrypt from "bcryptjs";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    console.log("📝 Dados recebidos:", body);
     
     const {
       // Dados do proprietário
@@ -31,6 +33,7 @@ export async function POST(request: NextRequest) {
     
     // Validações
     if (!ownerName || !ownerEmail || !ownerPassword) {
+      console.log("❌ Validação falhou: dados do proprietário incompletos");
       return NextResponse.json(
         {
           success: false,
@@ -41,6 +44,13 @@ export async function POST(request: NextRequest) {
     }
     
     if (!salonName || !salonPhone || !salonAddress || !salonCity || !salonState) {
+      console.log("❌ Validação falhou: dados do salão incompletos", {
+        salonName: !!salonName,
+        salonPhone: !!salonPhone,
+        salonAddress: !!salonAddress,
+        salonCity: !!salonCity,
+        salonState: !!salonState,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -51,11 +61,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Verificar se email já existe
+    console.log("🔍 Verificando email:", ownerEmail);
     const existingUser = await prisma.user.findUnique({
       where: { email: ownerEmail },
     });
     
     if (existingUser) {
+      console.log("❌ Email já cadastrado");
       return NextResponse.json(
         {
           success: false,
@@ -65,12 +77,31 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    console.log("✅ Email disponível");
+    
     // Hash da senha
+    console.log("🔐 Gerando hash da senha...");
     const hashedPassword = await bcrypt.hash(ownerPassword, 10);
     
+    console.log("💾 Iniciando transação...");
+    console.log("💾 Iniciando transação...");
     // Criar usuário e salão em uma transação
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Criar salão
+      // 1. Criar usuário proprietário primeiro
+      console.log("👤 Criando usuário...");
+      const user = await tx.user.create({
+        data: {
+          name: ownerName,
+          email: ownerEmail,
+          password: hashedPassword,
+          role: "ADMIN", // Proprietários são ADMIN
+        },
+      });
+      
+      console.log("✅ Usuário criado:", user.id);
+      
+      // 2. Criar salão vinculado ao proprietário
+      console.log("🏪 Criando salão...");
       const salon = await tx.salon.create({
         data: {
           name: salonName,
@@ -80,24 +111,23 @@ export async function POST(request: NextRequest) {
           state: salonState,
           zipCode: salonZipCode || null,
           description: salonDescription || null,
+          // Valores padrão para campos obrigatórios
+          openTime: "09:00",
+          closeTime: "18:00",
+          workDays: "1,2,3,4,5", // Segunda a Sexta
           // Salão criado começa não publicado (owner precisa completar cadastro)
           publishedAt: null,
+          // Vincular ao proprietário
+          ownerId: user.id,
         },
       });
       
-      // 2. Criar usuário proprietário vinculado ao salão
-      const user = await tx.user.create({
-        data: {
-          name: ownerName,
-          email: ownerEmail,
-          password: hashedPassword,
-          role: "ADMIN", // Proprietários são ADMIN
-          salonId: salon.id,
-        },
-      });
+      console.log("✅ Salão criado:", salon.id);
       
       return { user, salon };
     });
+    
+    console.log("✅ Transação concluída com sucesso!");
     
     // TODO: Enviar email de boas-vindas
     // await sendWelcomeEmail(result.user.email, result.user.name, result.salon.name);
@@ -116,6 +146,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: "Erro ao criar cadastro. Tente novamente.",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
     );

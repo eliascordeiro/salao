@@ -9,6 +9,7 @@ import { GridBackground } from "@/components/ui/grid-background"
 import { Plus, Pencil, Trash2, Clock, DollarSign, Sparkles, Users, CheckCircle, XCircle } from "lucide-react"
 import Link from "next/link"
 import { DeleteServiceButton } from "@/components/dashboard/delete-service-button"
+import { getUserSalonId } from "@/lib/salon-helper"
 
 export default async function ServicesPage() {
   const session = await getServerSession(authOptions)
@@ -21,7 +22,17 @@ export default async function ServicesPage() {
     redirect("/dashboard")
   }
 
+  // Obter salão do usuário logado
+  const userSalonId = await getUserSalonId()
+  
+  if (!userSalonId) {
+    redirect("/dashboard")
+  }
+
   const services = await prisma.service.findMany({
+    where: {
+      salonId: userSalonId,
+    },
     include: {
       salon: true,
       staff: {
