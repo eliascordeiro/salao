@@ -205,26 +205,8 @@ export default async function StaffPage() {
                           Editar
                         </GradientButton>
                       </Link>
-                      <Link href={`/dashboard/profissionais/${member.id}/horarios`}>
-                        <GradientButton variant="primary" className="w-full text-xs">
-                          <Clock className="h-3 w-3" />
-                          Horários
-                        </GradientButton>
-                      </Link>
-                      <Link href={`/dashboard/profissionais/${member.id}/slots`}>
-                        <GradientButton variant="success" className="w-full text-xs">
-                          <CalendarCheck className="h-3 w-3" />
-                          Cadastrar Slots
-                        </GradientButton>
-                      </Link>
-                      <Link href={`/dashboard/profissionais/${member.id}/disponibilidade`}>
-                        <GradientButton variant="accent" className="w-full text-xs">
-                          <Calendar className="h-3 w-3" />
-                          Bloqueios
-                        </GradientButton>
-                      </Link>
+                      <DeleteStaffButton staffId={member.id} staffName={member.name} />
                     </div>
-                    <DeleteStaffButton staffId={member.id} staffName={member.name} />
                   </div>
                 </GlassCard>
               ))}
