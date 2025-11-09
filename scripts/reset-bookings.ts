@@ -39,10 +39,9 @@ async function resetBookings() {
   console.log(`📅 Criando agendamentos de teste para ${dateStr}:\n`);
 
   for (const test of testBookings) {
-    const [hours, minutes] = test.time.split(":").map(Number);
-    const bookingDate = new Date(dateStr);
-    // USAR UTC!
-    bookingDate.setUTCHours(hours, minutes, 0, 0);
+    // Correção timezone: criar data local que será automaticamente convertida para UTC
+    const localDateTimeStr = `${dateStr}T${test.time}:00`;
+    const bookingDate = new Date(localDateTimeStr);
 
     const booking = await prisma.booking.create({
       data: {

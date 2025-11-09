@@ -55,6 +55,9 @@ export async function GET(
             name: true,
             specialty: true,
             active: true,
+            workDays: true,    // ← ADICIONADO
+            workStart: true,   // ← ADICIONADO  
+            workEnd: true,     // ← ADICIONADO
             _count: {
               select: {
                 services: true, // Quantos serviços este profissional oferece

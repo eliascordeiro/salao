@@ -167,19 +167,20 @@ export async function POST(request: NextRequest) {
 
     // Combinar data e hora
     console.log("[bookings POST] Combinando data/hora:", { date, time });
-    const [hours, minutes] = time.split(":").map(Number);
-    const bookingDate = new Date(date);
-    // IMPORTANTE: Usar setUTCHours para manter consistência com timezone UTC
-    // date vem como "2025-11-08", hora vem como "10:00"
-    // Resultado será "2025-11-08T10:00:00.000Z" (UTC)
-    bookingDate.setUTCHours(hours, minutes, 0, 0);
-    console.log("[bookings POST] BookingDate criado (UTC):", bookingDate.toISOString());
+    
+    // CORREÇÃO TIMEZONE: O horário vem no fuso local (GMT-3)
+    // Criar como data local e deixar o JavaScript converter automaticamente para UTC
+    const localDateTimeStr = `${date}T${time}:00`;
+    const correctedDate = new Date(localDateTimeStr);
+    
+    console.log("[bookings POST] String de data/hora local:", localDateTimeStr);
+    console.log("[bookings POST] Data convertida para UTC:", correctedDate.toISOString());
 
     // VALIDAÇÃO 1: Verificar se o profissional já tem agendamento neste horário
     const existingBookingStaff = await prisma.booking.findFirst({
       where: {
         staffId,
-        date: bookingDate,
+        date: correctedDate,
         status: {
           in: ["PENDING", "CONFIRMED"],
         },
@@ -225,7 +226,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Verificar conflito de horário com agendamentos do cliente
-    const requestedStartMin = bookingDate.getUTCHours() * 60 + bookingDate.getUTCMinutes();
+    const requestedStartMin = correctedDate.getUTCHours() * 60 + correctedDate.getUTCMinutes();
     const requestedEndMin = requestedStartMin + service.duration;
 
     for (const clientBooking of clientBookings) {
@@ -268,7 +269,7 @@ export async function POST(request: NextRequest) {
       serviceId,
       staffId,
       salonId,
-      date: bookingDate,
+      date: correctedDate,
       totalPrice: service.price,
       status: "PENDING",
       notes: notes || null,
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
         serviceId,
         staffId,
         salonId,
-        date: bookingDate,
+        date: correctedDate,
         totalPrice: service.price,
         status: "PENDING",
         notes: notes || null,

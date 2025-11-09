@@ -52,9 +52,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Extrair dia da semana da data selecionada
-    const selectedDate = new Date(date);
+    // Extrair dia da semana da data selecionada (usar getDay() em data sem hora)
+    const selectedDate = new Date(date + 'T12:00:00'); // Meio-dia para evitar problema de timezone
     const dayOfWeek = selectedDate.getDay(); // 0 = Domingo, 6 = Sábado
+
+    console.log('[available-slots] Data info:');
+    console.log('  String recebida:', date);
+    console.log('  Date criado:', selectedDate.toISOString());
+    console.log('  Dia da semana (getDay):', dayOfWeek);
+    console.log('  Nome do dia:', ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dayOfWeek]);
 
     // Verificar se o profissional trabalha neste dia
     const workDaysArray = staff.workDays?.split(',').map(d => parseInt(d.trim())) || [];
@@ -87,11 +93,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar agendamentos existentes do profissional neste dia
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    // CORREÇÃO TIMEZONE: Criar datas em UTC para comparação correta
+    const startOfDay = new Date(date + 'T00:00:00.000Z'); // Meia-noite UTC do dia selecionado
+    const endOfDay = new Date(date + 'T23:59:59.999Z');   // Fim do dia UTC
 
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    console.log('[available-slots] Range de busca:');
+    console.log('  startOfDay:', startOfDay.toISOString());
+    console.log('  endOfDay:', endOfDay.toISOString());
 
     const existingBookings = await prisma.booking.findMany({
       where: {
@@ -133,18 +141,39 @@ export async function GET(request: NextRequest) {
     console.log('  Horário atual:', now.toISOString());
 
     for (const slot of recurringSlots) {
-      // Criar data/hora do slot combinando a data selecionada com o horário
-      const [hour, minute] = slot.startTime.split(":").map(Number);
-      const slotDateTime = new Date(date + 'T' + slot.startTime + ':00');
+      // CORREÇÃO TIMEZONE: Criar data/hora em UTC para comparação correta
+      // O horário do slot (ex: "09:00") deve ser tratado como horário LOCAL
+      // Precisamos comparar com o horário LOCAL atual também
+      
+      const [slotHour, slotMinute] = slot.startTime.split(":").map(Number);
+      
+      // Criar datetime do slot em UTC (adiciona offset GMT-3)
+      const slotDateTimeStr = `${date}T${slot.startTime}:00`;
+      const slotDateTime = new Date(slotDateTimeStr); // JS converte local para UTC
+      
+      // Obter hora/minuto atual NO TIMEZONE LOCAL para comparação justa
+      const now = new Date();
+      const nowLocalHour = now.getHours(); // Hora local (ex: 10h se são 10h no Brasil)
+      const nowLocalMinute = now.getMinutes();
+      const nowLocalMinutes = nowLocalHour * 60 + nowLocalMinute;
+      const slotLocalMinutes = slotHour * 60 + slotMinute;
+      
+      // Verificar se é hoje
+      const todayStr = now.toISOString().split('T')[0];
+      const isToday = date === todayStr;
       
       console.log(`  Checando slot ${slot.startTime}:`, {
         slotDateTime: slotDateTime.toISOString(),
-        isPast: slotDateTime < now,
+        isToday,
+        nowLocalTime: `${nowLocalHour.toString().padStart(2, '0')}:${nowLocalMinute.toString().padStart(2, '0')}`,
+        slotMinutes: slotLocalMinutes,
+        nowMinutes: nowLocalMinutes,
+        isPast: isToday && slotLocalMinutes <= nowLocalMinutes,
       });
 
-      // Verificar se está no passado
-      if (slotDateTime < now) {
-        console.log(`    ❌ Slot no passado, marcando como indisponível`);
+      // Verificar se está no passado (apenas se for hoje)
+      if (isToday && slotLocalMinutes <= nowLocalMinutes) {
+        console.log(`    ❌ Slot no passado`);
         allSlots.push({
           time: slot.startTime,
           available: false,

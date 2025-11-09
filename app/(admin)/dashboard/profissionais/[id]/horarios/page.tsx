@@ -54,6 +54,13 @@ export default function StaffSchedulePage({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generatingSlots, setGeneratingSlots] = useState(false);
+  
+  // Estado para armazenar slots gerados (temporários, antes de salvar)
+  const [previewSlots, setPreviewSlots] = useState<Array<{
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+  }>>([]);
 
   // Carregar dados do profissional
   useEffect(() => {
@@ -201,27 +208,22 @@ export default function StaffSchedulePage({
     }
   };
 
-  // Função para gerar slots automaticamente
-  const handleGenerateSlots = async (force = false) => {
-    // Validar se os horários estão salvos
-    if (!staff?.workStart || !staff?.workEnd) {
-      alert("Por favor, salve os horários de trabalho primeiro!");
+  // Função para gerar preview dos slots (NÃO SALVA NO BANCO)
+  const handleGenerateSlots = () => {
+    // Validar campos necessários
+    if (!formData.workStart || !formData.workEnd) {
+      alert("Por favor, preencha os horários de trabalho!");
       return;
     }
 
-    if (!formData.slotDuration || parseInt(formData.slotDuration) < 15) {
-      alert("A duração do slot deve ser de pelo menos 15 minutos");
+    if (!formData.slotDuration || parseInt(formData.slotDuration) < 5) {
+      alert("A duração do slot deve ser de pelo menos 5 minutos");
       return;
     }
 
-    if (!force) {
-      const confirm = window.confirm(
-        `⚠️ ATENÇÃO: Isso irá APAGAR TODOS os slots existentes e criar novos!\n\n` +
-        `Serão gerados slots de ${formData.slotDuration} minutos para todos os dias de trabalho.\n\n` +
-        `Deseja continuar?`
-      );
-
-      if (!confirm) return;
+    if (formData.workDays.length === 0) {
+      alert("Selecione pelo menos um dia de trabalho!");
+      return;
     }
 
     setGeneratingSlots(true);
@@ -254,22 +256,60 @@ export default function StaffSchedulePage({
         });
       });
 
-      console.log(`📊 Gerando ${slotsToCreate.length} slots...`);
+      // Atualizar o preview (NÃO salva no banco)
+      setPreviewSlots(slotsToCreate);
+      console.log(`📊 Preview gerado com ${slotsToCreate.length} slots`);
+      
+    } catch (error) {
+      console.error("Erro ao gerar preview:", error);
+      alert("Erro ao gerar preview dos slots");
+    } finally {
+      setGeneratingSlots(false);
+    }
+  };
 
-      // Enviar todos os slots de uma vez
+  // Função para limpar o preview
+  const handleClearPreview = () => {
+    setPreviewSlots([]);
+  };
+
+  // Função para salvar TUDO (configuração + slots) no banco
+  const handleSaveAll = async () => {
+    if (previewSlots.length === 0) {
+      alert("Gere os slots antes de salvar!");
+      return;
+    }
+
+    const confirm = window.confirm(
+      `⚠️ ATENÇÃO: Isso irá:\n\n` +
+      `1. SALVAR as configurações de horário\n` +
+      `2. APAGAR todos os slots existentes\n` +
+      `3. CRIAR ${previewSlots.length} novos slots\n\n` +
+      `Deseja continuar?`
+    );
+
+    if (!confirm) return;
+
+    setGeneratingSlots(true);
+
+    try {
+      // 1. Salvar configurações de horário
+      await handleSubmit(new Event('submit') as any);
+
+      // 2. Salvar slots no banco
       const response = await fetch(`/api/availabilities/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           staffId: params.id,
-          slots: slotsToCreate,
-          force, // Indica se o usuário confirmou mesmo com conflitos
+          slots: previewSlots,
+          force: true, // Força a criação
         }),
       });
 
       const result = await response.json();
 
-      // Se requer confirmação (status 409), mostrar detalhes dos conflitos
+      // Verificar conflitos (status 409)
       if (response.status === 409 && result.requiresConfirmation) {
         const conflicts = result.bookings.filter((b: any) => b.willHaveConflict);
         
@@ -287,20 +327,36 @@ export default function StaffSchedulePage({
             message += `... e mais ${conflicts.length - 5} agendamentos\n\n`;
           }
           
-          message += '⚠️ Esses agendamentos permanecerão no sistema, mas os clientes não poderão remarcar para esses horários!\n\n';
-        } else {
-          message += '✅ Todos os agendamentos têm slots correspondentes na nova grade.\n\n';
+          message += '⚠️ Esses agendamentos permanecerão no sistema, mas os clientes não poderão remarcar!\n\n';
         }
         
         message += 'Deseja continuar mesmo assim?';
         
         const forceConfirm = window.confirm(message);
         
-        if (forceConfirm) {
-          // Tentar novamente com force=true
-          await handleGenerateSlots(true);
+        if (!forceConfirm) {
+          setGeneratingSlots(false);
+          return;
         }
-        return;
+
+        // Tentar novamente com force=true
+        const retryResponse = await fetch(`/api/availabilities/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            staffId: params.id,
+            slots: previewSlots,
+            force: true,
+          }),
+        });
+
+        const retryResult = await retryResponse.json();
+        
+        if (!retryResponse.ok) {
+          throw new Error(retryResult.error || "Erro ao gerar slots");
+        }
+
+        alert(retryResult.message);
       }
 
       if (!response.ok) {
@@ -314,13 +370,17 @@ export default function StaffSchedulePage({
       }
 
       alert(successMessage);
-      router.push("/dashboard/profissionais");
+      
+      // Limpar preview e recarregar
+      setPreviewSlots([]);
+      router.refresh();
+      
     } catch (error) {
-      console.error("❌ Erro ao gerar slots:", error);
+      console.error("❌ Erro ao salvar:", error);
       alert(
         error instanceof Error
           ? error.message
-          : "Erro ao gerar slots automaticamente"
+          : "Erro ao salvar horários e slots"
       );
     } finally {
       setGeneratingSlots(false);
@@ -448,18 +508,20 @@ export default function StaffSchedulePage({
             </p>
           </div>
 
-          {/* Formulário */}
-          <GlassCard glow="accent" className="max-w-2xl p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-accent" />
-                Configurar Horários
-              </h2>
-              <p className="text-foreground-muted mt-1">
-                Defina os dias e horários de trabalho
-              </p>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Layout em 2 colunas */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* COLUNA 1: Formulário de Configuração */}
+            <GlassCard glow="accent" className="p-8">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-accent" />
+                  Configurar Horários
+                </h2>
+                <p className="text-foreground-muted mt-1">
+                  Defina os dias e horários de trabalho
+                </p>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-6">
               {/* Dias de Trabalho */}
               <div>
                 <Label className="flex items-center gap-2 mb-3 text-foreground">
@@ -591,120 +653,29 @@ export default function StaffSchedulePage({
                 </div>
               </div>
 
-              {/* Duração do Slot e Geração Automática */}
-              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg space-y-6">
-                {/* Header do Card */}
-                <div>
-                  <h3 className="font-semibold text-foreground flex items-center gap-2 text-lg">
-                    <Calendar className="h-5 w-5 text-success" />
-                    Geração Automática de Slots
-                  </h3>
-                  <p className="text-sm text-foreground-muted mt-1">
-                    Configure e gere automaticamente os horários disponíveis para agendamento
-                  </p>
-                </div>
-
-                {/* Duração do Slot */}
-                <div>
-                  <Label htmlFor="slotDuration" className="text-foreground flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4 text-success" />
-                    Duração de cada atendimento (minutos)
-                  </Label>
-                  <Input
-                    id="slotDuration"
-                    type="number"
-                    min="15"
-                    max="240"
-                    step="15"
-                    value={formData.slotDuration}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slotDuration: e.target.value })
-                    }
-                    className="glass-card bg-background-alt/50 border-success/20 focus:border-success text-foreground"
-                    placeholder="Ex: 30"
-                  />
-                  <p className="text-xs text-foreground-muted mt-2 flex items-start gap-1">
-                    <span>💡</span>
-                    <span><strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.</span>
-                  </p>
-                </div>
-
-                {/* Informações da Geração */}
-                {staff?.workStart && staff?.workEnd && (
-                  <div className="glass-card bg-success/10 border-success/30 p-4 rounded-lg space-y-3">
-                    <p className="text-sm text-foreground-muted">
-                      📋 <strong className="text-foreground">Baseado nas configurações atuais:</strong>
-                    </p>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground-muted">📅 Dias:</span>
-                        <span className="font-medium text-foreground">{formData.workDays.length} selecionados</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground-muted">⏰ Duração:</span>
-                        <span className="font-medium text-foreground">{formData.slotDuration} min</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-foreground-muted">🕐 Expediente:</span>
-                        <span className="font-medium text-foreground">{formData.workStart}-{formData.workEnd}</span>
-                      </div>
-                      {formData.lunchStart && formData.lunchEnd && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-foreground-muted">🍽️ Almoço:</span>
-                          <span className="font-medium text-foreground">{formData.lunchStart}-{formData.lunchEnd}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="pt-3 border-t border-success/20">
-                      <p className="text-sm font-medium text-success flex items-center gap-2">
-                        <Sparkles className="h-4 w-4" />
-                        Aproximadamente {calculateEstimatedSlots()} slots serão criados
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Avisos */}
-                <div className="space-y-2">
-                  <p className="text-xs text-foreground-muted flex items-start gap-1">
-                    <span>⚠️</span>
-                    <span><strong>Importante:</strong> O horário de almoço será automaticamente excluído dos slots.</span>
-                  </p>
-                  <p className="text-xs text-foreground-muted flex items-start gap-1">
-                    <span>🔄</span>
-                    <span><strong>Regeneração:</strong> Ao gerar novamente, todos os slots antigos serão substituídos.</span>
-                  </p>
-                </div>
-
-                {/* Botão de Geração - Dentro do Card */}
-                {staff?.workStart && staff?.workEnd ? (
-                  <GradientButton
-                    type="button"
-                    variant="success"
-                    onClick={handleGenerateSlots}
-                    disabled={generatingSlots}
-                    className="w-full py-4"
-                  >
-                    {generatingSlots ? (
-                      <>
-                        <Sparkles className="h-5 w-5 animate-spin" />
-                        Gerando Slots...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-5 w-5" />
-                        Gerar Slots Automaticamente
-                      </>
-                    )}
-                  </GradientButton>
-                ) : (
-                  <div className="glass-card bg-warning/10 border-warning/30 p-4 rounded-lg">
-                    <p className="text-sm text-foreground-muted text-center flex items-center justify-center gap-2">
-                      <span>⚠️</span>
-                      <span>Salve os horários de trabalho primeiro para habilitar a geração automática</span>
-                    </p>
-                  </div>
-                )}
+              {/* Duração do Slot */}
+              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg">
+                <Label htmlFor="slotDuration" className="text-foreground flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-success" />
+                  Duração de cada atendimento (minutos)
+                </Label>
+                <Input
+                  id="slotDuration"
+                  type="number"
+                  min="5"
+                  max="240"
+                  step="5"
+                  value={formData.slotDuration}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slotDuration: e.target.value })
+                  }
+                  className="glass-card bg-background-alt/50 border-success/20 focus:border-success text-foreground"
+                  placeholder="Ex: 30"
+                />
+                <p className="text-xs text-foreground-muted mt-2 flex items-start gap-1">
+                  <span>💡</span>
+                  <span><strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.</span>
+                </p>
               </div>
 
               {/* Resumo */}
@@ -738,6 +709,14 @@ export default function StaffSchedulePage({
                       <span>{formData.lunchStart} às {formData.lunchEnd}</span>
                     </li>
                   )}
+                  <li className="flex gap-2">
+                    <span className="font-medium text-foreground">Duração:</span>
+                    <span>{formData.slotDuration} minutos</span>
+                  </li>
+                  <li className="flex gap-2 text-success">
+                    <Sparkles className="h-4 w-4 mt-0.5" />
+                    <span className="font-semibold">~{calculateEstimatedSlots()} slots</span>
+                  </li>
                 </ul>
               </div>
 
@@ -752,27 +731,138 @@ export default function StaffSchedulePage({
                   <ArrowLeft className="h-4 w-4" />
                   Cancelar
                 </GradientButton>
+                
+                {/* Botão Gerar Preview */}
                 <GradientButton
-                  type="submit"
-                  variant="accent"
-                  disabled={loading}
+                  type="button"
+                  variant="success"
+                  onClick={handleGenerateSlots}
+                  disabled={generatingSlots || !formData.workStart || !formData.workEnd}
                   className="flex-1"
                 >
-                  {loading ? (
+                  {generatingSlots ? (
                     <>
                       <Sparkles className="h-4 w-4 animate-spin" />
-                      Salvando...
+                      Gerando...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
-                      Salvar Horários
+                      <Calendar className="h-4 w-4" />
+                      Gerar Preview
                     </>
                   )}
                 </GradientButton>
               </div>
             </form>
           </GlassCard>
+
+          {/* COLUNA 2: Preview dos Slots */}
+          <GlassCard glow="primary" className="p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                Preview dos Slots
+              </h2>
+              <p className="text-foreground-muted mt-1">
+                Visualize os horários que serão criados
+              </p>
+            </div>
+
+            {previewSlots.length === 0 ? (
+              <div className="h-[400px] flex flex-col items-center justify-center text-center border-2 border-dashed border-primary/20 rounded-lg">
+                <Calendar className="h-16 w-16 text-primary/30 mb-4" />
+                <p className="text-foreground-muted text-lg font-medium mb-2">
+                  Nenhum preview gerado
+                </p>
+                <p className="text-foreground-muted/70 text-sm max-w-sm">
+                  Preencha as configurações e clique em "Gerar Preview" para visualizar os slots
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Header do Preview */}
+                <div className="mb-6 p-4 glass-card bg-success/5 border-success/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-bold text-foreground">
+                        {previewSlots.length} slots
+                      </p>
+                      <p className="text-sm text-foreground-muted">
+                        Pronto para salvar
+                      </p>
+                    </div>
+                    <GradientButton
+                      type="button"
+                      variant="primary"
+                      onClick={handleClearPreview}
+                      className="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 border-red-500/50"
+                    >
+                      Limpar
+                    </GradientButton>
+                  </div>
+                </div>
+
+                {/* Lista de Slots por Dia */}
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                  {DAYS_OF_WEEK.filter(day => 
+                    formData.workDays.includes(day.value)
+                  ).map((day) => {
+                    const daySlots = previewSlots.filter(
+                      slot => slot.dayOfWeek === parseInt(day.value)
+                    );
+
+                    return (
+                      <div key={day.value} className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
+                        <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          {day.label} ({daySlots.length} slots)
+                        </h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          {daySlots.map((slot, idx) => (
+                            <div
+                              key={idx}
+                              className="text-xs p-2 bg-background/50 border border-primary/10 rounded text-center text-foreground-muted hover:bg-primary/10 transition"
+                            >
+                              {slot.startTime} - {slot.endTime}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Botão de Salvar Tudo */}
+                <div className="mt-6 pt-6 border-t border-primary/20">
+                  <GradientButton
+                    type="button"
+                    variant="accent"
+                    onClick={handleSaveAll}
+                    disabled={generatingSlots || previewSlots.length === 0}
+                    className="w-full py-4"
+                  >
+                    {generatingSlots ? (
+                      <>
+                        <Sparkles className="h-5 w-5 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-5 w-5" />
+                        Salvar Configuração + Slots ({previewSlots.length})
+                      </>
+                    )}
+                  </GradientButton>
+                  <p className="text-xs text-foreground-muted/70 text-center mt-3">
+                    ⚠️ Isso salvará a configuração e substituirá todos os slots existentes
+                  </p>
+                </div>
+              </>
+            )}
+          </GlassCard>
+        </div>
+        {/* Fim do grid 2 colunas */}
+        
         </div>
       </GridBackground>
     </div>

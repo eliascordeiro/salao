@@ -40,6 +40,9 @@ interface Staff {
   id: string;
   name: string;
   specialty?: string | null;
+  workDays?: string | null;     // ← ADICIONADO (ex: "1,2,3,4,5")
+  workStart?: string | null;    // ← ADICIONADO
+  workEnd?: string | null;      // ← ADICIONADO
 }
 
 interface Salon {
@@ -147,8 +150,11 @@ export default function AgendarSalaoPage() {
       const result = await response.json();
       
       console.log("✅ Resposta da API:", result);
+      console.log("📊 Quantidade de slots:", result.availableSlots?.length || 0);
       
-      if (result.availableSlots) {
+      if (result.availableSlots && result.availableSlots.length > 0) {
+        console.log("🕒 Primeiros 5 slots:", result.availableSlots.slice(0, 5));
+        
         // Converter array de strings para formato { time, available, timeMinutes }
         const slots = result.availableSlots.map((time: string) => {
           const [hours, minutes] = time.split(':').map(Number);
@@ -161,8 +167,14 @@ export default function AgendarSalaoPage() {
         
         // Buscar agendamentos do cliente e marcar conflitos
         await fetchClientBookings(dateStr, slots);
+      } else if (result.message) {
+        console.warn("⚠️ Mensagem da API:", result.message);
+        setAvailableSlots([]);
       } else if (result.error) {
         console.error("❌ Erro da API:", result.error);
+        setAvailableSlots([]);
+      } else {
+        console.warn("⚠️ Nenhum slot disponível");
         setAvailableSlots([]);
       }
     } catch (error) {
@@ -218,8 +230,8 @@ export default function AgendarSalaoPage() {
         .filter((b: any) => b.status === "PENDING" || b.status === "CONFIRMED")
         .map((b: any) => {
           const bookingDate = new Date(b.date);
-          const hours = bookingDate.getUTCHours();
-          const minutes = bookingDate.getUTCMinutes();
+          const hours = bookingDate.getHours();
+          const minutes = bookingDate.getMinutes();
           const time = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
           
           return {
@@ -402,12 +414,64 @@ export default function AgendarSalaoPage() {
     }
   }
   
-  // Gerar próximos 14 dias
-  const next14Days = Array.from({ length: 14 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() + i);
-    return date;
-  });
+  // Gerar próximos 15 dias FILTRADOS pelos dias de trabalho do profissional
+  const next14Days = (() => {
+    if (!selectedStaff) {
+      // Se não tem profissional selecionado, mostra todos os dias
+      return Array.from({ length: 15 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        return date;
+      });
+    }
+
+    // Buscar dados completos do profissional para pegar workDays
+    const staffMember = staff.find(s => s.id === selectedStaff.id);
+    const workDays = (staffMember as any)?.workDays;
+    
+    console.log('🔍 DEBUG next14Days:');
+    console.log('  - Profissional:', selectedStaff.name);
+    console.log('  - StaffMember encontrado:', !!staffMember);
+    console.log('  - WorkDays:', workDays);
+    
+    if (!workDays) {
+      console.log('  ⚠️ WorkDays não encontrado, mostrando todos os dias');
+      // Se não tem workDays configurado, mostra todos
+      return Array.from({ length: 15 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        return date;
+      });
+    }
+
+    // Converter workDays string "1,2,3,4,5" para array de números
+    const workDaysArray = workDays.split(',').map((d: string) => parseInt(d.trim()));
+    console.log('  - WorkDays array:', workDaysArray);
+    
+    // Gerar até conseguir 15 dias que sejam dias de trabalho
+    const validDays: Date[] = [];
+    let daysChecked = 0;
+    const maxDaysToCheck = 60; // Limite de segurança
+    
+    while (validDays.length < 15 && daysChecked < maxDaysToCheck) {
+      const date = new Date();
+      date.setDate(date.getDate() + daysChecked);
+      const dayOfWeek = date.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+      
+      // Se é dia de trabalho, adiciona na lista
+      if (workDaysArray.includes(dayOfWeek)) {
+        validDays.push(date);
+      }
+      
+      daysChecked++;
+    }
+    
+    console.log('  ✅ Dias gerados:', validDays.length);
+    console.log('  - Primeiro dia:', validDays[0]?.toLocaleDateString('pt-BR'));
+    console.log('  - Último dia:', validDays[validDays.length - 1]?.toLocaleDateString('pt-BR'));
+    
+    return validDays;
+  })();
   
   if (loading) {
     return (

@@ -1,6 +1,3 @@
-// Schema do banco de dados para Sistema de Agendamento
-// Salões & Barbearias
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,287 +7,210 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Modelo de Usuário (Clientes e Administradores)
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  phone         String?
-  password      String
-  role          String    @default("CLIENT") // CLIENT, ADMIN, STAFF
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  // Relações
-  bookings      Booking[]
-  ownedSalons   Salon[]
-  payments      Payment[]
-  reviews       Review[]
-}
-
-// Modelo de Salão/Barbearia
-model Salon {
   id          String    @id @default(cuid())
   name        String
-  description String?   @db.Text
-  address     String
-  phone       String
-  email       String?
-  logo        String?
-  openTime    String    // Ex: "09:00"
-  closeTime   String    // Ex: "19:00"
-  workDays    String    // Ex: "1,2,3,4,5" (Seg-Sex)
-  bookingType String    @default("BOTH") // DYNAMIC, SLOT_BASED, BOTH
-  active      Boolean   @default(true)
-  
-  // Localização (NOVOS CAMPOS)
-  city        String?   // Cidade
-  state       String?   // Estado (UF)
-  zipCode     String?   // CEP
-  latitude    Float?    // Para mapas
-  longitude   Float?    // Para mapas
-  
-  // Mídia (NOVOS CAMPOS)
-  coverPhoto  String?   // Foto de capa
-  photos      String[]  @default([]) // Array de URLs de fotos
-  
-  // Avaliações (NOVOS CAMPOS)
-  rating      Float     @default(0) // Média das avaliações (0-5)
-  reviewsCount Int      @default(0) // Total de avaliações
-  
-  // Destaque (NOVOS CAMPOS)
-  featured    Boolean   @default(false) // Salão em destaque
-  verified    Boolean   @default(false) // Salão verificado
-  
-  // Marketing (NOVOS CAMPOS)
-  specialties String[]  @default([]) // Ex: ["corte masculino", "coloração"]
-  
-  // Controle (NOVOS CAMPOS)
-  publishedAt DateTime? // Data de publicação (quando aparece na busca pública)
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  ownerId     String
-  owner       User      @relation(fields: [ownerId], references: [id])
-  
-  // Relações
-  services    Service[]
-  staff       Staff[]
-  bookings    Booking[]
-  reviews     Review[]
-}
-
-// Modelo de Profissional/Barbeiro
-model Staff {
-  id          String    @id @default(cuid())
-  name        String
-  email       String?
+  email       String    @unique
   phone       String?
-  photo       String?
-  specialty   String?   // Ex: "Corte Masculino", "Coloração"
-  active      Boolean   @default(true)
-  
-  // Horários de trabalho
-  workDays    String?   @default("1,2,3,4,5") // Ex: "1,2,3,4,5,6" (0=Dom, 1=Seg, ..., 6=Sáb)
-  workStart   String?   @default("09:00") // Horário de início
-  workEnd     String?   @default("18:00") // Horário de término
-  lunchStart  String?   // Início do almoço (opcional)
-  lunchEnd    String?   // Fim do almoço (opcional)
-  
+  password    String
+  role        String    @default("CLIENT")
+  image       String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
-  salonId     String
-  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
-  // Relações
-  bookings      Booking[]
-  services      ServiceStaff[]
-  availabilities Availability[]
+  bookings    Booking[]
+  payments    Payment[]
+  reviews     Review[]
+  ownedSalons Salon[]
 }
 
-// Modelo de Serviço
+model Salon {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  address      String
+  phone        String
+  email        String?
+  logo         String?
+  openTime     String
+  closeTime    String
+  workDays     String
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  ownerId      String
+  bookingType  String    @default("BOTH")
+  city         String?
+  coverPhoto   String?
+  featured     Boolean   @default(false)
+  latitude     Float?
+  longitude    Float?
+  photos       String[]  @default([])
+  publishedAt  DateTime?
+  rating       Float     @default(0)
+  reviewsCount Int       @default(0)
+  specialties  String[]  @default([])
+  state        String?
+  verified     Boolean   @default(false)
+  zipCode      String?
+  bookings     Booking[]
+  reviews      Review[]
+  owner        User      @relation(fields: [ownerId], references: [id])
+  services     Service[]
+  staff        Staff[]
+}
+
+model Staff {
+  id             String         @id @default(cuid())
+  name           String
+  email          String?
+  phone          String?
+  photo          String?
+  specialty      String?
+  active         Boolean        @default(true)
+  workDays       String?        @default("1,2,3,4,5")
+  workStart      String?        @default("09:00")
+  workEnd        String?        @default("18:00")
+  lunchStart     String?
+  lunchEnd       String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  salonId        String
+  availabilities Availability[]
+  bookings       Booking[]
+  services       ServiceStaff[]
+  salon          Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
+}
+
 model Service {
-  id          String    @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   description String?
-  duration    Int       // Duração em minutos
+  duration    Int
   price       Float
-  category    String?   // Ex: "Corte", "Barba", "Coloração"
+  category    String?
   image       String?
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   salonId     String
-  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
-  // Relações
   bookings    Booking[]
+  salon       Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
   staff       ServiceStaff[]
 }
 
-// Tabela de relacionamento: Quais profissionais prestam quais serviços
 model ServiceStaff {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   serviceId String
   staffId   String
-  
-  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
   @@unique([serviceId, staffId])
 }
 
-// Modelo de Agendamento
 model Booking {
-  id          String    @id @default(cuid())
-  date        DateTime  // Data e hora do agendamento
-  status      String    @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
-  notes       String?
-  totalPrice  Float
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  // Relações
-  clientId    String
-  client      User      @relation(fields: [clientId], references: [id])
-  
-  salonId     String
-  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
-  serviceId   String
-  service     Service   @relation(fields: [serviceId], references: [id])
-  
-  staffId     String
-  staff       Staff     @relation(fields: [staffId], references: [id])
-  
-  // Relação com notificações
+  id            String         @id @default(cuid())
+  date          DateTime
+  status        String         @default("PENDING")
+  notes         String?
+  totalPrice    Float
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  clientId      String
+  salonId       String
+  serviceId     String
+  staffId       String
+  client        User           @relation(fields: [clientId], references: [id])
+  salon         Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  service       Service        @relation(fields: [serviceId], references: [id])
+  staff         Staff          @relation(fields: [staffId], references: [id])
   notifications Notification[]
-  
-  // Relação com pagamento
-  payment     Payment?
-  
-  // Relação com avaliação
-  review      Review?
-  
+  payment       Payment?
+  review        Review?
+
   @@index([date])
   @@index([clientId])
   @@index([salonId])
 }
 
-// Modelo de Notificação (histórico de emails enviados)
 model Notification {
-  id          String    @id @default(cuid())
-  type        String    // BOOKING_CREATED, BOOKING_CONFIRMED, BOOKING_REMINDER, BOOKING_CANCELLED
-  status      String    @default("PENDING") // PENDING, SENT, FAILED
-  email       String    // Email do destinatário
-  subject     String?   // Assunto do email
-  error       String?   // Mensagem de erro se falhou
-  sentAt      DateTime? // Quando foi enviado
-  createdAt   DateTime  @default(now())
-  
-  // Relação com agendamento
-  bookingId   String
-  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+  id        String    @id @default(cuid())
+  type      String
+  sentAt    DateTime?
+  status    String    @default("PENDING")
+  bookingId String
+  createdAt DateTime  @default(now())
+  email     String
+  error     String?
+  subject   String?
+  booking   Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
   @@index([bookingId])
   @@index([type])
   @@index([status])
 }
 
-// Modelo de Pagamento
 model Payment {
-  id          String    @id @default(cuid())
-  amount      Float     // Valor em reais
-  status      String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED, REFUNDED, CANCELLED
-  method      String?   // CREDIT_CARD, DEBIT_CARD, PIX, BOLETO
-  provider    String    @default("STRIPE") // STRIPE, MERCADOPAGO, MANUAL
-  currency    String    @default("BRL")
-  
-  // Metadados do provider (JSON)
-  stripeSessionId       String?   @unique
+  id                    String        @id @default(cuid())
+  amount                Float
+  status                String        @default("PENDING")
+  method                String?
+  stripeSessionId       String?       @unique
   stripePaymentIntentId String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  bookingId             String        @unique
+  userId                String
+  cancelledAt           DateTime?
+  currency              String        @default("BRL")
   mercadopagoId         String?
-  metadata              String?   // JSON com dados extras
-  
-  // Datas
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  paidAt      DateTime? // Quando foi confirmado
-  cancelledAt DateTime? // Quando foi cancelado
-  
-  // Relações
-  bookingId   String    @unique
-  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  transactions Transaction[]
-  
+  metadata              String?
+  paidAt                DateTime?
+  provider              String        @default("STRIPE")
+  booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+
   @@index([status])
   @@index([provider])
   @@index([createdAt])
   @@index([userId])
 }
 
-// Modelo de Transação (histórico de tentativas)
 model Transaction {
-  id          String    @id @default(cuid())
-  externalId  String?   // ID do provider (Stripe, MercadoPago)
-  status      String    // PENDING, AUTHORIZED, CAPTURED, FAILED, REFUNDED
-  amount      Float
-  
-  // Detalhes
-  method      String?   // Método usado
-  errorCode   String?   // Código de erro se falhou
-  errorMessage String?  // Mensagem de erro
-  
-  // Metadados
-  metadata    String?   // JSON com dados da transação
-  
-  // Datas
-  createdAt   DateTime  @default(now())
-  processedAt DateTime? // Quando foi processado
-  
-  // Relação com pagamento
-  paymentId   String
-  payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  
+  id           String    @id @default(cuid())
+  amount       Float
+  status       String
+  metadata     String?
+  createdAt    DateTime  @default(now())
+  paymentId    String
+  errorCode    String?
+  errorMessage String?
+  externalId   String?
+  method       String?
+  processedAt  DateTime?
+  payment      Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
   @@index([paymentId])
   @@index([status])
   @@index([externalId])
 }
 
-// Modelo de Disponibilidade/Bloqueios de Horários
 model Availability {
-  id          String    @id @default(cuid())
-  
-  // Profissional
-  staffId     String
-  staff       Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  
-  // Data e horário
-  date        DateTime? // Data específica (opcional - para bloqueios pontuais)
-  dayOfWeek   Int?      // Dia da semana (0=Dom, 1=Seg, ..., 6=Sáb) - para horários recorrentes
-  startTime   String    // Horário inicial (HH:mm)
-  endTime     String    // Horário final (HH:mm)
-  
-  // Status
-  available   Boolean   @default(true) // true = disponível, false = bloqueado
-  reason      String?   // Motivo do bloqueio (opcional)
-  
-  // Tipo
-  type        String    @default("BLOCK") // BLOCK (bloqueio), AVAILABLE (slot disponível), RECURRING (horário recorrente)
-  
-  // Auditoria
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?   // ID do usuário que criou
-  
+  id        String    @id @default(cuid())
+  date      DateTime?
+  dayOfWeek Int?
+  startTime String
+  endTime   String
+  available Boolean   @default(true)
+  type      String    @default("BLOCK")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  staffId   String
+  createdBy String?
+  reason    String?
+  staff     Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
   @@index([staffId])
   @@index([date])
   @@index([dayOfWeek])
@@ -298,26 +218,19 @@ model Availability {
   @@index([staffId, dayOfWeek])
 }
 
-// Modelo de Avaliação/Review de Salão
 model Review {
-  id          String    @id @default(cuid())
-  rating      Int       // 1 a 5 estrelas
-  comment     String?   @db.Text
-  
-  // Relações
-  salonId     String
-  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  bookingId   String?   @unique
-  booking     Booking?  @relation(fields: [bookingId], references: [id])
-  
-  // Controle
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  salonId   String
+  userId    String
+  bookingId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+  salon     Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([salonId])
   @@index([userId])
   @@index([rating])
