@@ -76,9 +76,28 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    console.log('📝 [POST /api/staff] Dados recebidos:', { name: data.name, salonId: userSalonId })
+    console.log('📝 [POST /api/staff] Dados recebidos:', { 
+      name: data.name, 
+      salonId: userSalonId,
+      workDays: data.workDays,
+      workStart: data.workStart,
+      workEnd: data.workEnd,
+      slotInterval: data.slotInterval
+    })
     
-    const { name, email, phone, specialty, serviceIds = [] } = data
+    const { 
+      name, 
+      email, 
+      phone, 
+      specialty, 
+      serviceIds = [],
+      workDays,
+      workStart,
+      workEnd,
+      lunchStart,
+      lunchEnd,
+      slotInterval
+    } = data
 
     // Validações
     if (!name) {
@@ -95,6 +114,13 @@ export async function POST(request: Request) {
         phone: phone || null,
         specialty: specialty || null,
         salonId: userSalonId, // Usar salão do usuário automaticamente
+        // Adicionar dados de horário
+        workDays: workDays || null,
+        workStart: workStart || null,
+        workEnd: workEnd || null,
+        lunchStart: lunchStart || null,
+        lunchEnd: lunchEnd || null,
+        slotInterval: slotInterval || 5,
         services: {
           create: serviceIds.map((serviceId: string) => ({
             serviceId,
