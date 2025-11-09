@@ -133,15 +133,23 @@ export async function GET(request: NextRequest) {
     }
 
     // GERAÇÃO DINÂMICA: Criar todos os slots possíveis para o dia
+    console.log('⚙️  Gerando slots dinamicamente:');
+    console.log('   workStart:', staff.workStart);
+    console.log('   workEnd:', staff.workEnd);
+    console.log('   lunchStart:', staff.lunchStart);
+    console.log('   lunchEnd:', staff.lunchEnd);
+    console.log('   slotInterval:', staff.slotInterval, 'minutos');
+    
     const allTimeSlots = generateTimeSlots(
       staff.workStart,
       staff.workEnd,
       staff.lunchStart,
       staff.lunchEnd,
-      staff.slotInterval
+      staff.slotInterval || 5 // Fallback para 5 se for null/undefined
     );
 
     console.log('  Slots gerados:', allTimeSlots.length);
+    console.log('  Primeiros 5 slots:', allTimeSlots.slice(0, 5));
 
     // Buscar bloqueios específicos para este dia (tabela Block)
     const startOfDay = new Date(date + 'T00:00:00.000Z');
