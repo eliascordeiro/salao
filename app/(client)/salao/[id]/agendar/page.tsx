@@ -129,6 +129,75 @@ export default function AgendarSalaoPage() {
     loadSalonData();
   }, [salonId, router]);
   
+  // Restaurar agendamento pendente após login
+  useEffect(() => {
+    // Aguardar dados do salão serem carregados
+    if (loading || !services.length || !staff.length) return;
+    
+    // Verificar se há agendamento pendente
+    const pendingBookingStr = localStorage.getItem("pendingBooking");
+    if (!pendingBookingStr) return;
+    
+    try {
+      const pendingBooking = JSON.parse(pendingBookingStr);
+      
+      // Verificar se é para este salão
+      if (pendingBooking.salonId !== salonId) return;
+      
+      console.log("🔄 Restaurando agendamento pendente:", pendingBooking);
+      
+      // Restaurar serviço selecionado
+      const service = services.find((s) => s.id === pendingBooking.serviceId);
+      if (service) {
+        setSelectedService(service);
+        console.log("✅ Serviço restaurado:", service.name);
+      }
+      
+      // Restaurar profissional selecionado
+      const staffMember = staff.find((s) => s.id === pendingBooking.staffId);
+      if (staffMember) {
+        setSelectedStaff(staffMember);
+        console.log("✅ Profissional restaurado:", staffMember.name);
+      }
+      
+      // Restaurar data selecionada
+      if (pendingBooking.date) {
+        const date = new Date(pendingBooking.date);
+        setSelectedDate(date);
+        console.log("✅ Data restaurada:", format(date, "dd/MM/yyyy", { locale: ptBR }));
+      }
+      
+      // Restaurar horário selecionado
+      if (pendingBooking.time) {
+        setSelectedTime(pendingBooking.time);
+        console.log("✅ Horário restaurado:", pendingBooking.time);
+      }
+      
+      // Ir para o passo de confirmação (passo 4)
+      if (service && staffMember && pendingBooking.date && pendingBooking.time) {
+        setCurrentStep(4);
+        console.log("✅ Indo para confirmação (passo 4)");
+      } else if (service && staffMember && pendingBooking.date) {
+        setCurrentStep(3); // Escolher horário
+        console.log("✅ Indo para escolha de horário (passo 3)");
+      } else if (service && staffMember) {
+        setCurrentStep(3); // Escolher data
+        console.log("✅ Indo para escolha de data (passo 3)");
+      } else if (service) {
+        setCurrentStep(2); // Escolher profissional
+        console.log("✅ Indo para escolha de profissional (passo 2)");
+      }
+      
+      // Limpar localStorage
+      localStorage.removeItem("pendingBooking");
+      console.log("🗑️ Agendamento pendente removido do localStorage");
+      
+    } catch (error) {
+      console.error("❌ Erro ao restaurar agendamento pendente:", error);
+      localStorage.removeItem("pendingBooking");
+    }
+  }, [loading, services, staff, salonId]);
+  
   // Carregar slots quando data e profissional são selecionados
   useEffect(() => {
     if (selectedDate && selectedStaff && selectedService) {
@@ -335,17 +404,30 @@ export default function AgendarSalaoPage() {
     // Verificar autenticação
     if (status === "unauthenticated") {
       // Salvar dados no localStorage para recuperar após login
-      localStorage.setItem(
-        "pendingBooking",
-        JSON.stringify({
-          salonId,
-          serviceId: selectedService?.id,
-          staffId: selectedStaff?.id,
-          date: selectedDate,
-          time: selectedTime,
-        })
+      const bookingData = {
+        salonId,
+        serviceId: selectedService?.id,
+        staffId: selectedStaff?.id,
+        date: selectedDate,
+        time: selectedTime,
+      };
+      
+      localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
+      
+      console.log("💾 Agendamento salvo para após login:", bookingData);
+      
+      // Mostrar feedback antes de redirecionar
+      const confirmed = window.confirm(
+        "Para confirmar seu agendamento, você precisa fazer login.\n\n" +
+        "✅ Suas escolhas serão salvas!\n" +
+        "Após o login, você voltará direto para a confirmação.\n\n" +
+        "Deseja prosseguir para o login?"
       );
-      router.push("/login?callbackUrl=" + encodeURIComponent(`/salao/${salonId}/agendar`));
+      
+      if (confirmed) {
+        router.push("/login?callbackUrl=" + encodeURIComponent(`/salao/${salonId}/agendar`));
+      }
+      
       return;
     }
     
@@ -495,6 +577,34 @@ export default function AgendarSalaoPage() {
   return (
     <GridBackground>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl space-y-4 sm:space-y-6">
+        {/* Banner para usuários não autenticados */}
+        {status === "unauthenticated" && (
+          <GlassCard className="p-4 bg-blue-500/10 border-blue-500/20">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="h-5 w-5 text-blue-500" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <h3 className="font-semibold text-blue-600 dark:text-blue-400">
+                  Login necessário para confirmar
+                </h3>
+                <p className="text-sm text-foreground-muted">
+                  Você pode navegar e escolher seu serviço, profissional, data e horário.
+                  <strong className="text-blue-600 dark:text-blue-400"> Suas escolhas serão salvas automaticamente</strong> quando você fizer login para confirmar o agendamento.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/login?callbackUrl=" + encodeURIComponent(`/salao/${salonId}/agendar`))}
+                  className="mt-2 border-blue-500/30 hover:bg-blue-500/10"
+                >
+                  Fazer login agora
+                </Button>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+        
         {/* Header */}
         <div className="space-y-3 sm:space-y-4">
           <Button
