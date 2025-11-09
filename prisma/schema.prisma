@@ -72,12 +72,13 @@ model Staff {
   workEnd        String?        @default("18:00")
   lunchStart     String?
   lunchEnd       String?
+  slotInterval   Int            @default(5)  // Intervalo entre slots em minutos
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   salonId        String
-  availabilities Availability[]
   bookings       Booking[]
   services       ServiceStaff[]
+  blocks         Block[]        // Bloqueios pontuais de horário
   salon          Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
 }
 
@@ -196,28 +197,6 @@ model Transaction {
   @@index([externalId])
 }
 
-model Availability {
-  id        String    @id @default(cuid())
-  date      DateTime?
-  dayOfWeek Int?
-  startTime String
-  endTime   String
-  available Boolean   @default(true)
-  type      String    @default("BLOCK")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  staffId   String
-  createdBy String?
-  reason    String?
-  staff     Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
-
-  @@index([staffId])
-  @@index([date])
-  @@index([dayOfWeek])
-  @@index([staffId, date])
-  @@index([staffId, dayOfWeek])
-}
-
 model Review {
   id        String   @id @default(cuid())
   rating    Int
@@ -235,4 +214,19 @@ model Review {
   @@index([userId])
   @@index([rating])
   @@index([salonId, rating])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  staffId   String
+  date      DateTime
+  startTime String   // Formato "HH:MM"
+  endTime   String   // Formato "HH:MM"
+  reason    String?
+  recurring Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId, date])
 }

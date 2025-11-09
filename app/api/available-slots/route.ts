@@ -4,6 +4,54 @@ import { prisma } from "@/lib/prisma";
 // Força renderização dinâmica (usa request.url)
 export const dynamic = 'force-dynamic';
 
+/**
+ * Gera slots de horário dinamicamente baseado na configuração do profissional
+ * @param workStart Horário de início (ex: "09:00")
+ * @param workEnd Horário de término (ex: "18:00")
+ * @param lunchStart Horário de início do almoço (opcional, ex: "12:00")
+ * @param lunchEnd Horário de término do almoço (opcional, ex: "13:00")
+ * @param slotInterval Intervalo em minutos entre slots (padrão: 5)
+ * @returns Array de horários no formato "HH:MM"
+ */
+function generateTimeSlots(
+  workStart: string,
+  workEnd: string,
+  lunchStart: string | null,
+  lunchEnd: string | null,
+  slotInterval: number = 5
+): string[] {
+  const slots: string[] = [];
+  
+  // Converter horários para minutos desde meia-noite
+  const parseTime = (time: string): number => {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  };
+  
+  const startMinutes = parseTime(workStart);
+  const endMinutes = parseTime(workEnd);
+  const lunchStartMinutes = lunchStart ? parseTime(lunchStart) : null;
+  const lunchEndMinutes = lunchEnd ? parseTime(lunchEnd) : null;
+  
+  // Gerar slots do início ao fim, pulando horário de almoço
+  for (let minutes = startMinutes; minutes < endMinutes; minutes += slotInterval) {
+    // Pular horário de almoço
+    if (lunchStartMinutes !== null && lunchEndMinutes !== null) {
+      if (minutes >= lunchStartMinutes && minutes < lunchEndMinutes) {
+        continue;
+      }
+    }
+    
+    // Converter minutos de volta para formato HH:MM
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const timeStr = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    slots.push(timeStr);
+  }
+  
+  return slots;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -31,7 +79,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar o profissional com horários de trabalho e almoço
+    // Buscar o profissional com horários de trabalho e configurações
     const staff = await prisma.staff.findUnique({
       where: { id: staffId },
       select: { 
@@ -42,6 +90,7 @@ export async function GET(request: NextRequest) {
         workEnd: true,
         lunchStart: true,
         lunchEnd: true,
+        slotInterval: true,
       },
     });
 
@@ -52,55 +101,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Extrair dia da semana da data selecionada (usar getDay() em data sem hora)
-    const selectedDate = new Date(date + 'T12:00:00'); // Meio-dia para evitar problema de timezone
-    const dayOfWeek = selectedDate.getDay(); // 0 = Domingo, 6 = Sábado
+    // Validar horários de trabalho configurados
+    if (!staff.workStart || !staff.workEnd) {
+      return NextResponse.json({ 
+        availableSlots: [],
+        message: "Profissional sem horários de trabalho configurados"
+      });
+    }
 
-    console.log('[available-slots] Data info:');
+    // Extrair dia da semana da data selecionada
+    const selectedDate = new Date(date + 'T12:00:00');
+    const dayOfWeek = selectedDate.getDay();
+
+    console.log('[available-slots-dynamic] Data info:');
     console.log('  String recebida:', date);
-    console.log('  Date criado:', selectedDate.toISOString());
-    console.log('  Dia da semana (getDay):', dayOfWeek);
-    console.log('  Nome do dia:', ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dayOfWeek]);
+    console.log('  Dia da semana:', dayOfWeek, ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dayOfWeek]);
+    console.log('  Horário trabalho:', staff.workStart, '-', staff.workEnd);
+    console.log('  Almoço:', staff.lunchStart, '-', staff.lunchEnd);
+    console.log('  Intervalo de slots:', staff.slotInterval, 'minutos');
 
     // Verificar se o profissional trabalha neste dia
     const workDaysArray = staff.workDays?.split(',').map(d => parseInt(d.trim())) || [];
     const professionalWorksThisDay = workDaysArray.includes(dayOfWeek);
 
     if (!professionalWorksThisDay) {
-      console.log(`⚠️ Profissional não trabalha no dia ${dayOfWeek} (${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][dayOfWeek]})`);
+      console.log(`⚠️ Profissional não trabalha neste dia`);
       return NextResponse.json({ 
         availableSlots: [],
-        message: `Profissional não trabalha neste dia da semana`
+        message: "Profissional não trabalha neste dia da semana"
       });
     }
 
-    // Buscar slots recorrentes cadastrados para este dia da semana
-    const recurringSlots = await prisma.availability.findMany({
+    // GERAÇÃO DINÂMICA: Criar todos os slots possíveis para o dia
+    const allTimeSlots = generateTimeSlots(
+      staff.workStart,
+      staff.workEnd,
+      staff.lunchStart,
+      staff.lunchEnd,
+      staff.slotInterval
+    );
+
+    console.log('  Slots gerados:', allTimeSlots.length);
+
+    // Buscar bloqueios específicos para este dia (tabela Block)
+    const startOfDay = new Date(date + 'T00:00:00.000Z');
+    const endOfDay = new Date(date + 'T23:59:59.999Z');
+
+    const blocks = await prisma.block.findMany({
       where: {
         staffId,
-        dayOfWeek,
-        available: true,
-        type: "RECURRING",
-      },
-      orderBy: {
-        startTime: "asc",
+        date: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
       },
     });
 
-    // Se não há slots cadastrados, retornar vazio
-    if (recurringSlots.length === 0) {
-      return NextResponse.json({ availableSlots: [] });
-    }
+    console.log('  Bloqueios encontrados:', blocks.length);
 
     // Buscar agendamentos existentes do profissional neste dia
-    // CORREÇÃO TIMEZONE: Criar datas em UTC para comparação correta
-    const startOfDay = new Date(date + 'T00:00:00.000Z'); // Meia-noite UTC do dia selecionado
-    const endOfDay = new Date(date + 'T23:59:59.999Z');   // Fim do dia UTC
-
-    console.log('[available-slots] Range de busca:');
-    console.log('  startOfDay:', startOfDay.toISOString());
-    console.log('  endOfDay:', endOfDay.toISOString());
-
     const existingBookings = await prisma.booking.findMany({
       where: {
         staffId,
@@ -124,82 +183,37 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Converter slots recorrentes em lista de horários com status
-    interface TimeSlot {
-      time: string;
-      available: boolean;
-      reason?: string;
-    }
-    
-    const allSlots: TimeSlot[] = [];
+    console.log('  Agendamentos existentes:', existingBookings.length);
+
+    // Filtrar slots disponíveis
     const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const isToday = date === todayStr;
+    const nowLocalHour = now.getHours();
+    const nowLocalMinute = now.getMinutes();
+    const nowLocalMinutes = nowLocalHour * 60 + nowLocalMinute;
 
-    console.log('[available-slots] Debug info:');
-    console.log('  Data selecionada:', date);
-    console.log('  Dia da semana:', dayOfWeek);
-    console.log('  Slots recorrentes encontrados:', recurringSlots.length);
-    console.log('  Horário atual:', now.toISOString());
-
-    for (const slot of recurringSlots) {
-      // CORREÇÃO TIMEZONE: Criar data/hora em UTC para comparação correta
-      // O horário do slot (ex: "09:00") deve ser tratado como horário LOCAL
-      // Precisamos comparar com o horário LOCAL atual também
-      
-      const [slotHour, slotMinute] = slot.startTime.split(":").map(Number);
-      
-      // Criar datetime do slot em UTC (adiciona offset GMT-3)
-      const slotDateTimeStr = `${date}T${slot.startTime}:00`;
-      const slotDateTime = new Date(slotDateTimeStr); // JS converte local para UTC
-      
-      // Obter hora/minuto atual NO TIMEZONE LOCAL para comparação justa
-      const now = new Date();
-      const nowLocalHour = now.getHours(); // Hora local (ex: 10h se são 10h no Brasil)
-      const nowLocalMinute = now.getMinutes();
-      const nowLocalMinutes = nowLocalHour * 60 + nowLocalMinute;
+    const availableSlots = allTimeSlots.filter(timeSlot => {
+      const [slotHour, slotMinute] = timeSlot.split(':').map(Number);
       const slotLocalMinutes = slotHour * 60 + slotMinute;
-      
-      // Verificar se é hoje
-      const todayStr = now.toISOString().split('T')[0];
-      const isToday = date === todayStr;
-      
-      console.log(`  Checando slot ${slot.startTime}:`, {
-        slotDateTime: slotDateTime.toISOString(),
-        isToday,
-        nowLocalTime: `${nowLocalHour.toString().padStart(2, '0')}:${nowLocalMinute.toString().padStart(2, '0')}`,
-        slotMinutes: slotLocalMinutes,
-        nowMinutes: nowLocalMinutes,
-        isPast: isToday && slotLocalMinutes <= nowLocalMinutes,
-      });
+      const slotDateTimeStr = `${date}T${timeSlot}:00`;
+      const slotDateTime = new Date(slotDateTimeStr);
 
-      // Verificar se está no passado (apenas se for hoje)
+      // 1. Verificar se está no passado (apenas se for hoje)
       if (isToday && slotLocalMinutes <= nowLocalMinutes) {
-        console.log(`    ❌ Slot no passado`);
-        allSlots.push({
-          time: slot.startTime,
-          available: false,
-          reason: "Horário já passou"
-        });
-        continue;
+        return false;
       }
 
-      // Verificar se está no horário de almoço
-      if (staff.lunchStart && staff.lunchEnd) {
-        const slotTime = slot.startTime;
-        const isLunchTime = slotTime >= staff.lunchStart && slotTime < staff.lunchEnd;
-        
-        if (isLunchTime) {
-          console.log(`    🍽️ Slot no horário de almoço (${staff.lunchStart} - ${staff.lunchEnd})`);
-          allSlots.push({
-            time: slot.startTime,
-            available: false,
-            reason: "Horário de almoço"
-          });
-          continue;
-        }
+      // 2. Verificar se está em um bloco específico (Block)
+      const isBlocked = blocks.some(block => {
+        return timeSlot >= block.startTime && timeSlot < block.endTime;
+      });
+      if (isBlocked) {
+        return false;
       }
 
-      // Verificar se o horário conflita com agendamentos existentes
-      const conflictingBooking = existingBookings.find((booking) => {
+      // 3. Verificar se conflita com agendamento existente
+      const hasConflict = existingBookings.some(booking => {
         const bookingStart = new Date(booking.date);
         const bookingEnd = new Date(booking.date);
         bookingEnd.setMinutes(bookingEnd.getMinutes() + booking.service.duration);
@@ -208,43 +222,17 @@ export async function GET(request: NextRequest) {
         slotEnd.setMinutes(slotEnd.getMinutes() + service.duration);
 
         // Verificar sobreposição
-        const hasOverlap = (
+        return (
           (slotDateTime >= bookingStart && slotDateTime < bookingEnd) ||
           (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
           (slotDateTime <= bookingStart && slotEnd >= bookingEnd)
         );
-
-        if (hasOverlap) {
-          console.log(`    ❌ Conflito com agendamento existente`);
-        }
-
-        return hasOverlap;
       });
 
-      if (conflictingBooking) {
-        console.log(`    🔴 Slot ocupado (agendamento existente)`);
-        allSlots.push({
-          time: slot.startTime,
-          available: false,
-          reason: "Horário ocupado"
-        });
-      } else {
-        console.log(`    ✅ Slot disponível`);
-        allSlots.push({
-          time: slot.startTime,
-          available: true
-        });
-      }
-    }
+      return !hasConflict;
+    });
 
-    console.log('  Total de slots:', allSlots.length);
-    console.log('  Slots disponíveis:', allSlots.filter(s => s.available).length);
-    console.log('  Slots ocupados:', allSlots.filter(s => !s.available).length);
-
-    // Retornar apenas os horários disponíveis (strings)
-    const availableSlots = allSlots
-      .filter(s => s.available)
-      .map(s => s.time);
+    console.log('  Slots disponíveis:', availableSlots.length);
 
     return NextResponse.json({ availableSlots });
   } catch (error) {
