@@ -166,26 +166,7 @@ export async function PATCH(
       )
     }
 
-    // 🔧 CORREÇÃO: Limpar slots recorrentes de dias não trabalhados
-    if (workDays && Array.isArray(workDays) && workDays.length > 0) {
-      const workDaysNumbers = workDays.map(d => parseInt(d))
-      
-      // Remover slots recorrentes em dias que NÃO estão na lista de dias de trabalho
-      const deletedSlots = await prisma.availability.deleteMany({
-        where: {
-          staffId: params.id,
-          type: 'RECURRING',
-          dayOfWeek: {
-            notIn: workDaysNumbers
-          }
-        }
-      })
-      
-      if (deletedSlots.count > 0) {
-        console.log(`🗑️ Removidos ${deletedSlots.count} slots recorrentes de dias não trabalhados`)
-      }
-    }
-
+    // Atualizar dados do profissional
     const staff = await prisma.staff.update({
       where: { id: params.id },
       data: {

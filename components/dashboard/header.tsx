@@ -28,7 +28,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
           {/* Menu Railway Style */}
           <nav className="hidden md:flex gap-8 items-center">
-            {user.role === "ADMIN" ? (
+            {user?.role === "ADMIN" ? (
               <>
                 <Link
                   href="/dashboard"
@@ -79,8 +79,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           {/* User Menu Railway Style */}
           <div className="flex items-center gap-4">
             <div className="hidden md:block text-right">
-              <p className="text-sm font-medium text-foreground">{user.name}</p>
-              <p className="text-xs text-foreground-muted">{user.email}</p>
+              <p className="text-sm font-medium text-foreground">{user?.name}</p>
+              <p className="text-xs text-foreground-muted">{user?.email}</p>
             </div>
             
             <div className="flex gap-2">
