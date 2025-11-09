@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Sparkles, UserPlus, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Clock, Calendar, X, Plus, Info } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ export default function NewStaffPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"info" | "schedule">("info");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,7 +26,25 @@ export default function NewStaffPage() {
     active: true,
   });
 
+  const [scheduleData, setScheduleData] = useState({
+    workDays: [] as string[],
+    workStart: "09:00",
+    workEnd: "18:00",
+    lunchStart: "12:00",
+    lunchEnd: "13:00",
+    slotInterval: 5,
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const toggleWorkDay = (day: string) => {
+    setScheduleData(prev => ({
+      ...prev,
+      workDays: prev.workDays.includes(day)
+        ? prev.workDays.filter(d => d !== day)
+        : [...prev.workDays, day]
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +71,7 @@ export default function NewStaffPage() {
     try {
       setLoading(true);
 
+      // Criar profissional com horários
       const response = await fetch("/api/staff", {
         method: "POST",
         headers: {
@@ -63,6 +83,13 @@ export default function NewStaffPage() {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
+          // Incluir dados de horário
+          workDays: scheduleData.workDays.join(","),
+          workStart: scheduleData.workStart,
+          workEnd: scheduleData.workEnd,
+          lunchStart: scheduleData.lunchStart || null,
+          lunchEnd: scheduleData.lunchEnd || null,
+          slotInterval: scheduleData.slotInterval,
         }),
       });
 
@@ -71,6 +98,7 @@ export default function NewStaffPage() {
         throw new Error(error.error || "Erro ao criar profissional");
       }
 
+      alert("Profissional cadastrado com sucesso!");
       router.push("/dashboard/profissionais");
       router.refresh();
     } catch (error) {
@@ -117,7 +145,38 @@ export default function NewStaffPage() {
             </p>
           </div>
 
-          {/* Formulário */}
+          {/* Abas de Navegação */}
+          <div className="mb-6">
+            <div className="flex gap-2 p-1 glass-card bg-background-alt/30 rounded-lg inline-flex">
+              <button
+                type="button"
+                onClick={() => setActiveTab("info")}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === "info"
+                    ? "bg-gradient-primary text-white shadow-lg"
+                    : "text-foreground-muted hover:text-foreground"
+                }`}
+              >
+                <UserPlus className="h-4 w-4 inline mr-2" />
+                Informações
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("schedule")}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === "schedule"
+                    ? "bg-gradient-primary text-white shadow-lg"
+                    : "text-foreground-muted hover:text-foreground"
+                }`}
+              >
+                <Clock className="h-4 w-4 inline mr-2" />
+                Horários
+              </button>
+            </div>
+          </div>
+
+          {/* Aba Informações */}
+          {activeTab === "info" && (
           <GlassCard glow="success" className="max-w-2xl p-8">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -215,12 +274,12 @@ export default function NewStaffPage() {
                 <GradientButton
                   type="button"
                   variant="primary"
-                  onClick={() => router.push("/dashboard/profissionais")}
+                  onClick={() => setActiveTab("schedule")}
                   disabled={loading}
                   className="flex-1 py-3"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Cancelar
+                  <Clock className="h-4 w-4" />
+                  Próximo: Horários
                 </GradientButton>
                 <GradientButton type="submit" variant="success" disabled={loading} className="flex-1 py-3">
                   {loading ? (
@@ -231,13 +290,177 @@ export default function NewStaffPage() {
                   ) : (
                     <>
                       <Save className="h-4 w-4" />
-                      Salvar Profissional
+                      Cadastrar Agora
                     </>
                   )}
                 </GradientButton>
               </div>
             </form>
           </GlassCard>
+          )}
+
+          {/* Aba Horários */}
+          {activeTab === "schedule" && (
+            <GlassCard glow="primary" className="max-w-4xl p-8">
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                      <Clock className="h-6 w-6 text-primary" />
+                      Configuração de Horários
+                    </h2>
+                    <p className="text-foreground-muted mt-1">
+                      Configure os dias e horários de trabalho
+                    </p>
+                  </div>
+                  <div className="glass-card bg-blue-500/10 border-blue-500/30 px-4 py-2 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-400">
+                      <Info className="h-4 w-4" />
+                      <span className="text-sm">Opcional</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Dias de Trabalho */}
+                <div>
+                  <Label className="text-foreground mb-3 block">Dias de Trabalho</Label>
+                  <div className="grid grid-cols-7 gap-2">
+                    {[
+                      { value: "0", label: "Dom" },
+                      { value: "1", label: "Seg" },
+                      { value: "2", label: "Ter" },
+                      { value: "3", label: "Qua" },
+                      { value: "4", label: "Qui" },
+                      { value: "5", label: "Sex" },
+                      { value: "6", label: "Sáb" },
+                    ].map((day) => (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => toggleWorkDay(day.value)}
+                        className={`p-3 rounded-lg font-medium transition-all ${
+                          scheduleData.workDays.includes(day.value)
+                            ? "bg-gradient-primary text-white shadow-lg"
+                            : "glass-card bg-background-alt/30 text-foreground-muted hover:bg-background-alt/50"
+                        }`}
+                      >
+                        {day.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Horário de Trabalho */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="workStart" className="text-foreground">Início do Expediente</Label>
+                    <Input
+                      id="workStart"
+                      type="time"
+                      value={scheduleData.workStart}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, workStart: e.target.value })
+                      }
+                      className="glass-card bg-background-alt/50 border-primary/20"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="workEnd" className="text-foreground">Término do Expediente</Label>
+                    <Input
+                      id="workEnd"
+                      type="time"
+                      value={scheduleData.workEnd}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, workEnd: e.target.value })
+                      }
+                      className="glass-card bg-background-alt/50 border-primary/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Horário de Almoço */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="lunchStart" className="text-foreground">Início do Almoço (opcional)</Label>
+                    <Input
+                      id="lunchStart"
+                      type="time"
+                      value={scheduleData.lunchStart}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, lunchStart: e.target.value })
+                      }
+                      className="glass-card bg-background-alt/50 border-primary/20"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lunchEnd" className="text-foreground">Término do Almoço (opcional)</Label>
+                    <Input
+                      id="lunchEnd"
+                      type="time"
+                      value={scheduleData.lunchEnd}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, lunchEnd: e.target.value })
+                      }
+                      className="glass-card bg-background-alt/50 border-primary/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Intervalo de Slots */}
+                <div>
+                  <Label htmlFor="slotInterval" className="text-foreground">Intervalo entre Slots</Label>
+                  <select
+                    id="slotInterval"
+                    value={scheduleData.slotInterval}
+                    onChange={(e) =>
+                      setScheduleData({ ...scheduleData, slotInterval: parseInt(e.target.value) })
+                    }
+                    className="w-full glass-card bg-background-alt/50 border-primary/20 text-foreground px-3 py-2 rounded-lg"
+                  >
+                    <option value={5}>5 minutos</option>
+                    <option value={10}>10 minutos</option>
+                    <option value={15}>15 minutos</option>
+                    <option value={30}>30 minutos</option>
+                    <option value={60}>60 minutos</option>
+                  </select>
+                </div>
+
+                {/* Botões */}
+                <div className="flex gap-3 pt-6">
+                  <GradientButton
+                    type="button"
+                    variant="primary"
+                    onClick={() => setActiveTab("info")}
+                    className="flex-1 py-3"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </GradientButton>
+                  <GradientButton
+                    type="button"
+                    variant="success"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="flex-1 py-3"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Cadastrar Profissional
+                      </>
+                    )}
+                  </GradientButton>
+                </div>
+              </div>
+            </GlassCard>
+          )}
         </main>
       </GridBackground>
     </div>
