@@ -17,6 +17,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "AgendaSalão - Sistema de Agendamento para Salões & Barbearias",
   description: "Plataforma completa de agendamento online para salões de beleza e barbearias. Gerencie sua agenda, clientes e serviços em um só lugar.",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export default function RootLayout({

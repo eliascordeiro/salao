@@ -489,34 +489,35 @@ export default function AgendarSalaoPage() {
   
   return (
     <GridBackground>
-      <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push(`/salao/${salonId}`)}
-            className="gap-2"
+            className="gap-2 text-sm"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar para {salon.name}
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Voltar para {salon.name}</span>
+            <span className="xs:hidden">Voltar</span>
           </Button>
           
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold">Agendar Horário</h1>
-            <p className="text-muted-foreground">
+          <div className="text-center space-y-1 sm:space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Agendar Horário</h1>
+            <p className="text-sm sm:text-base text-muted-foreground px-2">
               {salon.name} • {salon.city}, {salon.state}
             </p>
           </div>
         </div>
         
         {/* Progress Steps */}
-        <GlassCard className="p-6" glow="primary">
+        <GlassCard className="p-4 sm:p-6" glow="primary">
           <div className="flex items-center justify-between">
             {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex items-center gap-2">
+              <div key={step} className="flex items-center gap-1 sm:gap-2">
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all ${
+                  className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-sm sm:text-base font-semibold transition-all ${
                     currentStep >= step
                       ? "bg-gradient-primary text-white shadow-lg shadow-primary/30"
                       : "bg-background-alt border border-border"
@@ -526,7 +527,7 @@ export default function AgendarSalaoPage() {
                 </div>
                 {step < 4 && (
                   <div
-                    className={`hidden md:block w-16 h-1 rounded-full transition-all ${
+                    className={`hidden sm:block w-12 md:w-16 h-1 rounded-full transition-all ${
                       currentStep > step ? "bg-gradient-primary" : "bg-background-alt"
                     }`}
                   />
@@ -534,7 +535,7 @@ export default function AgendarSalaoPage() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-4 gap-2 mt-4 text-xs text-center text-foreground-muted">
+          <div className="grid grid-cols-4 gap-1 sm:gap-2 mt-3 sm:mt-4 text-[10px] sm:text-xs text-center text-foreground-muted">
             <span>Serviço</span>
             <span>Profissional</span>
             <span>Data/Hora</span>
@@ -706,11 +707,11 @@ export default function AgendarSalaoPage() {
               
               {/* Seletor de Data */}
               <div>
-                <p className="font-semibold mb-3 flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
+                <p className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Selecione a data
                 </p>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                   {next14Days.map((date) => {
                     const isSelected =
                       selectedDate?.toDateString() === date.toDateString();
@@ -720,24 +721,24 @@ export default function AgendarSalaoPage() {
                       <Button
                         key={date.toISOString()}
                         variant={isSelected ? "default" : "outline"}
-                        className={`flex flex-col h-auto py-3 transition-all ${
+                        className={`flex flex-col h-auto py-2 sm:py-3 transition-all ${
                           isSelected 
                             ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
                             : "glass-card hover:bg-background-alt hover:border-primary/30"
                         }`}
                         onClick={() => handleSelectDate(date)}
                       >
-                        <span className={`text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
+                        <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
                           {format(date, "EEE", { locale: ptBR })}
                         </span>
-                        <span className="text-lg font-bold my-1">
+                        <span className="text-base sm:text-lg font-bold my-0.5 sm:my-1">
                           {format(date, "dd", { locale: ptBR })}
                         </span>
-                        <span className={`text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
+                        <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
                           {format(date, "MMM", { locale: ptBR })}
                         </span>
                         {isToday && (
-                          <Badge className={`mt-1 text-[10px] px-2 py-0.5 ${
+                          <Badge className={`mt-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 ${
                             isSelected 
                               ? 'bg-white/20 text-white border-white/30' 
                               : 'bg-primary/20 text-primary border-primary/30'
@@ -754,41 +755,41 @@ export default function AgendarSalaoPage() {
               {/* Seletor de Horário */}
               {selectedDate && (
                 <div>
-                  <p className="font-semibold mb-3 flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-accent" />
+                  <p className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
                     Selecione o horário
                   </p>
                   
                   {loadingSlots ? (
-                    <GlassCard className="p-10">
+                    <GlassCard className="p-6 sm:p-10">
                       <div className="flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
                       </div>
                     </GlassCard>
                   ) : availableSlots.length > 0 ? (
                     <>
                       {/* Legenda Visual */}
-                      <div className="mb-4 flex flex-wrap items-center gap-4 text-xs">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded border-2 border-success/30 bg-success/5"></div>
+                      <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-success/30 bg-success/5"></div>
                           <span className="text-foreground-muted">Disponível</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded border-2 border-primary bg-primary/20"></div>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-primary bg-primary/20"></div>
                           <span className="text-foreground-muted">Selecionado</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded border-2 border-orange-500/40 bg-orange-500/10"></div>
-                          <span className="text-foreground-muted">Você já tem agendamento</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-orange-500/40 bg-orange-500/10"></div>
+                          <span className="text-foreground-muted hidden xs:inline">Você já tem agendamento</span>
+                          <span className="text-foreground-muted xs:hidden">Seu agendamento</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded border-2 border-foreground-muted/20 bg-background-alt/30"></div>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-foreground-muted/20 bg-background-alt/30"></div>
                           <span className="text-foreground-muted">Indisponível</span>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                        {availableSlots.map((slot) => {
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">{availableSlots.map((slot) => {
                           const isClientConflict = slot.isClientConflict === true;
                           const isDisabled = !slot.available || isClientConflict;
                           

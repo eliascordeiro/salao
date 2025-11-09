@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px', // Extra small breakpoint para telas pequenas
+      },
       colors: {
         // Railway-inspired dark theme
         background: {

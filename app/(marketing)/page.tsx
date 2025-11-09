@@ -23,56 +23,58 @@ export default function LandingPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <GridBackground>
-        <section className="container mx-auto px-4 py-20 md:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
+        <section className="container mx-auto px-4 py-12 sm:py-20 md:py-32">
+          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
             <div className="inline-block">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                <Zap className="h-4 w-4" />
-                A maior plataforma de agendamentos do Brasil
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium">
+                <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">A maior plataforma de agendamentos do Brasil</span>
+                <span className="xs:hidden">Agendamentos Online</span>
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight leading-tight">
               Encontre o{" "}
               <span className="text-primary">salão perfeito</span>
-              <br />
+              <br className="hidden sm:block" />
+              <span className="sm:hidden"> </span>
               para você
             </h1>
             
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
               Descubra, compare e agende serviços nos melhores salões e barbearias
               da sua região. Tudo em um só lugar, de forma rápida e segura.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/saloes">
-                <Button size="lg" className="gap-2 text-lg px-8">
-                  <Search className="h-5 w-5" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+              <Link href="/saloes" className="w-full sm:w-auto">
+                <Button size="lg" className="gap-2 text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
                   Buscar Salões
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
-              <Link href="/cadastro-salao">
-                <Button size="lg" variant="outline" className="gap-2 text-lg px-8">
-                  <Briefcase className="h-5 w-5" />
+              <Link href="/cadastro-salao" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="gap-2 text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
+                  <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
                   Cadastrar Meu Salão
                 </Button>
               </Link>
             </div>
             
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 sm:pt-12 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">1000+</div>
-                <div className="text-sm text-muted-foreground">Salões Parceiros</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">1000+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Salões Parceiros</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">50k+</div>
-                <div className="text-sm text-muted-foreground">Agendamentos</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">50k+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Agendamentos</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary">4.8</div>
-                <div className="text-sm text-muted-foreground">Avaliação Média</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">4.8</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Avaliação Média</div>
               </div>
             </div>
           </div>
@@ -80,24 +82,24 @@ export default function LandingPage() {
       </GridBackground>
       
       {/* Como Funciona - Clientes */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 sm:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
               Como Funciona para Você
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg px-4">
               Agende seu horário em 3 passos simples
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             <Card className="p-6 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <Search className="h-8 w-8 text-primary" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Search className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold">1. Busque</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg sm:text-xl font-semibold">1. Busque</h3>
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Encontre salões próximos a você, filtre por serviço e veja avaliações reais
               </p>
             </Card>

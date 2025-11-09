@@ -21,19 +21,19 @@ export default function SobrePage() {
     <GridBackground>
       <div className="min-h-screen">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 py-20">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-              <span className="text-sm font-medium text-primary">Sobre Nós</span>
+        <section className="container mx-auto px-4 py-12 sm:py-20">
+          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary/10 border border-primary/20 mb-3 sm:mb-4">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-primary animate-pulse" />
+              <span className="text-xs sm:text-sm font-medium text-primary">Sobre Nós</span>
             </div>
             
             <AnimatedText
               text="Transformando a gestão do tempo em experiências memoráveis"
-              className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent"
+              className="text-3xl sm:text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent px-2"
             />
             
-            <p className="text-xl text-foreground-muted max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-foreground-muted max-w-3xl mx-auto leading-relaxed px-4">
               Mais do que um sistema de agendamentos. Somos a ponte entre profissionais que 
               amam o que fazem e clientes que valorizam seu tempo.
             </p>
@@ -41,14 +41,14 @@ export default function SobrePage() {
         </section>
 
         {/* Story Section */}
-        <section className="container mx-auto px-4 py-16">
-          <GlassCard className="p-12 max-w-5xl mx-auto" glow="primary">
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <Heart className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
-                <div className="space-y-4">
-                  <h2 className="text-3xl font-bold text-foreground">Nossa História</h2>
-                  <div className="space-y-4 text-foreground-muted leading-relaxed">
+        <section className="container mx-auto px-4 py-10 sm:py-16">
+          <GlassCard className="p-6 sm:p-12 max-w-5xl mx-auto" glow="primary">
+            <div className="space-y-6 sm:space-y-8">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0 mt-1" />
+                <div className="space-y-3 sm:space-y-4">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Nossa História</h2>
+                  <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-foreground-muted leading-relaxed">
                     <p>
                       Nascemos da observação de uma verdade simples: <strong className="text-foreground">o tempo é o recurso 
                       mais valioso que existe</strong>. Não pode ser comprado, armazenado ou recuperado. Cada minuto 
@@ -74,25 +74,25 @@ export default function SobrePage() {
         </section>
 
         {/* Values Section */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="max-w-6xl mx-auto space-y-12">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+        <section className="container mx-auto px-4 py-10 sm:py-16">
+          <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12">
+            <div className="text-center space-y-3 sm:space-y-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground px-4">
                 Nossos Valores
               </h2>
-              <p className="text-xl text-foreground-muted max-w-2xl mx-auto">
+              <p className="text-base sm:text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto px-4">
                 Os princípios que guiam cada decisão, cada linha de código, cada interação
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Valor 1 */}
-              <GlassCard hover className="p-8 space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-primary" />
+              <GlassCard hover className="p-6 sm:p-8 space-y-3 sm:space-y-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground">Simplicidade Inteligente</h3>
-                <p className="text-foreground-muted leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold text-foreground">Simplicidade Inteligente</h3>
+                <p className="text-sm sm:text-base text-foreground-muted leading-relaxed">
                   Tecnologia poderosa não precisa ser complicada. Criamos interfaces tão intuitivas 
                   que qualquer pessoa pode dominar em minutos, não em semanas.
                 </p>
