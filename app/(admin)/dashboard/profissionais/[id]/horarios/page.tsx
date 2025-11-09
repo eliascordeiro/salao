@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Clock, Calendar, Save } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Save, Plus, Trash2, AlertCircle, Check } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,88 +19,104 @@ interface Staff {
   workEnd?: string;
   lunchStart?: string;
   lunchEnd?: string;
+  slotInterval?: number;
+}
+
+interface Block {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  reason?: string;
+  recurring: boolean;
 }
 
 const DAYS_OF_WEEK = [
-  { value: "0", label: "Domingo" },
-  { value: "1", label: "Segunda-feira" },
-  { value: "2", label: "Terça-feira" },
-  { value: "3", label: "Quarta-feira" },
-  { value: "4", label: "Quinta-feira" },
-  { value: "5", label: "Sexta-feira" },
-  { value: "6", label: "Sábado" },
+  { value: "0", label: "Dom", full: "Domingo" },
+  { value: "1", label: "Seg", full: "Segunda" },
+  { value: "2", label: "Ter", full: "Terça" },
+  { value: "3", label: "Qua", full: "Quarta" },
+  { value: "4", label: "Qui", full: "Quinta" },
+  { value: "5", label: "Sex", full: "Sexta" },
+  { value: "6", label: "Sáb", full: "Sábado" },
 ];
 
-export default function StaffSchedulePage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function StaffSchedulePage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [staff, setStaff] = useState<Staff | null>(null);
+  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [savedMessage, setSavedMessage] = useState(false);
 
   const [formData, setFormData] = useState({
-    workDays: ["1", "2", "3", "4", "5"], // Segunda a Sexta por padrão
+    workDays: ["1", "2", "3", "4", "5"],
     workStart: "09:00",
     workEnd: "18:00",
     lunchStart: "",
     lunchEnd: "",
-    slotDuration: "30", // Duração do slot em minutos
+    slotInterval: "5",
+  });
+
+  const [blockForm, setBlockForm] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+    reason: "",
+    recurring: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [generatingSlots, setGeneratingSlots] = useState(false);
-  
-  // Estado para armazenar slots gerados (temporários, antes de salvar)
-  const [previewSlots, setPreviewSlots] = useState<Array<{
-    dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-  }>>([]);
+  const [showBlockForm, setShowBlockForm] = useState(false);
 
-  // Carregar dados do profissional
   useEffect(() => {
-    const fetchStaff = async () => {
-      try {
-        setLoadingData(true);
-        const response = await fetch(`/api/staff/${params.id}`);
-
-        if (!response.ok) {
-          throw new Error("Profissional não encontrado");
-        }
-
-        const data: Staff = await response.json();
-        setStaff(data);
-
-        // Preencher formulário
-        setFormData({
-          workDays: data.workDays ? data.workDays.split(",") : ["1", "2", "3", "4", "5"],
-          workStart: data.workStart || "09:00",
-          workEnd: data.workEnd || "18:00",
-          lunchStart: data.lunchStart || "",
-          lunchEnd: data.lunchEnd || "",
-          slotDuration: "30", // Duração padrão de 30 minutos
-        });
-      } catch (error) {
-        console.error("Erro ao carregar profissional:", error);
-        alert("Erro ao carregar profissional. Redirecionando...");
-        router.push("/dashboard/profissionais");
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
     fetchStaff();
-  }, [params.id, router]);
+  }, [params.id]);
+
+  const fetchStaff = async () => {
+    try {
+      setLoadingData(true);
+      const response = await fetch(`/api/staff/${params.id}`);
+      if (!response.ok) throw new Error("Profissional não encontrado");
+
+      const data: Staff = await response.json();
+      setStaff(data);
+
+      setFormData({
+        workDays: data.workDays ? data.workDays.split(",") : ["1", "2", "3", "4", "5"],
+        workStart: data.workStart || "09:00",
+        workEnd: data.workEnd || "18:00",
+        lunchStart: data.lunchStart || "",
+        lunchEnd: data.lunchEnd || "",
+        slotInterval: String(data.slotInterval || 5),
+      });
+
+      await fetchBlocks();
+    } catch (error) {
+      console.error("Erro:", error);
+      alert("Erro ao carregar profissional");
+      router.push("/dashboard/profissionais");
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const fetchBlocks = async () => {
+    try {
+      const response = await fetch(`/api/staff/${params.id}/blocks`);
+      if (response.ok) {
+        const data = await response.json();
+        setBlocks(data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar bloqueios:", error);
+    }
+  };
 
   const handleDayToggle = (day: string) => {
     const newDays = formData.workDays.includes(day)
       ? formData.workDays.filter((d) => d !== day)
       : [...formData.workDays, day].sort();
-    
     setFormData({ ...formData, workDays: newDays });
   };
 
@@ -114,7 +129,6 @@ export default function StaffSchedulePage({
     e.preventDefault();
     setErrors({});
 
-    // Validações
     const newErrors: Record<string, string> = {};
 
     if (formData.workDays.length === 0) {
@@ -134,21 +148,25 @@ export default function StaffSchedulePage({
     }
 
     if (formData.lunchStart && !validateTime(formData.lunchStart)) {
-      newErrors.lunchStart = "Horário inválido (formato: HH:mm)";
+      newErrors.lunchStart = "Horário inválido";
     }
 
     if (formData.lunchEnd && !validateTime(formData.lunchEnd)) {
-      newErrors.lunchEnd = "Horário inválido (formato: HH:mm)";
+      newErrors.lunchEnd = "Horário inválido";
     }
 
     if (formData.lunchStart && formData.lunchEnd) {
       if (formData.lunchStart >= formData.lunchEnd) {
         newErrors.lunchEnd = "Horário de término deve ser após o início";
       }
-
       if (formData.lunchStart < formData.workStart || formData.lunchEnd > formData.workEnd) {
         newErrors.lunchStart = "Horário de almoço deve estar dentro do expediente";
       }
+    }
+
+    const interval = parseInt(formData.slotInterval);
+    if (isNaN(interval) || interval < 5 || interval > 60) {
+      newErrors.slotInterval = "Intervalo deve ser entre 5 e 60 minutos";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -156,715 +174,447 @@ export default function StaffSchedulePage({
       return;
     }
 
-    // Enviar dados
     setLoading(true);
-    
-    const payload = {
-      workDays: formData.workDays,
-      workStart: formData.workStart,
-      workEnd: formData.workEnd,
-      lunchStart: formData.lunchStart || null,
-      lunchEnd: formData.lunchEnd || null,
-    };
-    
-    console.log("📤 Enviando payload:", payload);
-    console.log("📤 WorkDays é array?", Array.isArray(payload.workDays));
-    console.log("📤 WorkDays length:", payload.workDays.length);
     
     try {
       const response = await fetch(`/api/staff/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          workDays: formData.workDays,
+          workStart: formData.workStart,
+          workEnd: formData.workEnd,
+          lunchStart: formData.lunchStart || null,
+          lunchEnd: formData.lunchEnd || null,
+          slotInterval: parseInt(formData.slotInterval),
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        console.error("❌ Erro da API:", data);
         throw new Error(data.error || "Erro ao atualizar horários");
       }
 
-      const result = await response.json();
-      console.log("✅ Horários atualizados:", result);
-      
-      alert("Horários atualizados com sucesso!");
-      router.push("/dashboard/profissionais");
+      setSavedMessage(true);
+      setTimeout(() => setSavedMessage(false), 3000);
     } catch (error) {
-      console.error("❌ Erro ao salvar horários:", error);
-      console.error("📤 Dados enviados:", {
-        workDays: formData.workDays,
-        workStart: formData.workStart,
-        workEnd: formData.workEnd,
-        lunchStart: formData.lunchStart,
-        lunchEnd: formData.lunchEnd,
-      });
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Erro ao atualizar horários"
-      );
+      alert(error instanceof Error ? error.message : "Erro ao atualizar horários");
     } finally {
       setLoading(false);
     }
   };
 
-  // Função para gerar preview dos slots (NÃO SALVA NO BANCO)
-  const handleGenerateSlots = () => {
-    // Validar campos necessários
-    if (!formData.workStart || !formData.workEnd) {
-      alert("Por favor, preencha os horários de trabalho!");
-      return;
+  const handleCreateBlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newErrors: Record<string, string> = {};
+
+    if (!blockForm.date) {
+      newErrors.blockDate = "Data obrigatória";
     }
 
-    if (!formData.slotDuration || parseInt(formData.slotDuration) < 5) {
-      alert("A duração do slot deve ser de pelo menos 5 minutos");
-      return;
+    if (!validateTime(blockForm.startTime)) {
+      newErrors.blockStartTime = "Horário inválido";
     }
 
-    if (formData.workDays.length === 0) {
-      alert("Selecione pelo menos um dia de trabalho!");
-      return;
+    if (!validateTime(blockForm.endTime)) {
+      newErrors.blockEndTime = "Horário inválido";
     }
 
-    setGeneratingSlots(true);
+    if (blockForm.startTime >= blockForm.endTime) {
+      newErrors.blockEndTime = "Horário de término deve ser após o início";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     try {
-      // Gerar slots para cada dia da semana
-      const slotDuration = parseInt(formData.slotDuration);
-      const slotsToCreate: Array<{
-        dayOfWeek: number;
-        startTime: string;
-        endTime: string;
-      }> = [];
-
-      formData.workDays.forEach((day) => {
-        const dayNum = parseInt(day);
-        const slots = generateSlotsForDay(
-          formData.workStart,
-          formData.workEnd,
-          formData.lunchStart,
-          formData.lunchEnd,
-          slotDuration
-        );
-
-        slots.forEach((slot) => {
-          slotsToCreate.push({
-            dayOfWeek: dayNum,
-            startTime: slot.start,
-            endTime: slot.end,
-          });
-        });
-      });
-
-      // Atualizar o preview (NÃO salva no banco)
-      setPreviewSlots(slotsToCreate);
-      console.log(`📊 Preview gerado com ${slotsToCreate.length} slots`);
-      
-    } catch (error) {
-      console.error("Erro ao gerar preview:", error);
-      alert("Erro ao gerar preview dos slots");
-    } finally {
-      setGeneratingSlots(false);
-    }
-  };
-
-  // Função para limpar o preview
-  const handleClearPreview = () => {
-    setPreviewSlots([]);
-  };
-
-  // Função para salvar TUDO (configuração + slots) no banco
-  const handleSaveAll = async () => {
-    if (previewSlots.length === 0) {
-      alert("Gere os slots antes de salvar!");
-      return;
-    }
-
-    const confirm = window.confirm(
-      `⚠️ ATENÇÃO: Isso irá:\n\n` +
-      `1. SALVAR as configurações de horário\n` +
-      `2. APAGAR todos os slots existentes\n` +
-      `3. CRIAR ${previewSlots.length} novos slots\n\n` +
-      `Deseja continuar?`
-    );
-
-    if (!confirm) return;
-
-    setGeneratingSlots(true);
-
-    try {
-      // 1. Salvar configurações de horário
-      await handleSubmit(new Event('submit') as any);
-
-      // 2. Salvar slots no banco
-      const response = await fetch(`/api/availabilities/generate`, {
+      const response = await fetch(`/api/staff/${params.id}/blocks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          staffId: params.id,
-          slots: previewSlots,
-          force: true, // Força a criação
+          date: new Date(blockForm.date + 'T00:00:00'),
+          startTime: blockForm.startTime,
+          endTime: blockForm.endTime,
+          reason: blockForm.reason || null,
+          recurring: blockForm.recurring,
         }),
       });
 
-      const result = await response.json();
+      if (!response.ok) throw new Error("Erro ao criar bloqueio");
 
-      // Verificar conflitos (status 409)
-      if (response.status === 409 && result.requiresConfirmation) {
-        const conflicts = result.bookings.filter((b: any) => b.willHaveConflict);
-        
-        let message = result.message + '\n\n';
-        
-        if (conflicts.length > 0) {
-          message += '🔴 AGENDAMENTOS QUE FICARÃO SEM SLOT:\n\n';
-          conflicts.slice(0, 5).forEach((booking: any) => {
-            const date = new Date(booking.date);
-            message += `• ${date.toLocaleDateString('pt-BR')} ${booking.time} - ${booking.service}\n`;
-            message += `  Cliente: ${booking.client} (${booking.email})\n\n`;
-          });
-          
-          if (conflicts.length > 5) {
-            message += `... e mais ${conflicts.length - 5} agendamentos\n\n`;
-          }
-          
-          message += '⚠️ Esses agendamentos permanecerão no sistema, mas os clientes não poderão remarcar!\n\n';
-        }
-        
-        message += 'Deseja continuar mesmo assim?';
-        
-        const forceConfirm = window.confirm(message);
-        
-        if (!forceConfirm) {
-          setGeneratingSlots(false);
-          return;
-        }
-
-        // Tentar novamente com force=true
-        const retryResponse = await fetch(`/api/availabilities/generate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            staffId: params.id,
-            slots: previewSlots,
-            force: true,
-          }),
-        });
-
-        const retryResult = await retryResponse.json();
-        
-        if (!retryResponse.ok) {
-          throw new Error(retryResult.error || "Erro ao gerar slots");
-        }
-
-        alert(retryResult.message);
-      }
-
-      if (!response.ok) {
-        throw new Error(result.error || "Erro ao gerar slots");
-      }
-
-      let successMessage = result.message;
-      
-      if (result.bookingsCount > 0) {
-        successMessage += `\n\n📅 ${result.bookingsCount} agendamentos futuros foram preservados.`;
-      }
-
-      alert(successMessage);
-      
-      // Limpar preview e recarregar
-      setPreviewSlots([]);
-      router.refresh();
-      
+      setBlockForm({
+        date: "",
+        startTime: "",
+        endTime: "",
+        reason: "",
+        recurring: false,
+      });
+      setShowBlockForm(false);
+      await fetchBlocks();
+      alert("Bloqueio criado com sucesso!");
     } catch (error) {
-      console.error("❌ Erro ao salvar:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Erro ao salvar horários e slots"
-      );
-    } finally {
-      setGeneratingSlots(false);
+      alert("Erro ao criar bloqueio");
     }
   };
 
-  // Função auxiliar para gerar slots de um dia
-  const generateSlotsForDay = (
-    workStart: string,
-    workEnd: string,
-    lunchStart: string,
-    lunchEnd: string,
-    duration: number
-  ): Array<{ start: string; end: string }> => {
-    const slots: Array<{ start: string; end: string }> = [];
-    
-    const [startHour, startMin] = workStart.split(":").map(Number);
-    const [endHour, endMin] = workEnd.split(":").map(Number);
-    
-    let currentTime = startHour * 60 + startMin; // Converter para minutos
-    const endTime = endHour * 60 + endMin;
-    
-    // Converter horário de almoço para minutos (se existir)
-    let lunchStartMin = 0;
-    let lunchEndMin = 0;
-    if (lunchStart && lunchEnd) {
-      const [lunchStartH, lunchStartM] = lunchStart.split(":").map(Number);
-      const [lunchEndH, lunchEndM] = lunchEnd.split(":").map(Number);
-      lunchStartMin = lunchStartH * 60 + lunchStartM;
-      lunchEndMin = lunchEndH * 60 + lunchEndM;
+  const handleDeleteBlock = async (blockId: string) => {
+    if (!confirm("Deseja realmente excluir este bloqueio?")) return;
+
+    try {
+      const response = await fetch(`/api/staff/${params.id}/blocks/${blockId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Erro ao deletar bloqueio");
+
+      await fetchBlocks();
+      alert("Bloqueio removido com sucesso!");
+    } catch (error) {
+      alert("Erro ao remover bloqueio");
     }
-    
-    while (currentTime + duration <= endTime) {
-      const slotEnd = currentTime + duration;
-      
-      // Verificar se o slot não cai no horário de almoço
-      const isInLunch = lunchStartMin > 0 && (
-        (currentTime >= lunchStartMin && currentTime < lunchEndMin) ||
-        (slotEnd > lunchStartMin && slotEnd <= lunchEndMin) ||
-        (currentTime < lunchStartMin && slotEnd > lunchEndMin)
-      );
-      
-      if (!isInLunch) {
-        slots.push({
-          start: formatTime(currentTime),
-          end: formatTime(slotEnd),
-        });
-      }
-      
-      currentTime += duration;
-      
-      // Se chegou no início do almoço, pular para o fim
-      if (lunchStartMin > 0 && currentTime >= lunchStartMin && currentTime < lunchEndMin) {
-        currentTime = lunchEndMin;
-      }
-    }
-    
-    return slots;
   };
-
-  // Função auxiliar para formatar tempo (minutos → HH:mm)
-  const formatTime = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
-  };
-
-  // Função para calcular quantos slots serão gerados (estimativa)
-  const calculateEstimatedSlots = (): number => {
-    if (!formData.workStart || !formData.workEnd || !formData.slotDuration) {
-      return 0;
-    }
-
-    const slotsPerDay = generateSlotsForDay(
-      formData.workStart,
-      formData.workEnd,
-      formData.lunchStart,
-      formData.lunchEnd,
-      parseInt(formData.slotDuration)
-    ).length;
-
-    return slotsPerDay * formData.workDays.length;
-  };
-
-  if (!session || session.user.role !== "ADMIN") {
-    router.push("/dashboard");
-    return null;
-  }
 
   if (loadingData) {
     return (
-      <div className="min-h-screen bg-background">
-        <DashboardHeader
-          user={session?.user || { name: "", email: "", role: "CLIENT" }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center h-64">
-            <Sparkles className="h-12 w-12 text-primary animate-spin" />
+      <GridBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <Clock className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Carregando...</p>
           </div>
         </div>
-      </div>
+      </GridBackground>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader user={session.user} />
-
-      <GridBackground>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <GridBackground>
+      <div className="min-h-screen">
+        <DashboardHeader />
+        
+        <main className="container mx-auto px-4 py-8 max-w-5xl">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp">
-            <Link href="/dashboard/profissionais">
-              <GradientButton variant="primary" className="mb-4 px-4 py-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </GradientButton>
+          <div className="mb-8">
+            <Link
+              href="/dashboard/profissionais"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-4"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar para Profissionais
             </Link>
-            <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-              <Clock className="h-8 w-8 text-accent" />
-              Horários de Trabalho
-            </h1>
-            <p className="text-foreground-muted">
-              Configure os horários de <strong className="text-accent">{staff?.name}</strong>
-            </p>
+            
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border border-primary/30">
+                <Clock className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold gradient-text">Horários e Bloqueios</h1>
+                <p className="text-muted-foreground">{staff?.name}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Layout em 2 colunas */}
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* COLUNA 1: Formulário de Configuração */}
-            <GlassCard glow="accent" className="p-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                  <Calendar className="h-6 w-6 text-accent" />
-                  Configurar Horários
-                </h2>
-                <p className="text-foreground-muted mt-1">
-                  Defina os dias e horários de trabalho
-                </p>
+          {/* Mensagem de Sucesso */}
+          {savedMessage && (
+            <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500" />
+              <p className="text-sm text-green-500 font-medium">Horários salvos com sucesso!</p>
+            </div>
+          )}
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Configuração de Horários */}
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Clock className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-bold">Horários de Trabalho</h2>
               </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Dias de Trabalho */}
-              <div>
-                <Label className="flex items-center gap-2 mb-3 text-foreground">
-                  <Calendar className="h-4 w-4 text-accent" />
-                  Dias de Trabalho <span className="text-destructive">*</span>
-                </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {DAYS_OF_WEEK.map((day) => (
-                    <label
-                      key={day.value}
-                      className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition ${
-                        formData.workDays.includes(day.value)
-                          ? "border-primary bg-primary/10 shadow-sm"
-                          : "border-primary/20 hover:bg-background-alt/50"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.workDays.includes(day.value)}
-                        onChange={() => handleDayToggle(day.value)}
-                        className="rounded accent-primary"
-                      />
-                      <span className="text-sm text-foreground">{day.label}</span>
-                    </label>
-                  ))}
-                </div>
-                {errors.workDays && (
-                  <p className="text-sm text-destructive mt-2">{errors.workDays}</p>
-                )}
-              </div>
-
-              {/* Horário de Trabalho */}
-              <div className="grid grid-cols-2 gap-4">
+                {/* Dias de Trabalho */}
                 <div>
-                  <Label htmlFor="workStart" className="text-foreground">
-                    Início do Expediente <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="workStart"
-                    type="time"
-                    value={formData.workStart}
-                    onChange={(e) =>
-                      setFormData({ ...formData, workStart: e.target.value })
-                    }
-                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
-                      errors.workStart ? "border-destructive" : ""
-                    }`}
-                  />
-                  {errors.workStart && (
-                    <p className="text-sm text-destructive mt-1">
-                      {errors.workStart}
-                    </p>
+                  <Label>Dias de Trabalho</Label>
+                  <div className="grid grid-cols-7 gap-2 mt-2">
+                    {DAYS_OF_WEEK.map((day) => (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => handleDayToggle(day.value)}
+                        className={`p-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${ formData.workDays.includes(day.value)
+                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50"
+                            : "bg-background-alt/50 text-muted-foreground hover:bg-background-alt"
+                        }`}
+                        title={day.full}
+                      >
+                        {day.label}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.workDays && (
+                    <p className="text-xs text-destructive mt-1">{errors.workDays}</p>
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="workEnd" className="text-foreground">
-                    Fim do Expediente <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="workEnd"
-                    type="time"
-                    value={formData.workEnd}
-                    onChange={(e) =>
-                      setFormData({ ...formData, workEnd: e.target.value })
-                    }
-                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
-                      errors.workEnd ? "border-destructive" : ""
-                    }`}
-                  />
-                  {errors.workEnd && (
-                    <p className="text-sm text-destructive mt-1">{errors.workEnd}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Horário de Almoço (Opcional) */}
-              <div>
-                <Label className="mb-3 block text-foreground">
-                  Horário de Almoço (Opcional)
-                </Label>
-                <p className="text-sm text-foreground-muted mb-3">
-                  Configure um intervalo de almoço onde não haverá atendimentos
-                </p>
-                <div className="grid grid-cols-2 gap-4">
+                {/* Expediente */}
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="lunchStart" className="text-foreground">
-                      Início do Almoço
-                    </Label>
+                    <Label htmlFor="workStart">Início do Expediente</Label>
+                    <Input
+                      id="workStart"
+                      type="time"
+                      value={formData.workStart}
+                      onChange={(e) => setFormData({ ...formData, workStart: e.target.value })}
+                    />
+                    {errors.workStart && (
+                      <p className="text-xs text-destructive mt-1">{errors.workStart}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="workEnd">Fim do Expediente</Label>
+                    <Input
+                      id="workEnd"
+                      type="time"
+                      value={formData.workEnd}
+                      onChange={(e) => setFormData({ ...formData, workEnd: e.target.value })}
+                    />
+                    {errors.workEnd && (
+                      <p className="text-xs text-destructive mt-1">{errors.workEnd}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Almoço */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="lunchStart">Início do Almoço (opcional)</Label>
                     <Input
                       id="lunchStart"
                       type="time"
                       value={formData.lunchStart}
-                      onChange={(e) =>
-                        setFormData({ ...formData, lunchStart: e.target.value })
-                      }
-                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
-                        errors.lunchStart ? "border-destructive" : ""
-                      }`}
+                      onChange={(e) => setFormData({ ...formData, lunchStart: e.target.value })}
                     />
                     {errors.lunchStart && (
-                      <p className="text-sm text-destructive mt-1">
-                        {errors.lunchStart}
-                      </p>
+                      <p className="text-xs text-destructive mt-1">{errors.lunchStart}</p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="lunchEnd" className="text-foreground">
-                      Fim do Almoço
-                    </Label>
+                    <Label htmlFor="lunchEnd">Fim do Almoço (opcional)</Label>
                     <Input
                       id="lunchEnd"
                       type="time"
                       value={formData.lunchEnd}
-                      onChange={(e) =>
-                        setFormData({ ...formData, lunchEnd: e.target.value })
-                      }
-                      className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${
-                        errors.lunchEnd ? "border-destructive" : ""
-                      }`}
+                      onChange={(e) => setFormData({ ...formData, lunchEnd: e.target.value })}
                     />
                     {errors.lunchEnd && (
-                      <p className="text-sm text-destructive mt-1">
-                        {errors.lunchEnd}
-                      </p>
+                      <p className="text-xs text-destructive mt-1">{errors.lunchEnd}</p>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Duração do Slot */}
-              <div className="glass-card bg-success/5 border-success/20 p-6 rounded-lg">
-                <Label htmlFor="slotDuration" className="text-foreground flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-success" />
-                  Duração de cada atendimento (minutos)
-                </Label>
-                <Input
-                  id="slotDuration"
-                  type="number"
-                  min="5"
-                  max="240"
-                  step="5"
-                  value={formData.slotDuration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, slotDuration: e.target.value })
-                  }
-                  className="glass-card bg-background-alt/50 border-success/20 focus:border-success text-foreground"
-                  placeholder="Ex: 30"
-                />
-                <p className="text-xs text-foreground-muted mt-2 flex items-start gap-1">
-                  <span>💡</span>
-                  <span><strong>Exemplo:</strong> Com 30 minutos, serão criados slots de 09:00-09:30, 09:30-10:00, etc.</span>
-                </p>
-              </div>
-
-              {/* Resumo */}
-              <div className="glass-card bg-accent/5 border-accent/20 p-6 rounded-lg">
-                <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-accent" />
-                  Resumo da Configuração
-                </h3>
-                <ul className="text-sm space-y-2 text-foreground-muted">
-                  <li className="flex gap-2">
-                    <span className="font-medium text-foreground">Dias:</span>
-                    <span>
-                      {formData.workDays.length > 0
-                        ? formData.workDays
-                            .map(
-                              (d) =>
-                                DAYS_OF_WEEK.find((day) => day.value === d)
-                                  ?.label
-                            )
-                            .join(", ")
-                        : "Nenhum dia selecionado"}
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="font-medium text-foreground">Expediente:</span>
-                    <span>{formData.workStart} às {formData.workEnd}</span>
-                  </li>
-                  {formData.lunchStart && formData.lunchEnd && (
-                    <li className="flex gap-2">
-                      <span className="font-medium text-foreground">Almoço:</span>
-                      <span>{formData.lunchStart} às {formData.lunchEnd}</span>
-                    </li>
-                  )}
-                  <li className="flex gap-2">
-                    <span className="font-medium text-foreground">Duração:</span>
-                    <span>{formData.slotDuration} minutos</span>
-                  </li>
-                  <li className="flex gap-2 text-success">
-                    <Sparkles className="h-4 w-4 mt-0.5" />
-                    <span className="font-semibold">~{calculateEstimatedSlots()} slots</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Botões */}
-              <div className="flex gap-4">
-                <GradientButton
-                  type="button"
-                  variant="primary"
-                  onClick={() => router.push("/dashboard/profissionais")}
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Cancelar
-                </GradientButton>
-                
-                {/* Botão Gerar Preview */}
-                <GradientButton
-                  type="button"
-                  variant="success"
-                  onClick={handleGenerateSlots}
-                  disabled={generatingSlots || !formData.workStart || !formData.workEnd}
-                  className="flex-1"
-                >
-                  {generatingSlots ? (
-                    <>
-                      <Sparkles className="h-4 w-4 animate-spin" />
-                      Gerando...
-                    </>
-                  ) : (
-                    <>
-                      <Calendar className="h-4 w-4" />
-                      Gerar Preview
-                    </>
-                  )}
-                </GradientButton>
-              </div>
-            </form>
-          </GlassCard>
-
-          {/* COLUNA 2: Preview dos Slots */}
-          <GlassCard glow="primary" className="p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Sparkles className="h-6 w-6 text-primary" />
-                Preview dos Slots
-              </h2>
-              <p className="text-foreground-muted mt-1">
-                Visualize os horários que serão criados
-              </p>
-            </div>
-
-            {previewSlots.length === 0 ? (
-              <div className="h-[400px] flex flex-col items-center justify-center text-center border-2 border-dashed border-primary/20 rounded-lg">
-                <Calendar className="h-16 w-16 text-primary/30 mb-4" />
-                <p className="text-foreground-muted text-lg font-medium mb-2">
-                  Nenhum preview gerado
-                </p>
-                <p className="text-foreground-muted/70 text-sm max-w-sm">
-                  Preencha as configurações e clique em "Gerar Preview" para visualizar os slots
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Header do Preview */}
-                <div className="mb-6 p-4 glass-card bg-success/5 border-success/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-lg font-bold text-foreground">
-                        {previewSlots.length} slots
-                      </p>
-                      <p className="text-sm text-foreground-muted">
-                        Pronto para salvar
-                      </p>
-                    </div>
-                    <GradientButton
-                      type="button"
-                      variant="primary"
-                      onClick={handleClearPreview}
-                      className="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 border-red-500/50"
-                    >
-                      Limpar
-                    </GradientButton>
-                  </div>
-                </div>
-
-                {/* Lista de Slots por Dia */}
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                  {DAYS_OF_WEEK.filter(day => 
-                    formData.workDays.includes(day.value)
-                  ).map((day) => {
-                    const daySlots = previewSlots.filter(
-                      slot => slot.dayOfWeek === parseInt(day.value)
-                    );
-
-                    return (
-                      <div key={day.value} className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
-                        <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-primary" />
-                          {day.label} ({daySlots.length} slots)
-                        </h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {daySlots.map((slot, idx) => (
-                            <div
-                              key={idx}
-                              className="text-xs p-2 bg-background/50 border border-primary/10 rounded text-center text-foreground-muted hover:bg-primary/10 transition"
-                            >
-                              {slot.startTime} - {slot.endTime}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Botão de Salvar Tudo */}
-                <div className="mt-6 pt-6 border-t border-primary/20">
-                  <GradientButton
-                    type="button"
-                    variant="accent"
-                    onClick={handleSaveAll}
-                    disabled={generatingSlots || previewSlots.length === 0}
-                    className="w-full py-4"
+                {/* Intervalo entre Slots */}
+                <div>
+                  <Label htmlFor="slotInterval">Intervalo entre Slots (minutos)</Label>
+                  <select
+                    id="slotInterval"
+                    value={formData.slotInterval}
+                    onChange={(e) => setFormData({ ...formData, slotInterval: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl bg-background-alt/50 border border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all backdrop-blur-sm"
                   >
-                    {generatingSlots ? (
-                      <>
-                        <Sparkles className="h-5 w-5 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-5 w-5" />
-                        Salvar Configuração + Slots ({previewSlots.length})
-                      </>
-                    )}
-                  </GradientButton>
-                  <p className="text-xs text-foreground-muted/70 text-center mt-3">
-                    ⚠️ Isso salvará a configuração e substituirá todos os slots existentes
+                    <option value="5">5 minutos</option>
+                    <option value="10">10 minutos</option>
+                    <option value="15">15 minutos</option>
+                    <option value="30">30 minutos</option>
+                    <option value="60">60 minutos</option>
+                  </select>
+                  {errors.slotInterval && (
+                    <p className="text-xs text-destructive mt-1">{errors.slotInterval}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Define o espaçamento entre horários disponíveis para agendamento
                   </p>
                 </div>
-              </>
-            )}
-          </GlassCard>
-        </div>
-        {/* Fim do grid 2 colunas */}
-        
-        </div>
-      </GridBackground>
-    </div>
+
+                <GradientButton type="submit" className="w-full" disabled={loading}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {loading ? "Salvando..." : "Salvar Horários"}
+                </GradientButton>
+              </form>
+            </GlassCard>
+
+            {/* Bloqueios */}
+            <div className="space-y-6">
+              <GlassCard className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    <h2 className="text-xl font-bold">Bloqueios de Horário</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBlockForm(!showBlockForm)}
+                    className="p-2 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-muted-foreground mb-4">
+                  Bloqueie horários específicos para reuniões, compromissos ou folgas
+                </p>
+
+                {/* Formulário de Novo Bloqueio */}
+                {showBlockForm && (
+                  <form onSubmit={handleCreateBlock} className="space-y-4 mb-6 p-4 rounded-lg bg-background-alt/30 border border-primary/10">
+                    <div>
+                      <Label htmlFor="blockDate">Data</Label>
+                      <Input
+                        id="blockDate"
+                        type="date"
+                        value={blockForm.date}
+                        onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                      {errors.blockDate && (
+                        <p className="text-xs text-destructive mt-1">{errors.blockDate}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="blockStartTime">Início</Label>
+                        <Input
+                          id="blockStartTime"
+                          type="time"
+                          value={blockForm.startTime}
+                          onChange={(e) => setBlockForm({ ...blockForm, startTime: e.target.value })}
+                        />
+                        {errors.blockStartTime && (
+                          <p className="text-xs text-destructive mt-1">{errors.blockStartTime}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="blockEndTime">Fim</Label>
+                        <Input
+                          id="blockEndTime"
+                          type="time"
+                          value={blockForm.endTime}
+                          onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })}
+                        />
+                        {errors.blockEndTime && (
+                          <p className="text-xs text-destructive mt-1">{errors.blockEndTime}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="blockReason">Motivo (opcional)</Label>
+                      <Input
+                        id="blockReason"
+                        type="text"
+                        placeholder="Ex: Reunião com fornecedor"
+                        value={blockForm.reason}
+                        onChange={(e) => setBlockForm({ ...blockForm, reason: e.target.value })}
+                      />
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={blockForm.recurring}
+                        onChange={(e) => setBlockForm({ ...blockForm, recurring: e.target.checked })}
+                        className="w-4 h-4 rounded border-primary/20 text-primary focus:ring-primary"
+                      />
+                      <span className="text-sm text-muted-foreground">Repetir semanalmente</span>
+                    </label>
+
+                    <div className="flex gap-2">
+                      <GradientButton type="submit" size="sm" className="flex-1">
+                        Criar Bloqueio
+                      </GradientButton>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowBlockForm(false);
+                          setBlockForm({ date: "", startTime: "", endTime: "", reason: "", recurring: false });
+                        }}
+                        className="px-4 py-2 rounded-lg bg-background-alt/50 hover:bg-background-alt text-sm transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Lista de Bloqueios */}
+                <div className="space-y-3">
+                  {blocks.length === 0 ? (
+                    <div className="text-center py-8">
+                      <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">Nenhum bloqueio cadastrado</p>
+                    </div>
+                  ) : (
+                    blocks.map((block) => (
+                      <div
+                        key={block.id}
+                        className="p-4 rounded-lg bg-background-alt/30 border border-primary/10 hover:border-primary/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">
+                              {new Date(block.date).toLocaleDateString('pt-BR')}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {block.startTime} - {block.endTime}
+                            </p>
+                            {block.reason && (
+                              <p className="text-xs text-muted-foreground mt-2 italic">
+                                {block.reason}
+                              </p>
+                            )}
+                            {block.recurring && (
+                              <span className="inline-block mt-2 px-2 py-1 rounded text-[10px] bg-primary/20 text-primary">
+                                Semanal
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteBlock(block.id)}
+                            className="p-2 rounded-lg bg-destructive/20 hover:bg-destructive/30 text-destructive transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </GlassCard>
+
+              {/* Info Card */}
+              <GlassCard className="p-4 bg-primary/5 border-primary/20">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>
+                      <strong className="text-foreground">Slots Dinâmicos:</strong> Os horários disponíveis são gerados automaticamente com base na sua configuração.
+                    </p>
+                    <p>
+                      <strong className="text-foreground">Bloqueios:</strong> Use para indisponibilizar horários específicos (reuniões, compromissos).
+                    </p>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+          </div>
+        </main>
+      </div>
+    </GridBackground>
   );
 }
