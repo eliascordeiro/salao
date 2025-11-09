@@ -58,6 +58,15 @@ export async function GET(
             workDays: true,    // ← ADICIONADO
             workStart: true,   // ← ADICIONADO  
             workEnd: true,     // ← ADICIONADO
+            services: {        // ← ADICIONADO: relação N:N
+              select: {
+                service: {
+                  select: {
+                    id: true,
+                  },
+                },
+              },
+            },
             _count: {
               select: {
                 services: true, // Quantos serviços este profissional oferece

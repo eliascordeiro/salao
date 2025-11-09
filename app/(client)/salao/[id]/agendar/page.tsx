@@ -43,6 +43,11 @@ interface Staff {
   workDays?: string | null;     // ← ADICIONADO (ex: "1,2,3,4,5")
   workStart?: string | null;    // ← ADICIONADO
   workEnd?: string | null;      // ← ADICIONADO
+  services?: {                  // ← ADICIONADO: relação N:N
+    service: {
+      id: string;
+    };
+  }[];
 }
 
 interface Salon {
@@ -626,7 +631,44 @@ export default function AgendarSalaoPage() {
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {staff.map((member) => (
+                {staff
+                  .filter((member) => {
+                    // Filtrar apenas profissionais vinculados ao serviço selecionado
+                    if (!selectedService) return true;
+                    return member.services?.some(
+                      (s) => s.service.id === selectedService.id
+                    );
+                  })
+                  .length === 0 ? (
+                    <GlassCard className="p-8 col-span-full">
+                      <div className="text-center space-y-3">
+                        <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto">
+                          <AlertCircle className="h-8 w-8 text-warning" />
+                        </div>
+                        <h3 className="font-semibold text-lg">Nenhum profissional disponível</h3>
+                        <p className="text-sm text-foreground-muted max-w-md mx-auto">
+                          Não há profissionais vinculados ao serviço <strong>{selectedService?.name}</strong> no momento.
+                          Por favor, selecione outro serviço ou entre em contato com o salão.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setCurrentStep(1)}
+                          className="mt-4"
+                        >
+                          Escolher outro serviço
+                        </Button>
+                      </div>
+                    </GlassCard>
+                  ) : (
+                  staff
+                  .filter((member) => {
+                    // Filtrar apenas profissionais vinculados ao serviço selecionado
+                    if (!selectedService) return true;
+                    return member.services?.some(
+                      (s) => s.service.id === selectedService.id
+                    );
+                  })
+                  .map((member) => (
                   <GlassCard
                     key={member.id}
                     hover
@@ -649,7 +691,8 @@ export default function AgendarSalaoPage() {
                       )}
                     </div>
                   </GlassCard>
-                ))}
+                ))
+                )}
               </div>
               
               <Button 

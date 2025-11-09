@@ -116,7 +116,7 @@ export async function PATCH(
     }
 
     const data = await request.json()
-    const { workDays, workStart, workEnd, lunchStart, lunchEnd } = data
+    const { workDays, workStart, workEnd, lunchStart, lunchEnd, slotInterval } = data
 
     console.log("📝 Dados recebidos:", {
       workDays,
@@ -126,6 +126,7 @@ export async function PATCH(
       workEnd,
       lunchStart,
       lunchEnd,
+      slotInterval,
     })
 
     // Validação dos horários
@@ -175,6 +176,7 @@ export async function PATCH(
         workEnd: workEnd || null,
         lunchStart: lunchStart && lunchStart.trim() !== "" ? lunchStart : null,
         lunchEnd: lunchEnd && lunchEnd.trim() !== "" ? lunchEnd : null,
+        slotInterval: slotInterval || 5,
       },
       include: {
         salon: true,
