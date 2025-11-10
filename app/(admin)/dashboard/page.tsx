@@ -7,9 +7,11 @@ import { AnimatedText } from "@/components/ui/animated-text"
 import { GridBackground } from "@/components/ui/grid-background"
 import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3, ArrowRight, Zap } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/header"
+import { TrialStatus } from "@/components/dashboard/trial-status"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
 import { getUserSalonId } from "@/lib/salon-helper"
+import { getSalonSubscription, formatTrialInfo } from "@/lib/subscription-helper"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -24,6 +26,10 @@ export default async function DashboardPage() {
   if (!userSalonId) {
     redirect("/login")
   }
+
+  // Buscar subscription e trial info
+  const subscription = await getSalonSubscription(userSalonId)
+  const trialInfo = subscription ? formatTrialInfo(subscription) : null
 
   // Datas para comparação
   const today = new Date()
@@ -159,6 +165,19 @@ export default async function DashboardPage() {
               Aqui está um resumo da sua atividade nos últimos 30 dias
             </p>
           </div>
+
+          {/* Trial Status */}
+          {trialInfo && trialInfo.isActive && (
+            <div className="mb-8 animate-fadeInUp" style={{ animationDelay: "100ms" }}>
+              <TrialStatus
+                daysLeft={trialInfo.daysLeft}
+                percentage={trialInfo.percentage}
+                isEnding={trialInfo.isEnding}
+                isExpired={trialInfo.isExpired}
+                endsAt={trialInfo.endsAt!}
+              />
+            </div>
+          )}
 
         {/* Cards de Estatísticas Railway */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
