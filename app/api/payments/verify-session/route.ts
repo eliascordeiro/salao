@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
             service: true,
             staff: true,
             client: true,
+            salon: true,
           },
         },
         transactions: {
@@ -81,15 +82,23 @@ export async function GET(request: NextRequest) {
       method: payment.method,
       provider: payment.provider,
       paidAt: payment.paidAt,
+      createdAt: payment.createdAt,
       booking: {
         id: payment.booking.id,
         date: payment.booking.date,
         service: {
           name: payment.booking.service.name,
           duration: payment.booking.service.duration,
+          price: payment.booking.service.price,
+          description: payment.booking.service.description,
         },
         staff: {
           name: payment.booking.staff.name,
+          specialty: payment.booking.staff.specialty,
+        },
+        salon: {
+          name: payment.booking.salon.name,
+          address: payment.booking.salon.address,
         },
         client: {
           name: payment.booking.client.name,

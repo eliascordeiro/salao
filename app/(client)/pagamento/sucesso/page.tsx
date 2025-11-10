@@ -9,10 +9,16 @@ import { CheckCircle2, Calendar, CreditCard, Clock, MapPin, User, Briefcase, Arr
 import { GridBackground } from '@/components/ui/grid-background';
 
 interface PaymentDetails {
+  id: string;
+  amount: number;
+  status: string;
+  method: string;
+  provider: string;
+  paidAt: string | null;
+  createdAt: string;
   booking: {
     id: string;
     date: string;
-    status: string;
     service: {
       name: string;
       duration: number;
@@ -27,13 +33,14 @@ interface PaymentDetails {
       name: string;
       address: string;
     };
+    client: {
+      name: string;
+      email: string;
+    };
   };
-  payment: {
-    id: string;
-    amount: number;
-    status: string;
-    stripePaymentId: string;
-    createdAt: string;
+  stripeSession: {
+    paymentStatus: string;
+    customerEmail: string;
   };
 }
 
@@ -101,13 +108,14 @@ export default function PaymentSuccessPage() {
   if (loading) {
     return (
       <div className="min-h-screen relative flex items-center justify-center p-4">
-        <GridBackground />
+        <GridBackground>
         <GlassCard className="w-full max-w-2xl p-8 text-center">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
           <p className="text-lg">Verificando pagamento...</p>
         </GlassCard>
+        </GridBackground>
       </div>
     );
   }
@@ -115,7 +123,7 @@ export default function PaymentSuccessPage() {
   if (error || !paymentDetails) {
     return (
       <div className="min-h-screen relative flex items-center justify-center p-4">
-        <GridBackground />
+        <GridBackground>
         <GlassCard className="w-full max-w-2xl p-8">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -135,15 +143,14 @@ export default function PaymentSuccessPage() {
             </GradientButton>
           </div>
         </GlassCard>
+        </GridBackground>
       </div>
     );
   }
 
-  const { booking, payment } = paymentDetails;
-
   return (
     <div className="min-h-screen relative py-12 px-4">
-      <GridBackground />
+      <GridBackground>
       
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header de Sucesso */}
@@ -162,7 +169,7 @@ export default function PaymentSuccessPage() {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 border border-success/20 rounded-lg">
             <CreditCard className="w-5 h-5 text-success" />
             <span className="font-semibold text-success">
-              {formatCurrency(payment.amount)}
+              {formatCurrency(paymentDetails.amount)}
             </span>
           </div>
         </GlassCard>
@@ -182,14 +189,14 @@ export default function PaymentSuccessPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Serviço</p>
-                <p className="font-semibold">{booking.service.name}</p>
+                <p className="font-semibold">{paymentDetails.booking.service.name}</p>
                 <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {booking.service.duration} min
+                    {paymentDetails.booking.service.duration} min
                   </span>
                   <span className="font-medium text-foreground">
-                    {formatCurrency(booking.service.price)}
+                    {formatCurrency(paymentDetails.booking.service.price)}
                   </span>
                 </div>
               </div>
@@ -202,9 +209,9 @@ export default function PaymentSuccessPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Profissional</p>
-                <p className="font-semibold">{booking.staff.name}</p>
-                {booking.staff.specialty && (
-                  <p className="text-sm text-muted-foreground">{booking.staff.specialty}</p>
+                <p className="font-semibold">{paymentDetails.booking.staff.name}</p>
+                {paymentDetails.booking.staff.specialty && (
+                  <p className="text-sm text-muted-foreground">{paymentDetails.booking.staff.specialty}</p>
                 )}
               </div>
             </div>
@@ -216,7 +223,7 @@ export default function PaymentSuccessPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Data e Horário</p>
-                <p className="font-semibold">{formatDate(booking.date)}</p>
+                <p className="font-semibold">{formatDate(paymentDetails.booking.date)}</p>
               </div>
             </div>
 
@@ -227,8 +234,8 @@ export default function PaymentSuccessPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-muted-foreground">Local</p>
-                <p className="font-semibold">{booking.salon.name}</p>
-                <p className="text-sm text-muted-foreground">{booking.salon.address}</p>
+                <p className="font-semibold">{paymentDetails.booking.salon.name}</p>
+                <p className="text-sm text-muted-foreground">{paymentDetails.booking.salon.address}</p>
               </div>
             </div>
           </div>
@@ -244,7 +251,7 @@ export default function PaymentSuccessPage() {
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-border/50">
               <span className="text-muted-foreground">ID da Transação</span>
-              <span className="font-mono text-sm">{payment.id.slice(0, 16)}...</span>
+              <span className="font-mono text-sm">{paymentDetails.id.slice(0, 16)}...</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-border/50">
               <span className="text-muted-foreground">Status</span>
@@ -258,12 +265,12 @@ export default function PaymentSuccessPage() {
                 {new Intl.DateTimeFormat('pt-BR', {
                   dateStyle: 'short',
                   timeStyle: 'short',
-                }).format(new Date(payment.createdAt))}
+                }).format(new Date(paymentDetails.createdAt))}
               </span>
             </div>
             <div className="flex justify-between items-center py-2 font-semibold text-lg">
               <span>Total Pago</span>
-              <span className="text-success">{formatCurrency(payment.amount)}</span>
+              <span className="text-success">{formatCurrency(paymentDetails.amount)}</span>
             </div>
           </div>
         </GlassCard>
@@ -303,7 +310,6 @@ export default function PaymentSuccessPage() {
           
           <GradientButton
             onClick={() => router.push('/dashboard')}
-            variant="outline"
             className="flex-1 flex items-center justify-center gap-2"
           >
             <Home className="w-4 h-4" />
@@ -319,6 +325,7 @@ export default function PaymentSuccessPage() {
           </a>
         </p>
       </div>
+      </GridBackground>
     </div>
   );
 }
