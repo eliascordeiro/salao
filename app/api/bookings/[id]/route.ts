@@ -32,6 +32,7 @@ export async function GET(
         service: {
           select: {
             name: true,
+            description: true,
             duration: true,
             price: true,
             category: true,
@@ -49,6 +50,13 @@ export async function GET(
             name: true,
             address: true,
             phone: true,
+          },
+        },
+        payment: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
           },
         },
       },
