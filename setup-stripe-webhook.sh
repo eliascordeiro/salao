@@ -11,34 +11,36 @@ echo "2. Fazer login no Stripe"
 echo "3. Encaminhar webhooks para http://localhost:3000/api/payments/webhook"
 echo ""
 
-# Verificar se Stripe CLI está instalado
-if ! command -v stripe &> /dev/null
-then
-    echo "❌ Stripe CLI não está instalado."
+# Diretório do script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+STRIPE_CLI="$SCRIPT_DIR/stripe"
+
+# Verificar se Stripe CLI está instalado localmente
+if [ ! -f "$STRIPE_CLI" ]; then
+    echo "❌ Stripe CLI não encontrado."
     echo ""
-    echo "📦 Instalando Stripe CLI..."
+    echo "📦 Baixando Stripe CLI..."
     echo ""
     
-    # Instalar Stripe CLI no Linux/WSL
-    curl -s https://packages.stripe.com/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg > /dev/null
-    echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.com/stripe-cli-debian-local stable main" | sudo tee -a /etc/apt/sources.list.d/stripe.list
-    sudo apt update
-    sudo apt install -y stripe
+    cd "$SCRIPT_DIR"
+    curl -L https://github.com/stripe/stripe-cli/releases/download/v1.19.4/stripe_1.19.4_linux_x86_64.tar.gz | tar xz
+    chmod +x stripe
     
+    echo ""
     echo "✅ Stripe CLI instalado com sucesso!"
     echo ""
 fi
 
 # Verificar versão
 echo "📌 Versão do Stripe CLI:"
-stripe --version
+"$STRIPE_CLI" version
 echo ""
 
 # Fazer login
 echo "🔑 Fazendo login no Stripe..."
 echo "Uma janela do navegador será aberta para você autorizar."
 echo ""
-stripe login
+"$STRIPE_CLI" login
 
 echo ""
 echo "✅ Login realizado com sucesso!"
@@ -55,4 +57,4 @@ echo ""
 echo "🚀 Iniciando listener..."
 echo ""
 
-stripe listen --forward-to localhost:3000/api/payments/webhook
+"$STRIPE_CLI" listen --forward-to localhost:3000/api/payments/webhook

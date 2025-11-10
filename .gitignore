@@ -48,7 +48,12 @@ next-env.d.ts
 # logs
 *.log
 
-# scripts temporários (mas não os oficiais)
+# Stripe CLI (binário local)
+/stripe
+stripe_*.tar.gz
+
+# scripts de teste
+test-*.js# scripts temporários (mas não os oficiais)
 cleanup-*.js
 debug-*.js
 test-*.js

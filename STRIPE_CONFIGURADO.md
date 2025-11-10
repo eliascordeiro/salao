@@ -12,128 +12,72 @@ STRIPE_WEBHOOK_SECRET=whsec_placeholder  # ⚠️ PRECISA CONFIGURAR
 
 ---
 
-## 🚀 Próximos Passos
+## 🚀 CONFIGURAÇÃO RÁPIDA (3 Passos)
 
-### **1. Configurar Webhook Local (OBRIGATÓRIO)**
+### **Passo 1: Configurar Webhook (OBRIGATÓRIO)**
 
-Para que os pagamentos sejam confirmados automaticamente, você precisa configurar o webhook:
+Execute este comando em um **terminal separado**:
 
-**Terminal 1 - Execute o script:**
 ```bash
-./setup-stripe-webhook.sh
+./start-webhook.sh
 ```
 
 **O que vai acontecer:**
-1. Verifica se Stripe CLI está instalado (instala se necessário)
-2. Abre navegador para você fazer login no Stripe
-3. Inicia o listener de webhooks
-4. **Mostra o `webhook signing secret`** (whsec_xxx...)
+1. ✅ Verifica/instala Stripe CLI local
+2. 🔑 Pede para você fazer login no Stripe
+3. 🎣 Inicia o listener de webhooks
+4. 📋 Mostra o `webhook signing secret` (whsec_xxx...)
 
-**Terminal 1 - OU execute manualmente:**
-```bash
-# Se o script não funcionar, execute passo a passo:
-
-# 1. Instalar Stripe CLI (se não tiver)
-curl -s https://packages.stripe.com/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
-echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.com/stripe-cli-debian-local stable main" | sudo tee -a /etc/apt/sources.list.d/stripe.list
-sudo apt update
-sudo apt install stripe
-
-# 2. Fazer login
-stripe login
-
-# 3. Iniciar webhook listener
-stripe listen --forward-to localhost:3000/api/payments/webhook
+**IMPORTANTE:** Quando aparecer a linha:
+```
+✔ Ready! Your webhook signing secret is whsec_xxxxxxxxxxxxx
 ```
 
-**⚠️ IMPORTANTE:** Copie o `webhook signing secret` que aparecer e cole no `.env`:
+**COPIE** o código `whsec_xxxxxxxxxxxxx` e cole no arquivo `.env`:
 
 ```bash
-# No arquivo .env, substitua:
-STRIPE_WEBHOOK_SECRET="whsec_xxxxxxxxxxxxxxxxxxxxxxxx"
+# Abra o .env e atualize:
+STRIPE_WEBHOOK_SECRET="whsec_xxxxxxxxxxxxx"
 ```
 
-### **2. Iniciar o Servidor**
+### **Passo 2: Iniciar Servidor**
 
-**Terminal 2:**
+Em **outro terminal**, execute:
+
 ```bash
 npm run dev
 ```
 
-### **3. Testar Pagamento**
+### **Passo 3: Testar Pagamento**
 
 1. Acesse: http://localhost:3000
-2. Faça login como cliente
+2. Login: `pedro@exemplo.com` / `cliente123`
 3. Crie um agendamento
 4. Vá em "Meus Agendamentos"
-5. Clique "Pagar Agendamento"
+5. Clique "💳 Pagar Agendamento"
 6. Use cartão de teste:
    ```
    Número: 4242 4242 4242 4242
    CVV: 123
    Data: 12/30
-   Nome: Qualquer Nome
+   Nome: Teste Silva
    ```
 7. Complete o pagamento
-8. ✅ Verifique o webhook no Terminal 1
-9. ✅ Receba email de confirmação
+8. ✅ No **Terminal 1** (webhook), você verá:
+   ```
+   --> checkout.session.completed [evt_xxx]
+   --> payment_intent.succeeded [evt_xxx]
+   ```
+9. ✅ Agendamento confirmado + Email enviado!
 
 ---
 
-## 🧪 Cartões de Teste
+## 📊 Verificar Pagamentos
 
-| Cenário | Número do Cartão |
-|---------|------------------|
-| ✅ **Sucesso** | `4242 4242 4242 4242` |
-| ❌ **Recusado** | `4000 0000 0000 0002` |
-| ⏳ **Requer 3DS** | `4000 0027 6000 3184` |
-| 💳 **Cartão BR** | `4000 0007 6000 0002` |
+Acesse o Dashboard do Stripe:
+- https://dashboard.stripe.com/test/payments
 
-**Dados adicionais:**
-- CVV: Qualquer 3 dígitos (ex: 123)
-- Data: Qualquer data futura (ex: 12/30)
-- Nome: Qualquer nome
-- CEP: Qualquer CEP válido
-
----
-
-## 📊 Dashboard do Stripe
-
-Acesse para ver pagamentos, webhooks, etc:
-- **Modo Teste:** https://dashboard.stripe.com/test/dashboard
-- **API Keys:** https://dashboard.stripe.com/test/apikeys
-- **Webhooks:** https://dashboard.stripe.com/test/webhooks
-- **Pagamentos:** https://dashboard.stripe.com/test/payments
-
----
-
-## 🔍 Verificar se Está Funcionando
-
-### **Checklist:**
-
-- [x] ✅ Chaves adicionadas ao `.env`
-- [ ] ⚠️ Webhook secret configurado (precisa rodar `setup-stripe-webhook.sh`)
-- [ ] 🎣 Stripe CLI rodando no Terminal 1
-- [ ] 🚀 Servidor rodando no Terminal 2 (npm run dev)
-- [ ] 💳 Teste de pagamento realizado
-
-### **Logs Esperados:**
-
-**Terminal 1 (Stripe CLI):**
-```
-✔ Ready! Your webhook signing secret is whsec_xxxxxxxxxxxxxxxxxxxxx
-2024-11-09 18:30:00   --> checkout.session.completed [evt_xxx]
-2024-11-09 18:30:01   --> payment_intent.succeeded [evt_xxx]
-```
-
-**Terminal 2 (Servidor):**
-```
-Webhook recebido: checkout.session.completed
-Checkout session completed: cs_test_xxx
-Webhook recebido: payment_intent.succeeded
-Payment intent succeeded: pi_xxx
-✅ Pagamento confirmado! Email enviado.
-```
+Você verá o pagamento de teste listado com status "Succeeded" ✅
 
 ---
 
