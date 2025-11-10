@@ -8,10 +8,12 @@ import { GridBackground } from "@/components/ui/grid-background"
 import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3, ArrowRight, Zap } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { TrialStatus } from "@/components/dashboard/trial-status"
+import { RevenueStatus } from "@/components/dashboard/revenue-status"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
 import { getUserSalonId } from "@/lib/salon-helper"
 import { getSalonSubscription, formatTrialInfo } from "@/lib/subscription-helper"
+import { getSalonRevenueStats } from "@/lib/revenue-helper"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -30,6 +32,9 @@ export default async function DashboardPage() {
   // Buscar subscription e trial info
   const subscription = await getSalonSubscription(userSalonId)
   const trialInfo = subscription ? formatTrialInfo(subscription) : null
+
+  // Buscar estatísticas de receita
+  const revenueStats = await getSalonRevenueStats(userSalonId)
 
   // Datas para comparação
   const today = new Date()
@@ -178,6 +183,21 @@ export default async function DashboardPage() {
               />
             </div>
           )}
+
+          {/* Revenue Status */}
+          <div className="mb-8 animate-fadeInUp" style={{ animationDelay: "150ms" }}>
+            <RevenueStatus
+              currentMonth={revenueStats.currentMonth}
+              lastMonth={revenueStats.lastMonth}
+              growth={revenueStats.growth}
+              shouldCharge={revenueStats.shouldCharge}
+              chargeAmount={revenueStats.chargeAmount}
+              threshold={revenueStats.threshold}
+              remaining={revenueStats.remaining}
+              percentageToThreshold={revenueStats.percentageToThreshold}
+              willBeFree={revenueStats.willBeFree}
+            />
+          </div>
 
         {/* Cards de Estatísticas Railway */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
