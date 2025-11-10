@@ -18,7 +18,6 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   bookings    Booking[]
-  payments    Payment[]
   reviews     Review[]
   ownedSalons Salon[]
 }
@@ -126,7 +125,6 @@ model Booking {
   service       Service        @relation(fields: [serviceId], references: [id])
   staff         Staff          @relation(fields: [staffId], references: [id])
   notifications Notification[]
-  payment       Payment?
   review        Review?
 
   @@index([date])
@@ -149,52 +147,6 @@ model Notification {
   @@index([bookingId])
   @@index([type])
   @@index([status])
-}
-
-model Payment {
-  id                    String        @id @default(cuid())
-  amount                Float
-  status                String        @default("PENDING")
-  method                String?
-  stripeSessionId       String?       @unique
-  stripePaymentIntentId String?
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-  bookingId             String        @unique
-  userId                String
-  cancelledAt           DateTime?
-  currency              String        @default("BRL")
-  mercadopagoId         String?
-  metadata              String?
-  paidAt                DateTime?
-  provider              String        @default("STRIPE")
-  booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions          Transaction[]
-
-  @@index([status])
-  @@index([provider])
-  @@index([createdAt])
-  @@index([userId])
-}
-
-model Transaction {
-  id           String    @id @default(cuid())
-  amount       Float
-  status       String
-  metadata     String?
-  createdAt    DateTime  @default(now())
-  paymentId    String
-  errorCode    String?
-  errorMessage String?
-  externalId   String?
-  method       String?
-  processedAt  DateTime?
-  payment      Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-
-  @@index([paymentId])
-  @@index([status])
-  @@index([externalId])
 }
 
 model Review {

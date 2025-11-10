@@ -52,13 +52,6 @@ export async function GET(
             phone: true,
           },
         },
-        payment: {
-          select: {
-            id: true,
-            status: true,
-            amount: true,
-          },
-        },
       },
     });
 

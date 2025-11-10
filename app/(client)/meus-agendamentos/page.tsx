@@ -10,13 +10,11 @@ import {
   Calendar,
   Clock,
   User,
-  DollarSign,
   MapPin,
   X,
   Plus,
   CheckCircle,
   Sparkles,
-  ArrowRight,
   AlertCircle,
 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -42,9 +40,6 @@ interface Booking {
   salon: {
     name: string;
     address?: string;
-  };
-  payment?: {
-    status: string;
   };
 }
 
@@ -436,46 +431,6 @@ function MyBookingsContent() {
 
                       {/* Actions */}
                       <div className="space-y-3">
-                        {/* Payment Button */}
-                        {booking.status === "PENDING" &&
-                          (!booking.payment ||
-                            booking.payment.status === "PENDING" ||
-                            booking.payment.status === "FAILED") && (
-                            <Link href={`/agendar/checkout/${booking.id}`} className="block">
-                              <GradientButton variant="success" className="w-full group/pay">
-                                <DollarSign className="h-4 w-4 group-hover/pay:scale-110 transition-transform" />
-                                Realizar Pagamento
-                                <ArrowRight className="h-4 w-4 group-hover/pay:translate-x-1 transition-transform" />
-                              </GradientButton>
-                            </Link>
-                          )}
-
-                        {/* Payment Status */}
-                        {booking.payment && (
-                          <div className="px-4 py-3 rounded-lg bg-background-alt border border-border">
-                            <p className="text-xs text-foreground-muted">
-                              Status do Pagamento:{" "}
-                              <span
-                                className={`font-bold ${
-                                  booking.payment.status === "COMPLETED"
-                                    ? "text-success"
-                                    : booking.payment.status === "FAILED"
-                                    ? "text-error"
-                                    : "text-warning"
-                                }`}
-                              >
-                                {booking.payment.status === "COMPLETED"
-                                  ? "✓ Confirmado"
-                                  : booking.payment.status === "PROCESSING"
-                                  ? "⏳ Processando"
-                                  : booking.payment.status === "FAILED"
-                                  ? "✗ Falhou"
-                                  : "⏱ Pendente"}
-                              </span>
-                            </p>
-                          </div>
-                        )}
-
                         {/* Cancel Button */}
                         {canCancelBooking(booking) && (
                           <button
