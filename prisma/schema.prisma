@@ -56,6 +56,7 @@ model Salon {
   owner        User      @relation(fields: [ownerId], references: [id])
   services     Service[]
   staff        Staff[]
+  subscription Subscription?
 }
 
 model Staff {
@@ -181,4 +182,78 @@ model Block {
   staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@index([staffId, date])
+}
+
+// ============================================
+// SUBSCRIPTION MODELS (Stripe Billing)
+// ============================================
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         @unique // "Free", "Premium"
+  description   String?
+  price         Float          // 0.00 para Free, 39.00 para Premium
+  stripePriceId String?        @unique // ID do Price no Stripe Dashboard
+  features      Json           // Array de features: ["Agendamentos ilimitados", "Email support"]
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  salonId              String    @unique // Um salão tem uma assinatura
+  salon                Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  planId               String
+  plan                 Plan      @relation(fields: [planId], references: [id])
+  status               String    @default("trialing") // "trialing", "active", "past_due", "canceled", "paused"
+  
+  // Stripe IDs
+  stripeCustomerId     String    @unique // Customer ID no Stripe
+  stripeSubscriptionId String?   @unique // Subscription ID no Stripe
+  
+  // Trial (30 dias grátis)
+  trialStartedAt       DateTime? // Quando iniciou o trial
+  trialEndsAt          DateTime? // Quando termina o trial (30 dias depois)
+  
+  // Billing Cycle
+  currentPeriodStart   DateTime  // Início do período atual de cobrança
+  currentPeriodEnd     DateTime  // Fim do período atual de cobrança
+  cancelAtPeriodEnd    Boolean   @default(false) // Se true, cancela ao fim do período
+  canceledAt           DateTime? // Quando foi cancelado
+  
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  invoices             Invoice[]
+
+  @@index([salonId])
+  @@index([status])
+  @@index([stripeCustomerId])
+}
+
+model Invoice {
+  id               String       @id @default(cuid())
+  subscriptionId   String
+  subscription     Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount           Float        // Valor da invoice (pode ser 0 se não cobrado)
+  status           String       @default("draft") // "draft", "open", "paid", "void", "uncollectible"
+  stripeInvoiceId  String?      @unique // Invoice ID no Stripe
+  
+  // Métricas do mês
+  monthlyRevenue   Float        @default(0) // Receita do salão naquele mês (soma de bookings)
+  wasCharged       Boolean      @default(true) // false se receita < R$ 1.000 (não foi cobrado)
+  
+  // Datas
+  paidAt           DateTime? // Quando foi pago
+  dueDate          DateTime  // Data de vencimento
+  periodStart      DateTime  // Início do período de cobrança
+  periodEnd        DateTime  // Fim do período de cobrança
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([dueDate])
 }
