@@ -8,15 +8,15 @@ import { prisma } from "@/lib/prisma";
  */
 export async function GET(request: NextRequest) {
   try {
-    // Buscar salões publicados com localização definida
+    // Buscar salões ativos com localização definida
     const salons = await prisma.salon.findMany({
       where: {
-        publishedAt: {
-          not: null,
-        },
+        active: true, // Apenas salões ativos
         AND: [
           { city: { not: null } },
           { state: { not: null } },
+          { city: { not: "" } },
+          { state: { not: "" } },
         ],
       },
       select: {

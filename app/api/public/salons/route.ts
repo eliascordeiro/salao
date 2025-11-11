@@ -31,10 +31,8 @@ export async function GET(request: NextRequest) {
     
     // Construir where clause
     const where: any = {
-      // Apenas salões publicados (visíveis na plataforma)
-      publishedAt: {
-        not: null,
-      },
+      // Apenas salões ativos (visíveis na plataforma)
+      active: true,
     };
     
     // Filtro por localização
