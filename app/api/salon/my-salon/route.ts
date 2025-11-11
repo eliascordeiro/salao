@@ -59,6 +59,21 @@ export async function PUT(request: Request) {
       active
     } = data
 
+    // Extrair cidade e estado do endereço
+    // Formato esperado: "Rua, 123 - Bairro - Cidade/UF"
+    let city = null;
+    let state = null;
+    
+    if (address && typeof address === 'string') {
+      const parts = address.split(' - ');
+      if (parts.length >= 3) {
+        const cityState = parts[parts.length - 1].trim();
+        const [cityPart, statePart] = cityState.split('/');
+        city = cityPart?.trim() || null;
+        state = statePart?.trim() || null;
+      }
+    }
+
     // Validações básicas
     if (name && name.trim().length < 3) {
       return NextResponse.json(
@@ -81,6 +96,8 @@ export async function PUT(request: Request) {
         ...(name !== undefined && { name: name.trim() }),
         ...(description !== undefined && { description: description?.trim() || null }),
         ...(address !== undefined && { address: address?.trim() || '' }),
+        ...(city && { city }),
+        ...(state && { state }),
         ...(phone !== undefined && { phone: phone?.trim() || '' }),
         ...(email !== undefined && { email: email?.trim() || null }),
         ...(openTime !== undefined && { openTime: openTime?.trim() || '09:00' }),
