@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Sparkles,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";

@@ -308,70 +308,138 @@ export default async function DashboardPage() {
 
         {/* Quick Stats & Ações Rápidas Railway */}
         <div className="grid md:grid-cols-3 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "400ms" }}>
-          {/* Visão Geral */}
-          <GlassCard hover>
-            <h3 className="text-lg font-bold text-foreground mb-4">Visão Geral</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-foreground-muted">Total de Clientes</span>
-                <span className="text-lg font-bold text-foreground">{stats.totalClients}</span>
+          {/* Visão Geral Modernizada */}
+          <GlassCard hover className="relative overflow-hidden group">
+            {/* Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-50 group-hover:opacity-100 transition-opacity" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-foreground">Visão Geral</h3>
+                <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
+                  <BarChart3 className="h-5 w-5 text-white" />
+                </div>
               </div>
-              <div className="h-px bg-border/50"></div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-foreground-muted">Serviços Ativos</span>
-                <span className="text-lg font-bold text-foreground">{stats.totalServices}</span>
-              </div>
-              <div className="h-px bg-border/50"></div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-foreground-muted">Total de Agendamentos</span>
-                <span className="text-lg font-bold text-foreground">{stats.totalBookings}</span>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 rounded-lg bg-background-alt/30 hover:bg-background-alt/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground-muted">Total de Clientes</span>
+                  </div>
+                  <span className="text-xl font-bold text-foreground">{stats.totalClients}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 rounded-lg bg-background-alt/30 hover:bg-background-alt/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-accent/10 rounded-lg">
+                      <Scissors className="h-4 w-4 text-accent" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground-muted">Serviços Ativos</span>
+                  </div>
+                  <span className="text-xl font-bold text-foreground">{stats.totalServices}</span>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 rounded-lg bg-background-alt/30 hover:bg-background-alt/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-success/10 rounded-lg">
+                      <Calendar className="h-4 w-4 text-success" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground-muted">Total de Agendamentos</span>
+                  </div>
+                  <span className="text-xl font-bold text-foreground">{stats.totalBookings}</span>
+                </div>
               </div>
             </div>
           </GlassCard>
 
-          {/* Ações Rápidas */}
-          <GlassCard hover className="md:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-foreground">Ações Rápidas</h3>
-              <BarChart3 className="h-5 w-5 text-accent" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Link
-                href="/dashboard/relatorios"
-                className="glass-card p-4 hover:border-primary/50 transition-all text-center group"
-              >
-                <div className="p-2 bg-gradient-primary rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
-                  <BarChart3 className="h-5 w-5 text-white" />
+          {/* Ações Rápidas Modernizadas */}
+          <GlassCard hover className="md:col-span-2 relative overflow-hidden group">
+            {/* Animated Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-primary/5 to-success/5 opacity-50 group-hover:opacity-100 transition-opacity" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold text-foreground">Ações Rápidas</h3>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                  <span className="text-xs text-foreground-muted">Sistema ativo</span>
                 </div>
-                <span className="text-sm font-medium text-foreground">Relatórios</span>
-              </Link>
-              <Link
-                href="/dashboard/agendamentos"
-                className="glass-card p-4 hover:border-success/50 transition-all text-center group"
-              >
-                <div className="p-2 bg-gradient-success rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
-                  <Calendar className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-sm font-medium text-foreground">Agendamentos</span>
-              </Link>
-              <Link
-                href="/dashboard/servicos"
-                className="glass-card p-4 hover:border-accent/50 transition-all text-center group"
-              >
-                <div className="p-2 bg-gradient-accent rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
-                  <Scissors className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-sm font-medium text-foreground">Serviços</span>
-              </Link>
-              <Link
-                href="/dashboard/profissionais"
-                className="glass-card p-4 hover:border-primary/50 transition-all text-center group"
-              >
-                <div className="p-2 bg-gradient-primary rounded-lg w-fit mx-auto mb-2 group-hover:scale-110 transition-transform">
-                  <Users className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-sm font-medium text-foreground">Profissionais</span>
-              </Link>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                <Link
+                  href="/dashboard/caixa"
+                  className="glass-card p-4 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-600/5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <DollarSign className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Caixa</span>
+                    <p className="text-xs text-muted-foreground mt-1">Fechamento</p>
+                  </div>
+                </Link>
+                
+                <Link
+                  href="/dashboard/relatorios"
+                  className="glass-card p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-primary rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <BarChart3 className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Relatórios</span>
+                    <p className="text-xs text-muted-foreground mt-1">Analytics</p>
+                  </div>
+                </Link>
+                
+                <Link
+                  href="/dashboard/agendamentos"
+                  className="glass-card p-4 hover:border-success/50 hover:shadow-lg hover:shadow-success/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-success/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-success rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Calendar className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Agendamentos</span>
+                    <p className="text-xs text-muted-foreground mt-1">Calendário</p>
+                  </div>
+                </Link>
+                
+                <Link
+                  href="/dashboard/servicos"
+                  className="glass-card p-4 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-accent/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-accent rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Scissors className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Serviços</span>
+                    <p className="text-xs text-muted-foreground mt-1">Catálogo</p>
+                  </div>
+                </Link>
+                
+                <Link
+                  href="/dashboard/profissionais"
+                  className="glass-card p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-primary rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Profissionais</span>
+                    <p className="text-xs text-muted-foreground mt-1">Equipe</p>
+                  </div>
+                </Link>
+              </div>
             </div>
           </GlassCard>
         </div>

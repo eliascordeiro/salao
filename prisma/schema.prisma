@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(cuid())
-  name        String
-  email       String    @unique
-  phone       String?
-  password    String
-  role        String    @default("CLIENT")
-  image       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  bookings    Booking[]
-  reviews     Review[]
-  ownedSalons Salon[]
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  phone           String?
+  password        String
+  role            String           @default("CLIENT")
+  image           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  bookings        Booking[]
+  reviews         Review[]
+  ownedSalons     Salon[]
+  cashierSessions CashierSession[] // Sessões de caixa do cliente
 }
 
 model Salon {
@@ -256,4 +257,63 @@ model Invoice {
   @@index([subscriptionId])
   @@index([status])
   @@index([dueDate])
+}
+
+// ============================================
+// CASHIER / FRENTE DE CAIXA (Fechamento de Conta)
+// ============================================
+
+model CashierSession {
+  id            String              @id @default(cuid())
+  salonId       String
+  clientId      String
+  client        User                @relation(fields: [clientId], references: [id])
+  
+  // Totais
+  subtotal      Float               // Soma dos serviços
+  discount      Float               @default(0) // Desconto aplicado
+  total         Float               // Subtotal - desconto
+  
+  // Pagamento
+  status        CashierStatus       @default(OPEN)
+  paymentMethod String?             // "CASH", "CARD", "PIX", "MULTIPLE"
+  paidAt        DateTime?
+  
+  // Items da sessão (serviços prestados)
+  items         CashierSessionItem[]
+  
+  // Timestamps
+  createdAt     DateTime            @default(now())
+  closedAt      DateTime?
+  
+  @@index([salonId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model CashierSessionItem {
+  id        String          @id @default(cuid())
+  sessionId String
+  session   CashierSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // Referência ao agendamento
+  bookingId String
+  
+  // Snapshot do serviço no momento do fechamento
+  serviceName String
+  staffName   String
+  price       Float
+  discount    Float          @default(0)
+  
+  createdAt   DateTime       @default(now())
+  
+  @@index([sessionId])
+  @@index([bookingId])
+}
+
+enum CashierStatus {
+  OPEN      // Conta aberta (cliente ainda no salão)
+  CLOSED    // Conta fechada (pagamento efetuado)
+  CANCELLED // Cancelada
 }

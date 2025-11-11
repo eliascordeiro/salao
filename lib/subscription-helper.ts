@@ -61,6 +61,24 @@ export function getDaysLeftInTrial(trialEndsAt: Date | null): number {
 }
 
 /**
+ * Calcula porcentagem do trial restante (0-100)
+ */
+export function getTrialPercentage(subscription: {
+  trialStartedAt: Date | null;
+  trialEndsAt: Date | null;
+}): number {
+  if (!subscription.trialStartedAt || !subscription.trialEndsAt) return 0;
+  
+  const totalDays = differenceInDays(subscription.trialEndsAt, subscription.trialStartedAt);
+  const daysLeft = getDaysLeftInTrial(subscription.trialEndsAt);
+  
+  if (totalDays === 0) return 0;
+  
+  const percentage = ((totalDays - daysLeft) / totalDays) * 100;
+  return Math.min(100, Math.max(0, percentage));
+}
+
+/**
  * Verifica se o trial está acabando (menos de 3 dias)
  */
 export function isTrialEnding(trialEndsAt: Date | null): boolean {

@@ -1,10 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { MapPin, Star, Users, Briefcase, CheckCircle } from "lucide-react";
+import { GlassCard } from "@/components/ui/glass-card";
+import { MapPin, Star, Users, Briefcase, CheckCircle, Crown, Sparkles, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface SalonCardProps {
   salon: {
@@ -28,51 +29,72 @@ interface SalonCardProps {
 
 export function SalonCard({ salon }: SalonCardProps) {
   return (
-    <Link href={`/salao/${salon.id}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer">
-        {/* Cover Photo */}
-        <div className="relative h-48 w-full bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+    <Link href={`/salao/${salon.id}`} className="block h-full">
+      <GlassCard className="group overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 cursor-pointer">
+        {/* Cover Photo com Overlay */}
+        <div className="relative h-56 w-full bg-gradient-to-br from-primary/10 to-purple-500/10 overflow-hidden">
           {salon.coverPhoto ? (
-            <Image
-              src={salon.coverPhoto}
-              alt={salon.name}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-            />
+            <>
+              <Image
+                src={salon.coverPhoto}
+                alt={salon.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            </>
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <Briefcase className="h-16 w-16 text-primary/30" />
+            <div className="flex flex-col items-center justify-center h-full">
+              <Briefcase className="h-16 w-16 text-primary/40 mb-2" />
+              <span className="text-xs text-muted-foreground">Sem foto</span>
             </div>
           )}
           
-          {/* Badges de destaque */}
-          <div className="absolute top-3 left-3 flex gap-2">
+          {/* Badges Flutuantes */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2">
             {salon.featured && (
-              <Badge className="bg-amber-500 text-white border-0">
-                ⭐ Destaque
+              <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 shadow-lg animate-pulse">
+                <Crown className="h-3 w-3 mr-1" />
+                Destaque
               </Badge>
             )}
             {salon.verified && (
-              <Badge className="bg-blue-500 text-white border-0 flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" />
+              <Badge className="bg-blue-500/90 backdrop-blur-sm text-white border-0 shadow-lg">
+                <CheckCircle className="h-3 w-3 mr-1" />
                 Verificado
               </Badge>
             )}
           </div>
+
+          {/* Rating Badge no canto inferior esquerdo */}
+          {salon.rating > 0 && (
+            <div className="absolute bottom-3 left-3">
+              <div className="flex items-center gap-1.5 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                <span className="font-semibold text-sm text-white">
+                  {salon.rating.toFixed(1)}
+                </span>
+                <span className="text-xs text-white/80">
+                  ({salon.reviewsCount})
+                </span>
+              </div>
+            </div>
+          )}
         </div>
         
-        {/* Content */}
-        <div className="p-4 space-y-3">
-          {/* Nome */}
-          <div>
-            <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors">
+        {/* Content Aprimorado */}
+        <div className="p-5 space-y-4 flex-1 flex flex-col">
+          {/* Header */}
+          <div className="space-y-2">
+            <h3 className="font-bold text-xl line-clamp-1 group-hover:text-primary transition-colors">
               {salon.name}
             </h3>
             
             {/* Localização */}
             {salon.city && salon.state && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
-                <MapPin className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                <MapPin className="h-4 w-4" />
                 <span>{salon.city}, {salon.state}</span>
               </div>
             )}
@@ -80,60 +102,65 @@ export function SalonCard({ salon }: SalonCardProps) {
           
           {/* Descrição */}
           {salon.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {salon.description}
             </p>
           )}
           
-          {/* Especialidades */}
+          {/* Especialidades com visual melhorado */}
           {salon.specialties.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {salon.specialties.slice(0, 3).map((specialty) => (
-                <Badge key={specialty} variant="outline" className="text-xs">
+                <Badge 
+                  key={specialty} 
+                  variant="outline" 
+                  className="text-xs bg-primary/5 border-primary/20 hover:bg-primary/10 transition-colors"
+                >
+                  <Sparkles className="h-3 w-3 mr-1" />
                   {specialty}
                 </Badge>
               ))}
               {salon.specialties.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{salon.specialties.length - 3}
+                <Badge variant="outline" className="text-xs bg-primary/5 border-primary/20">
+                  +{salon.specialties.length - 3} mais
                 </Badge>
               )}
             </div>
           )}
           
-          {/* Stats */}
-          <div className="flex items-center justify-between pt-2 border-t">
-            {/* Rating */}
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-sm">
-                {salon.rating > 0 ? salon.rating.toFixed(1) : "Novo"}
-              </span>
-              {salon.reviewsCount > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  ({salon.reviewsCount})
-                </span>
-              )}
-            </div>
-            
-            {/* Counters */}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {/* Spacer para empurrar stats para baixo */}
+          <div className="flex-1" />
+          
+          {/* Stats com visual melhorado */}
+          <div className="flex items-center justify-between pt-3 border-t border-primary/10">
+            {/* Contadores */}
+            <div className="flex items-center gap-4 text-sm">
               {salon._count && (
                 <>
-                  <div className="flex items-center gap-1">
-                    <Briefcase className="h-3.5 w-3.5" />
-                    <span>{salon._count.services}</span>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium">{salon._count.services}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>{salon._count.staff}</span>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium">{salon._count.staff}</span>
                   </div>
                 </>
               )}
             </div>
+            
+            {/* Botão Ver Mais */}
+            <div className="flex items-center gap-1 text-primary text-sm font-medium group-hover:gap-2 transition-all">
+              <span>Ver mais</span>
+              <ArrowRight className="h-4 w-4" />
+            </div>
           </div>
         </div>
-      </Card>
+      </GlassCard>
     </Link>
   );
 }

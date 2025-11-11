@@ -59,17 +59,17 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
+                  href="/dashboard/assinatura"
+                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
+                >
+                  Assinatura
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
+                </Link>
+                <Link
                   href="/dashboard/meu-salao"
                   className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
                 >
                   Meu Salão
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/configuracoes"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Configurações
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
                 </Link>
               </>

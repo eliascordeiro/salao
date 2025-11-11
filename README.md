@@ -1,52 +1,39 @@
-# 💈 AgendaSalão - Sistema de Agendamento Profissional# 💈 Sistema de Agendamento para Salões & Barbearias# 💈 AgendaSalão - Sistema de Agendamento para Salões & Barbearias
+# 💈 AgendaSalão - Sistema de Agendamento para Salões & Barbearias
 
+> Sistema completo de gestão e agendamento online com assinatura mensal inteligente
 
-
-> Sistema completo de agendamento online com **Railway Theme** para salões de beleza e barbearias
-
-
-
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)Sistema completo de gestão e agendamento online para salões de beleza e barbearias.Sistema completo de agendamento online desenvolvido com Next.js 14, TypeScript, Prisma e Tailwind CSS.
-
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC)](https://tailwindcss.com/)
-
 [![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748)](https://www.prisma.io/)
-
-[![Railway Theme](https://img.shields.io/badge/Theme-Railway-7C3AED)](./docs/TEMA_RAILWAY_COMPLETO.md)## 🚀 Tecnologias## 🚀 Tecnologias
-
-
+[![Stripe Billing](https://img.shields.io/badge/Stripe-Billing-635BFF)](https://stripe.com)
 
 ---
 
+## � Modelo de Negócio
 
+**Para Salões (B2B):**
+- 🎁 **30 dias grátis** para testar
+- 💵 **R$ 39/mês** apenas se faturar mais de R$ 1.000
+- ✨ **Grátis** se faturar menos de R$ 1.000
+- 🔄 **Cobrança automática** via Stripe Billing
 
-## 🎨 Railway Theme- **Framework:** Next.js 14 (App Router)- **Framework**: Next.js 14 (App Router)
+**Para Clientes (B2C):**
+- 📅 Agendamento online gratuito
+- 💳 Pagamento **presencial** no salão
+- 📧 Notificações por email
 
+---
 
+## 🚀 Tecnologias
 
-Sistema de design moderno com **glassmorphism**, **gradientes vibrantes** e **animações suaves** aplicado em 100% das páginas client-facing.- **Linguagem:** TypeScript- **Linguagem**: TypeScript
-
-
-
-### Características do Tema:- **Estilização:** Tailwind CSS + shadcn/ui- **Banco de Dados**: SQLite com Prisma ORM
-
-- ✨ **Glassmorphism** - Efeito de vidro com blur e transparência
-
-- 🎨 **Gradientes Vibrantes** - Primary (Roxo→Azul), Accent (Rosa→Laranja), Success (Verde→Ciano)- **Banco de Dados:** PostgreSQL- **Estilização**: Tailwind CSS
-
-- 🌟 **Glow Effects** - Brilhos suaves ao hover
-
-- 🎬 **7 Animações CSS** - fadeInUp, pulseGlow, float, shimmer, gradient, slideInLeft, scaleIn- **ORM:** Prisma 5.0- **Autenticação**: NextAuth.js
-
-- 🌙 **Dark Mode Nativo** - Tema escuro elegante por padrão
-
-- 📱 **100% Responsivo** - Mobile, Tablet e Desktop- **Autenticação:** NextAuth.js- **Componentes**: shadcn/ui
-
-
-
-📖 **[Documentação Completa do Tema Railway](./docs/TEMA_RAILWAY_COMPLETO.md)**  - **Pagamentos:** Stripe- **Ícones**: Lucide React
+- **Framework**: Next.js 14 (App Router)
+- **Linguagem**: TypeScript
+- **Estilização**: Tailwind CSS + shadcn/ui
+- **Banco de Dados**: PostgreSQL com Prisma ORM
+- **Autenticação**: NextAuth.js
+- **Pagamentos**: Stripe Billing (assinaturas)
+- **Ícones**: Lucide React
 
 📖 **[Guia Rápido de Referência](./docs/RAILWAY_QUICK_REFERENCE.md)**
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Building2, 
   Mail, 
@@ -12,7 +13,10 @@ import {
   Calendar,
   Save,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  X,
+  ImageIcon
 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -20,6 +24,7 @@ import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Salon {
   id: string;
@@ -33,6 +38,7 @@ interface Salon {
   workDays: string;
   bookingType: string;
   active: boolean;
+  coverPhoto: string | null;
 }
 
 const DAYS_OF_WEEK = [
@@ -50,9 +56,11 @@ export default function MeuSalaoPage() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [salon, setSalon] = useState<Salon | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -152,6 +160,87 @@ export default function MeuSalaoPage() {
     setFormData({ ...formData, workDays: days.join(",") });
   };
 
+  const handleCoverPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validação de tipo
+    if (!file.type.startsWith('image/')) {
+      setError("Por favor, selecione uma imagem válida");
+      return;
+    }
+
+    // Validação de tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("A imagem deve ter no máximo 5MB");
+      return;
+    }
+
+    try {
+      setUploadingCover(true);
+      setError("");
+
+      // Preview local
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload para API
+      const formData = new FormData();
+      formData.append('coverPhoto', file);
+
+      const response = await fetch("/api/salon/upload-cover", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao fazer upload da imagem");
+      }
+
+      const { coverPhotoUrl } = await response.json();
+      
+      // Atualizar salão com nova foto
+      setSalon(prev => prev ? { ...prev, coverPhoto: coverPhotoUrl } : null);
+      setSuccess("Foto de capa atualizada com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+
+    } catch (error: any) {
+      setError(error.message || "Erro ao fazer upload da foto");
+      setCoverPreview(null);
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
+  const handleRemoveCoverPhoto = async () => {
+    if (!confirm("Deseja realmente remover a foto de capa?")) return;
+
+    try {
+      setUploadingCover(true);
+
+      const response = await fetch("/api/salon/upload-cover", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao remover foto");
+      }
+
+      setSalon(prev => prev ? { ...prev, coverPhoto: null } : null);
+      setCoverPreview(null);
+      setSuccess("Foto de capa removida com sucesso!");
+      setTimeout(() => setSuccess(""), 3000);
+
+    } catch (error: any) {
+      setError(error.message || "Erro ao remover foto");
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -217,6 +306,94 @@ export default function MeuSalaoPage() {
           )}
 
           <form onSubmit={handleSubmit}>
+            {/* Foto de Capa */}
+            <GlassCard className="p-8 mb-6">
+              <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-primary" />
+                Foto de Capa
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Uma foto de capa atrativa aumenta suas chances de conversão. Tamanho recomendado: 1920x1080px (máx. 5MB)
+              </p>
+
+              <div className="space-y-4">
+                {/* Preview da foto atual ou placeholder */}
+                <div className="relative h-64 rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 group">
+                  {coverPreview || salon?.coverPhoto ? (
+                    <>
+                      <Image
+                        src={coverPreview || salon?.coverPhoto || ""}
+                        alt="Foto de capa"
+                        fill
+                        className="object-cover"
+                      />
+                      {!uploadingCover && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleRemoveCoverPhoto}
+                              className="gap-2"
+                            >
+                              <X className="h-4 w-4" />
+                              Remover
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              onClick={() => document.getElementById('coverPhotoInput')?.click()}
+                              className="gap-2"
+                            >
+                              <Upload className="h-4 w-4" />
+                              Trocar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <ImageIcon className="h-16 w-16 text-primary/40 mb-3" />
+                      <p className="text-sm text-muted-foreground mb-4">Nenhuma foto de capa ainda</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('coverPhotoInput')?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Fazer Upload
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Loading overlay */}
+                  {uploadingCover && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-2" />
+                        <p className="text-white text-sm">Enviando imagem...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input file oculto */}
+                <input
+                  id="coverPhotoInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverPhotoUpload}
+                  className="hidden"
+                  disabled={uploadingCover}
+                />
+              </div>
+            </GlassCard>
+
             <GlassCard className="p-8 space-y-6">
               {/* Informações Básicas */}
               <div>
@@ -346,44 +523,6 @@ export default function MeuSalaoPage() {
                       );
                     })}
                   </div>
-                </div>
-              </div>
-
-              {/* Configurações de Agendamento */}
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Tipo de Agendamento
-                </h2>
-                
-                <div className="space-y-2">
-                  {[
-                    { value: "DYNAMIC", label: "Dinâmico", desc: "Horários calculados automaticamente" },
-                    { value: "SLOT_BASED", label: "Slots Pré-definidos", desc: "Horários fixos cadastrados" },
-                    { value: "BOTH", label: "Ambos", desc: "Cliente escolhe o modo preferido" },
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        formData.bookingType === option.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-background-alt hover:border-primary/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="bookingType"
-                        value={option.value}
-                        checked={formData.bookingType === option.value}
-                        onChange={(e) => setFormData({ ...formData, bookingType: e.target.value })}
-                        className="mt-1"
-                      />
-                      <div>
-                        <div className="font-semibold text-foreground">{option.label}</div>
-                        <div className="text-sm text-foreground-muted">{option.desc}</div>
-                      </div>
-                    </label>
-                  ))}
                 </div>
               </div>
 
