@@ -38,7 +38,7 @@ model Salon {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   ownerId      String
-  bookingType  String    @default("BOTH")
+  // bookingType  String    @default("BOTH") // Temporariamente removido para Railway
   city         String?
   coverPhoto   String?
   featured     Boolean   @default(false)
