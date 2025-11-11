@@ -184,21 +184,6 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          {/* Revenue Status */}
-          <div className="mb-8 animate-fadeInUp" style={{ animationDelay: "150ms" }}>
-            <RevenueStatus
-              currentMonth={revenueStats.currentMonth}
-              lastMonth={revenueStats.lastMonth}
-              growth={revenueStats.growth}
-              shouldCharge={revenueStats.shouldCharge}
-              chargeAmount={revenueStats.chargeAmount}
-              threshold={revenueStats.threshold}
-              remaining={revenueStats.remaining}
-              percentageToThreshold={revenueStats.percentageToThreshold}
-              willBeFree={revenueStats.willBeFree}
-            />
-          </div>
-
         {/* Cards de Estatísticas Railway */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
           {/* Card Agendamentos */}
@@ -509,6 +494,21 @@ export default async function DashboardPage() {
             </div>
           )}
         </GlassCard>
+
+        {/* Revenue Status - Movido para o final */}
+        <div className="mt-8 animate-fadeInUp" style={{ animationDelay: "600ms" }}>
+          <RevenueStatus
+            currentMonth={revenueStats.currentMonth}
+            lastMonth={revenueStats.lastMonth}
+            growth={revenueStats.growth}
+            shouldCharge={revenueStats.shouldCharge}
+            chargeAmount={revenueStats.chargeAmount}
+            threshold={revenueStats.threshold}
+            remaining={revenueStats.remaining}
+            percentageToThreshold={revenueStats.percentageToThreshold}
+            willBeFree={revenueStats.willBeFree}
+          />
+        </div>
       </main>
       </GridBackground>
     </div>

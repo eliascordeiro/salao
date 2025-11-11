@@ -168,7 +168,7 @@ export function RevenueStatus({
                       <strong>R$ {remaining.toFixed(2)}</strong> para atingir o threshold.
                     </p>
                     <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                      💡 Continue assim! Você só paga quando ganhar mais de R$ 1.000/mês.
+                      💡 Você só paga quando ganhar mais de R$ 1.000/mês.
                     </p>
                   </>
                 ) : (
@@ -189,11 +189,12 @@ export function RevenueStatus({
           </div>
 
           {/* Info Box with glass effect */}
-          <div className="flex items-start gap-2 p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-2 border-blue-200/50 dark:border-blue-800/50 rounded-xl backdrop-blur-sm">
-            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
-              <strong>Como funciona:</strong> Sua assinatura é cobrada automaticamente apenas
-              se sua receita mensal ultrapassar R$ 1.000. Abaixo disso, é 100% grátis!
+          <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border-2 border-blue-300/60 dark:border-blue-700/60 rounded-xl backdrop-blur-sm shadow-lg">
+            <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-orange-900 dark:text-orange-100 leading-relaxed font-medium">
+              <strong className="text-orange-700 dark:text-orange-300 text-base">Como funciona:</strong> Sua assinatura é cobrada automaticamente apenas
+              se sua receita mensal ultrapassar <span className="font-bold text-orange-700 dark:text-orange-300">R$ 1.000</span>. Abaixo disso, é{" "}
+              <span className="font-bold text-green-600 dark:text-green-400">100% grátis!</span>
             </p>
           </div>
         </div>

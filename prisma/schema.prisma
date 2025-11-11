@@ -58,6 +58,7 @@ model Salon {
   services     Service[]
   staff        Staff[]
   subscription Subscription?
+  expenses     Expense[]  // Despesas do salão
 }
 
 model Staff {
@@ -316,4 +317,37 @@ enum CashierStatus {
   OPEN      // Conta aberta (cliente ainda no salão)
   CLOSED    // Conta fechada (pagamento efetuado)
   CANCELLED // Cancelada
+}
+
+// Modelo de Despesas (Contas a Pagar)
+model Expense {
+  id          String    @id @default(cuid())
+  salonId     String
+  
+  // Dados da despesa
+  description String
+  category    String    // "RENT", "UTILITIES", "PRODUCTS", "SALARIES", "MARKETING", "TAXES", "MAINTENANCE", "OTHER"
+  amount      Float
+  
+  // Controle de pagamento
+  status      String    // "PENDING", "PAID", "OVERDUE"
+  dueDate     DateTime
+  paidAt      DateTime?
+  paymentMethod String? // "CASH", "DEBIT", "CREDIT", "PIX", "BANK_TRANSFER"
+  
+  // Recorrência (opcional - Fase 2)
+  isRecurring Boolean   @default(false)
+  recurrence  String?   // "MONTHLY", "YEARLY", "WEEKLY"
+  
+  // Observações
+  notes       String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  
+  @@index([salonId])
+  @@index([status])
+  @@index([dueDate])
 }
