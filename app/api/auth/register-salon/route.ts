@@ -79,16 +79,36 @@ export async function POST(request: NextRequest) {
     
     console.log("✅ Email disponível");
     
+    // Testar conexão com o banco antes de prosseguir
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      console.log("✅ Conexão com banco OK");
+    } catch (dbError) {
+      console.error("❌ Erro de conexão com banco:", dbError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Erro de conexão com banco de dados",
+          details: dbError instanceof Error ? dbError.message : "Erro desconhecido",
+        },
+        { status: 503 }
+      );
+    }
+    
     // Hash da senha
     console.log("🔐 Gerando hash da senha...");
     const hashedPassword = await bcrypt.hash(ownerPassword, 10);
     
     console.log("💾 Iniciando transação...");
-    console.log("💾 Iniciando transação...");
     // Criar usuário e salão em uma transação
     const result = await prisma.$transaction(async (tx) => {
       // 1. Criar usuário proprietário primeiro
-      console.log("👤 Criando usuário...");
+      console.log("👤 Criando usuário com dados:", {
+        name: ownerName,
+        email: ownerEmail,
+        role: "ADMIN",
+      });
+      
       const user = await tx.user.create({
         data: {
           name: ownerName,
@@ -101,7 +121,16 @@ export async function POST(request: NextRequest) {
       console.log("✅ Usuário criado:", user.id);
       
       // 2. Criar salão vinculado ao proprietário
-      console.log("🏪 Criando salão...");
+      console.log("🏪 Criando salão com dados:", {
+        name: salonName,
+        phone: salonPhone,
+        address: salonAddress,
+        city: salonCity,
+        state: salonState,
+        zipCode: salonZipCode || null,
+        ownerId: user.id,
+      });
+      
       const salon = await tx.salon.create({
         data: {
           name: salonName,
@@ -143,11 +172,27 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("❌ Erro ao criar cadastro:", error);
+    
+    // Log detalhado para debug
+    if (error instanceof Error) {
+      console.error("Tipo do erro:", error.constructor.name);
+      console.error("Mensagem:", error.message);
+      console.error("Stack:", error.stack);
+    }
+    
+    // Verificar se é erro do Prisma
+    const isPrismaError = error && typeof error === 'object' && 'code' in error;
+    if (isPrismaError) {
+      console.error("Código Prisma:", (error as any).code);
+      console.error("Meta:", (error as any).meta);
+    }
+    
     return NextResponse.json(
       {
         success: false,
         error: "Erro ao criar cadastro. Tente novamente.",
         details: error instanceof Error ? error.message : "Erro desconhecido",
+        prismaCode: isPrismaError ? (error as any).code : undefined,
       },
       { status: 500 }
     );
