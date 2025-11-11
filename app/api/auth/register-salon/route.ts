@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
           openTime: "09:00",
           closeTime: "18:00",
           workDays: "1,2,3,4,5", // Segunda a Sexta
+          active: true, // Salão começa ativo
           // Salão criado começa não publicado (owner precisa completar cadastro)
           publishedAt: null,
           // Vincular ao proprietário
