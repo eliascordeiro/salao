@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Upload,
   X,
-  ImageIcon
+  ImageIcon,
+  Search
 } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -41,6 +42,16 @@ interface Salon {
   coverPhoto: string | null;
 }
 
+interface ViaCepResponse {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  erro?: boolean;
+}
+
 const DAYS_OF_WEEK = [
   { id: "0", label: "Dom" },
   { id: "1", label: "Seg" },
@@ -57,6 +68,7 @@ export default function MeuSalaoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [searchingCep, setSearchingCep] = useState(false);
   const [salon, setSalon] = useState<Salon | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -65,7 +77,14 @@ export default function MeuSalaoPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    address: "",
+    cep: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    address: "", // Mantém para compatibilidade com backend
     phone: "",
     email: "",
     openTime: "09:00",
@@ -78,6 +97,10 @@ export default function MeuSalaoPage() {
   useEffect(() => {
     fetchSalon();
   }, []);
+
+  useEffect(() => {
+    console.log("FormData.cep mudou:", formData.cep); // Debug
+  }, [formData.cep]);
 
   const fetchSalon = async () => {
     try {
@@ -93,9 +116,19 @@ export default function MeuSalaoPage() {
       const data = await response.json();
       setSalon(data);
       
+      // Parse do endereço existente
+      const addressParts = parseAddress(data.address || "");
+      
       setFormData({
         name: data.name || "",
         description: data.description || "",
+        cep: addressParts.cep || "",
+        street: addressParts.street || "",
+        number: addressParts.number || "",
+        complement: addressParts.complement || "",
+        neighborhood: addressParts.neighborhood || "",
+        city: addressParts.city || "",
+        state: addressParts.state || "",
         address: data.address || "",
         phone: data.phone || "",
         email: data.email || "",
@@ -113,6 +146,112 @@ export default function MeuSalaoPage() {
     }
   };
 
+  // Função auxiliar para parsear endereço antigo
+  const parseAddress = (address: string) => {
+    // Tenta extrair informações do endereço existente
+    // Formato esperado: "Rua, numero - Bairro - Cidade/UF"
+    const parts = {
+      cep: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
+    };
+
+    try {
+      const segments = address.split(" - ");
+      if (segments.length >= 3) {
+        const streetAndNumber = segments[0].split(", ");
+        parts.street = streetAndNumber[0] || "";
+        parts.number = streetAndNumber[1] || "";
+        parts.neighborhood = segments[1] || "";
+        
+        const cityState = segments[2].split("/");
+        parts.city = cityState[0] || "";
+        parts.state = cityState[1] || "";
+      }
+    } catch (e) {
+      // Se falhar, retorna vazio
+    }
+
+    return parts;
+  };
+
+  const searchCep = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, "");
+    
+    if (cleanCep.length !== 8) {
+      return;
+    }
+
+    setSearchingCep(true);
+    setError("");
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      
+      if (!response.ok) {
+        throw new Error("Erro ao buscar CEP");
+      }
+
+      const data: ViaCepResponse = await response.json();
+      
+      if (data.erro) {
+        setError("CEP não encontrado");
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        street: data.logradouro,
+        neighborhood: data.bairro,
+        city: data.localidade,
+        state: data.uf,
+      }));
+      
+      setSuccess("CEP encontrado! Preencha o número.");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+      setError("Erro ao buscar CEP. Tente novamente.");
+    } finally {
+      setSearchingCep(false);
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    console.log("Input value:", inputValue); // Debug
+    
+    let value = inputValue.replace(/\D/g, "");
+    console.log("Apenas números:", value); // Debug
+    
+    // Limita a 8 dígitos
+    value = value.slice(0, 8);
+    
+    // Formata CEP: 00000-000
+    if (value.length > 5) {
+      value = value.slice(0, 5) + "-" + value.slice(5);
+    }
+    
+    console.log("CEP formatado:", value); // Debug
+    
+    setFormData(prev => {
+      console.log("Estado anterior:", prev.cep); // Debug
+      console.log("Novo valor:", value); // Debug
+      return { ...prev, cep: value };
+    });
+    
+    // Busca automaticamente quando completar 8 dígitos
+    const cleanCep = value.replace(/\D/g, "");
+    if (cleanCep.length === 8) {
+      console.log("Buscando CEP:", cleanCep); // Debug
+      searchCep(value);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -121,12 +260,20 @@ export default function MeuSalaoPage() {
     try {
       setSaving(true);
 
+      // Monta o endereço completo no formato esperado pelo backend
+      const fullAddress = `${formData.street}, ${formData.number}${formData.complement ? ` - ${formData.complement}` : ""} - ${formData.neighborhood} - ${formData.city}/${formData.state}`;
+      
+      const dataToSend = {
+        ...formData,
+        address: fullAddress,
+      };
+
       const response = await fetch("/api/salon/my-salon", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (!response.ok) {
@@ -457,16 +604,113 @@ export default function MeuSalaoPage() {
                       className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
+                </div>
 
-                  <div className="md:col-span-2">
-                    <Label htmlFor="address">Endereço</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Rua, número - Bairro - Cidade/UF"
-                      className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
-                    />
+                {/* Endereço Completo */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Endereço
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* CEP com busca */}
+                    <div>
+                      <Label htmlFor="cep">CEP</Label>
+                      <div className="relative">
+                        <Input
+                          key={`cep-${formData.cep}`}
+                          id="cep"
+                          type="text"
+                          value={formData.cep}
+                          onChange={handleCepChange}
+                          placeholder="00000-000"
+                          maxLength={9}
+                          autoComplete="off"
+                          className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground pr-10"
+                        />
+                        {searchingCep && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
+                        )}
+                        {!searchingCep && formData.cep.replace(/\D/g, "").length === 8 && (
+                          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">Busca automática</p>
+                    </div>
+
+                    {/* Rua */}
+                    <div className="md:col-span-2">
+                      <Label htmlFor="street">Rua</Label>
+                      <Input
+                        id="street"
+                        value={formData.street}
+                        onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                        placeholder="Nome da rua"
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                      />
+                    </div>
+
+                    {/* Número */}
+                    <div>
+                      <Label htmlFor="number">Número</Label>
+                      <Input
+                        id="number"
+                        value={formData.number}
+                        onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                        placeholder="123"
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                      />
+                    </div>
+
+                    {/* Complemento */}
+                    <div>
+                      <Label htmlFor="complement">Complemento</Label>
+                      <Input
+                        id="complement"
+                        value={formData.complement}
+                        onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
+                        placeholder="Apto, Sala..."
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                      />
+                    </div>
+
+                    {/* Bairro */}
+                    <div>
+                      <Label htmlFor="neighborhood">Bairro</Label>
+                      <Input
+                        id="neighborhood"
+                        value={formData.neighborhood}
+                        onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                        placeholder="Nome do bairro"
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                      />
+                    </div>
+
+                    {/* Cidade */}
+                    <div>
+                      <Label htmlFor="city">Cidade</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="Nome da cidade"
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                      />
+                    </div>
+
+                    {/* Estado */}
+                    <div>
+                      <Label htmlFor="state">Estado</Label>
+                      <Input
+                        id="state"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                        placeholder="UF"
+                        maxLength={2}
+                        className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground uppercase"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

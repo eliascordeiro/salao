@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, Sparkles, AlertTriangle, CheckCircle } from "lucide-react";
+import { Clock, Calendar, Sparkles, AlertTriangle, CheckCircle, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TrialStatusProps {
@@ -51,75 +51,112 @@ export function TrialStatus({
   };
 
   return (
-    <Card className={cn("border-2", className)}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn("p-3 rounded-lg text-white", getStatusColor())}>
+    <GlassCard className={cn("border-2 border-primary/20 relative overflow-hidden group hover:shadow-xl transition-all duration-300", className)}>
+      {/* Gradient Background Effect */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-accent/10 blur-3xl rounded-full -z-10 group-hover:scale-110 transition-transform" />
+      
+      {/* Header Section */}
+      <div className="p-6 border-b border-border/50">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1">
+            {/* Icon with 3D effect */}
+            <div className={cn(
+              "p-3 rounded-xl text-white shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3",
+              getStatusColor()
+            )}>
               {getStatusIcon()}
             </div>
-            <div>
-              <CardTitle className="text-lg">{getStatusText()}</CardTitle>
-              <CardDescription>{getStatusDescription()}</CardDescription>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-xl font-bold">{getStatusText()}</h3>
+                <Zap className="h-4 w-4 text-primary animate-pulse" />
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {getStatusDescription()}
+              </p>
             </div>
           </div>
+          
+          {/* Days Badge with gradient */}
           <Badge
-            variant={isExpired ? "destructive" : isEnding ? "secondary" : "default"}
-            className="text-sm px-3 py-1"
+            variant={isExpired ? "destructive" : "default"}
+            className={cn(
+              "text-base px-4 py-2 font-bold shadow-md",
+              !isExpired && "bg-gradient-to-r from-primary to-accent"
+            )}
           >
             {isExpired ? "Expirado" : `${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`}
           </Badge>
         </div>
-      </CardHeader>
-
-      <CardContent>
-        {/* Progress Bar */}
-        <div className="space-y-2">
+      </div>
+      {/* Content Section */}
+      <div className="p-6">
+        {/* Progress Bar with modern design */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Expira em: {new Date(endsAt).toLocaleDateString("pt-BR")}
+            <span className="text-muted-foreground flex items-center gap-2 font-medium">
+              <Calendar className="h-4 w-4 text-primary" />
+              Expira em: <span className="text-foreground font-semibold">{new Date(endsAt).toLocaleDateString("pt-BR")}</span>
             </span>
-            <span className="font-semibold">{Math.round(percentage)}%</span>
+            <span className="font-bold text-lg text-primary">
+              {Math.round(percentage)}%
+            </span>
           </div>
 
-          <div className="h-3 bg-secondary rounded-full overflow-hidden">
+          {/* Glass morphism progress bar */}
+          <div className="h-4 bg-secondary/50 rounded-full overflow-hidden backdrop-blur-sm border border-border/50 shadow-inner">
             <div
               className={cn(
-                "h-full transition-all duration-500 rounded-full",
-                getStatusColor()
+                "h-full transition-all duration-700 ease-out rounded-full relative",
+                getStatusColor(),
+                "shadow-lg"
               )}
               style={{ width: `${percentage}%` }}
-            />
+            >
+              {/* Shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
           </div>
 
-          {/* Trial Benefits */}
+          {/* Trial Benefits with modern cards */}
           {!isExpired && (
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-semibold mb-2 flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+            <div className="mt-6 p-5 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl border border-primary/10 backdrop-blur-sm">
+              <p className="text-sm font-bold mb-3 flex items-center gap-2 text-primary">
+                <CheckCircle className="h-5 w-5" />
                 Durante o trial você tem acesso a:
               </p>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• Agendamentos ilimitados</li>
-                <li>• Gestão completa de profissionais e serviços</li>
-                <li>• Notificações automáticas por email</li>
-                <li>• Dashboard com estatísticas básicas</li>
-              </ul>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  "Agendamentos ilimitados",
+                  "Gestão completa de profissionais",
+                  "Notificações automáticas",
+                  "Dashboard com estatísticas"
+                ].map((benefit, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary to-accent" />
+                    {benefit}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Warning for ending trial */}
+          {/* Warning for ending trial with premium style */}
           {isEnding && !isExpired && (
-            <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-sm text-orange-800">
-                💡 <strong>Lembre-se:</strong> Após o trial, você só pagará R$ 39/mês se seu
-                faturamento ultrapassar R$ 1.000 no mês. Abaixo disso, é grátis para sempre!
+            <div className="mt-4 p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border-2 border-orange-200/50 dark:border-orange-800/50 rounded-xl backdrop-blur-sm">
+              <p className="text-sm leading-relaxed">
+                <span className="text-2xl mr-2">💡</span>
+                <strong className="text-orange-800 dark:text-orange-200">Lembre-se:</strong>{" "}
+                <span className="text-orange-700 dark:text-orange-300">
+                  Após o trial, você só pagará <strong>R$ 39/mês</strong> se seu
+                  faturamento ultrapassar <strong>R$ 1.000</strong> no mês. Abaixo disso, é grátis para sempre!
+                </span>
               </p>
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </GlassCard>
   );
 }

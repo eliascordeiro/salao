@@ -1,0 +1,15 @@
+# Ignorar arquivos desnecessários no deploy
+node_modules
+.next
+.env.local
+.env.development
+*.log
+.git
+.github
+docs
+*.md
+!README.md
+test-*.js
+debug-*.js
+cleanup-*.js
+seed-*.js
