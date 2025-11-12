@@ -9,6 +9,7 @@ import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckC
 import { DashboardHeader } from "@/components/dashboard/header"
 import { TrialStatus } from "@/components/dashboard/trial-status"
 import { RevenueStatus } from "@/components/dashboard/revenue-status"
+import { ExpenseSummary } from "@/components/dashboard/expense-summary"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
 import { getUserSalonId } from "@/lib/salon-helper"
@@ -185,7 +186,7 @@ export default async function DashboardPage() {
           )}
 
         {/* Cards de Estatísticas Railway */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
           {/* Card Agendamentos */}
           <GlassCard hover glow={bookingsGrowth >= 0 ? "success" : "primary"} className="group">
             <div className="flex items-start justify-between mb-4">
@@ -289,6 +290,11 @@ export default async function DashboardPage() {
               {topStaffData.length > 0 ? `${topStaffData[0]._count.id} agendamentos` : "Sem dados"}
             </p>
           </GlassCard>
+
+          {/* Card Despesas - NOVO */}
+          <div className="animate-fadeInUp" style={{ animationDelay: "250ms" }}>
+            <ExpenseSummary />
+          </div>
         </div>
 
         {/* Quick Stats & Ações Rápidas Railway */}

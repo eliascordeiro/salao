@@ -30,6 +30,34 @@
     --error: 0 84% 60%;              /* #ef4444 */
     --warning: 38 92% 50%;           /* #f59e0b */
   }
+
+  /* Light Theme */
+  .light {
+    /* Light Background */
+    --background: 0 0% 100%;         /* #ffffff - Branco puro */
+    --background-alt: 260 20% 97%;   /* #f8f7f9 - Branco com leve toque roxo */
+    
+    /* Foreground */
+    --foreground: 260 15% 10%;       /* #1a1820 - Preto com toque roxo */
+    --foreground-muted: 260 5% 45%;  /* #6e6a73 - Cinza médio */
+    
+    /* Borders */
+    --border: 260 10% 90%;           /* #e5e4e7 - Borda clara com toque roxo */
+    --border-hover: 260 8% 80%;      /* #cfcdd2 - Hover mais escuro */
+    
+    /* Primary - Purple/Indigo gradient (mantém vibrante) */
+    --primary: 250 70% 55%;          /* #5558e3 - Um pouco mais escuro no light */
+    --primary-foreground: 0 0% 100%; /* #ffffff */
+    
+    /* Accent - Purple */
+    --accent: 280 70% 60%;           /* #9d3dd9 - Um pouco mais escuro no light */
+    --accent-foreground: 0 0% 100%;  /* #ffffff */
+    
+    /* Status colors */
+    --success: 142 76% 36%;          /* #10b981 */
+    --error: 0 84% 60%;              /* #ef4444 */
+    --warning: 38 92% 50%;           /* #f59e0b */
+  }
   
   * {
     @apply border-border;
@@ -49,9 +77,17 @@
 /* Glass Effect Components - Railway style */
 @layer components {
   .glass-card {
-    @apply bg-background-alt/70 backdrop-blur-xl border;
-    border-color: rgba(255, 255, 255, 0.08);
+    @apply bg-background-alt/70 backdrop-blur-xl border border-border/50;
+  }
+  
+  /* Dark theme shadows */
+  :root .glass-card {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 1px rgba(168, 85, 247, 0.1);
+  }
+  
+  /* Light theme shadows */
+  .light .glass-card {
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
   }
   
   .glass-card-hover {
@@ -60,7 +96,14 @@
   
   .glass-card-hover:hover {
     @apply border-primary/50 shadow-2xl;
+  }
+  
+  :root .glass-card-hover:hover {
     box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2);
+  }
+  
+  .light .glass-card-hover:hover {
+    box-shadow: 0 8px 24px 0 rgba(99, 102, 241, 0.15);
   }
   
   /* Glow effects */

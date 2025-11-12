@@ -17,10 +17,6 @@ export async function GET(
     const salon = await prisma.salon.findUnique({
       where: {
         id,
-        // Apenas salões publicados
-        publishedAt: {
-          not: null,
-        },
       },
       include: {
         // Serviços ativos

@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Scissors, LogOut, User, Settings } from "lucide-react"
+import { Scissors, LogOut, User, Settings, Sun, Moon } from "lucide-react"
+import { useTheme } from "@/contexts/theme-context"
 
 interface DashboardHeaderProps {
   user: {
@@ -14,95 +15,68 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
+  const { resolvedTheme, setTheme } = useTheme()
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
+
   return (
-    <header className="glass-card border-b border-border/50 sticky top-0 z-50">
+    <header className="glass-card border-b border-border/50 sticky top-0 z-30">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo Railway Style */}
-          <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="p-2 rounded-lg bg-gradient-primary transition-transform group-hover:scale-110">
-              <Scissors className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">AgendaSalão</span>
-          </Link>
-
-          {/* Menu Railway Style */}
-          <nav className="hidden md:flex gap-8 items-center">
-            {user?.role === "ADMIN" ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Dashboard
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/agendamentos"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Agendamentos
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/servicos"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Serviços
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/profissionais"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Profissionais
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/assinatura"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Assinatura
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/dashboard/meu-salao"
-                  className="text-foreground-muted hover:text-primary transition-colors font-medium relative group"
-                >
-                  Meu Salão
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-primary transition-all group-hover:w-full"></span>
-                </Link>
-              </>
-            ) : null}
-          </nav>
+          {/* Título da página */}
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold text-foreground">
+              {user?.role === "ADMIN" ? "Painel Administrativo" : "Meu Painel"}
+            </h1>
+          </div>
 
           {/* User Menu Railway Style */}
           <div className="flex items-center gap-4">
             <div className="hidden md:block text-right">
-              <p className="text-sm font-medium text-foreground">{user?.name}</p>
+              <p className="text-sm font-medium text-white">{user?.name}</p>
               <p className="text-xs text-foreground-muted">{user?.email}</p>
             </div>
             
             <div className="flex gap-2">
+              {/* Toggle Tema */}
               <Button 
                 variant="ghost" 
                 size="sm"
+                onClick={toggleTheme}
                 className="hover:bg-background-alt hover:text-primary transition-colors"
+                title={resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
               >
-                <User className="h-4 w-4" />
+                {resolvedTheme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
                 className="hover:bg-background-alt hover:text-primary transition-colors"
               >
-                <Settings className="h-4 w-4" />
+                <User className="h-4 w-4 text-white" />
               </Button>
+              <Link href="/dashboard/configuracoes">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="hover:bg-background-alt hover:text-primary transition-colors"
+                  title="Configurações"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </Link>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="text-error hover:text-error hover:bg-error/10 transition-colors"
+                title="Sair"
               >
                 <LogOut className="h-4 w-4" />
               </Button>

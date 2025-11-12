@@ -19,6 +19,7 @@
 - [x] Associação de profissionais aos serviços
 - [x] Padronização de inputs com glass-card
 - [x] Simplificação para slots apenas (removido agendamento dinâmico)
+- [x] Sistema de contas a pagar (controle de despesas)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -43,6 +44,7 @@
 - Payment (pagamentos)
 - Transaction (transações)
 - Availability (bloqueios de horários)
+- Expense (despesas/contas a pagar)
 
 ## Funcionalidades Implementadas
 ✅ Landing page responsiva
@@ -147,6 +149,17 @@
   - Cliente sempre redirecionado para /agendar-slots
   - Experiência mais direta e simples
   - Documentação completa (docs/SIMPLIFICACAO_SLOTS.md)
+✅ Sistema de Contas a Pagar (Despesas):
+  - CRUD completo de despesas (criar, listar, editar, deletar)
+  - 8 categorias de despesas (Aluguel, Utilidades, Produtos, Salários, etc.)
+  - 3 status (Pendente, Pago, Atrasado)
+  - 5 métodos de pagamento (Dinheiro, Débito, Crédito, PIX, Transferência)
+  - Filtros avançados (busca, status, categoria, período)
+  - Dashboard card com resumo de despesas e cálculo de lucro
+  - Suporte a despesas recorrentes (estrutura preparada)
+  - Multi-tenant com isolamento por salão
+  - Helper functions para cálculo de lucro e análises
+  - Documentação completa (docs/CONTAS_A_PAGAR.md)
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
@@ -166,9 +179,12 @@
 10. ✅ ~~Sistema multi-tenant~~ COMPLETO
 11. ✅ ~~Associação profissional ↔ serviços~~ COMPLETO
 12. ✅ ~~Padronização de UI (glass-card)~~ COMPLETO
-13. Sistema de reembolsos (admin)
-14. Notificações SMS (opcional)
-15. App mobile (opcional)
+13. ✅ ~~Sistema de contas a pagar~~ COMPLETO
+14. Sistema de despesas recorrentes (auto-criação)
+15. Relatórios financeiros avançados (lucro, despesas por categoria)
+16. Sistema de reembolsos (admin)
+17. Notificações SMS (opcional)
+18. App mobile (opcional)
 
 ## Observações Técnicas
 - Node.js 18.17.0+ necessário

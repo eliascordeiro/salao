@@ -123,7 +123,7 @@ export default function SaloesPage() {
   
   return (
     <GridBackground>
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8 space-y-8 overflow-visible">
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">
@@ -136,7 +136,7 @@ export default function SaloesPage() {
         </div>
         
         {/* Filtros */}
-        <div className="glass-card p-6 space-y-4">
+        <div className="glass-card p-6 space-y-4 overflow-visible">
           <div className="flex items-center gap-2 text-lg font-semibold mb-4">
             <Filter className="h-5 w-5" />
             <span>Filtros</span>

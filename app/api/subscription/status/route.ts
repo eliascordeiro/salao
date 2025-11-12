@@ -49,10 +49,88 @@ export async function GET() {
 
     const salon = user.ownedSalons[0];
 
+    // Se não tem subscription, criar uma automaticamente com trial de 30 dias
+    if (!salon.subscription) {
+      // Buscar plano Free
+      let freePlan = await prisma.plan.findFirst({
+        where: { name: "Free" }
+      });
+
+      // Se não existe plano Free, criar
+      if (!freePlan) {
+        freePlan = await prisma.plan.create({
+          data: {
+            name: "Free",
+            price: 39,
+            stripePriceId: null,
+            features: [
+              "30 dias grátis",
+              "Agendamentos ilimitados",
+              "Profissionais ilimitados",
+              "Serviços ilimitados",
+              "Relatórios e analytics",
+              "Suporte prioritário"
+            ]
+          }
+        });
+      }
+
+      // Criar subscription com trial
+      const trialStart = new Date();
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 30); // 30 dias de trial
+
+      // Criar um stripeCustomerId temporário (será substituído ao configurar Stripe)
+      const tempCustomerId = `cus_temp_${salon.id}`;
+
+      const newSubscription = await prisma.subscription.create({
+        data: {
+          salonId: salon.id,
+          planId: freePlan.id,
+          status: "trialing",
+          stripeCustomerId: tempCustomerId,
+          trialStartedAt: trialStart,
+          trialEndsAt: trialEnd,
+          currentPeriodStart: trialStart,
+          currentPeriodEnd: trialEnd,
+        },
+        include: {
+          plan: true,
+          invoices: true
+        }
+      });
+
+      // Recarregar o salão com a subscription
+      const updatedSalon = await prisma.salon.findUnique({
+        where: { id: salon.id },
+        include: {
+          subscription: {
+            include: {
+              plan: true,
+              invoices: {
+                orderBy: { createdAt: "desc" },
+                take: 12,
+              }
+            }
+          }
+        }
+      });
+
+      if (!updatedSalon?.subscription) {
+        return NextResponse.json(
+          { error: "Erro ao criar assinatura" },
+          { status: 500 }
+        );
+      }
+
+      // Substituir referência
+      salon.subscription = updatedSalon.subscription;
+    }
+
     if (!salon.subscription) {
       return NextResponse.json(
-        { error: "Assinatura não encontrada" },
-        { status: 404 }
+        { error: "Erro ao criar assinatura" },
+        { status: 500 }
       );
     }
 

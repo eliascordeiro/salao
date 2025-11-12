@@ -9,6 +9,7 @@ import {
   Search,
   Star,
   Users,
+  User,
   Briefcase,
   TrendingUp,
   Shield,
@@ -54,17 +55,17 @@ export default function LandingPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
-              <Link href="/cadastro-salao" className="w-full sm:w-auto">
+              <Link href="/saloes" className="w-full sm:w-auto">
                 <Button size="lg" className="gap-2 text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto group">
-                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
-                  Começar Grátis Agora
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Buscar Salões
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link href="/saloes" className="w-full sm:w-auto">
+              <Link href="/login" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="gap-2 text-base sm:text-lg px-6 sm:px-8 w-full sm:w-auto">
-                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Ver Demonstração
+                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Fazer Login
                 </Button>
               </Link>
             </div>

@@ -50,12 +50,12 @@ export function Navbar({ showAuth = true }: NavbarProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden md:inline">{session.user.name}</span>
+                    <User className="h-4 w-4 text-white" />
+                    <span className="hidden md:inline text-white">{session.user.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-sm font-semibold">
+                  <div className="px-2 py-1.5 text-sm font-semibold text-white">
                     {session.user.name}
                   </div>
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">
@@ -98,14 +98,12 @@ export function Navbar({ showAuth = true }: NavbarProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/login">Entrar</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/cadastro-salao">Cadastrar Salão</Link>
-                </Button>
-              </>
+              <Button asChild className="gap-2">
+                <Link href="/login">
+                  <User className="h-4 w-4" />
+                  Entrar
+                </Link>
+              </Button>
             )}
           </div>
         )}

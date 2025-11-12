@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
+import { ThemeProvider } from "@/contexts/theme-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,13 +32,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'system';
+                  let resolved = 'dark';
+                  
+                  if (theme === 'system') {
+                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  } else {
+                    resolved = theme;
+                  }
+                  
+                  document.documentElement.classList.add(resolved);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
