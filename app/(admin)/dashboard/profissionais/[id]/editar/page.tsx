@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -37,10 +37,10 @@ interface Block {
   recurring: boolean;
 }
 
-export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: staffId } = use(params);
+export default function EditStaffPage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
   const router = useRouter();
   const { data: session } = useSession();
+  const [staffId, setStaffId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -75,8 +75,23 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Resolver params (suporte para Promise ou objeto direto)
+  useEffect(() => {
+    const resolveParams = async () => {
+      if (params instanceof Promise) {
+        const resolved = await params;
+        setStaffId(resolved.id);
+      } else {
+        setStaffId(params.id);
+      }
+    };
+    resolveParams();
+  }, [params]);
+
   // Carregar dados do profissional
   useEffect(() => {
+    if (!staffId) return;
+    
     const fetchData = async () => {
       try {
         setLoadingData(true);
