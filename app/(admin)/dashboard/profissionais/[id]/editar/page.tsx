@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -38,6 +38,7 @@ interface Block {
 }
 
 export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: staffId } = use(params);
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,6 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [activeTab, setActiveTab] = useState<"info" | "schedule" | "blocks">("info");
-  const [staffId, setStaffId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -75,15 +75,8 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Resolver params
-  useEffect(() => {
-    params.then(({ id }) => setStaffId(id));
-  }, [params]);
-
   // Carregar dados do profissional
   useEffect(() => {
-    if (!staffId) return;
-    
     const fetchData = async () => {
       try {
         setLoadingData(true);
@@ -144,7 +137,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const handleScheduleSave = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/staff/${params.id}`, {
+      const response = await fetch(`/api/staff/${staffId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scheduleData),
@@ -164,7 +157,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const handleBlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/staff/${params.id}/blocks`, {
+      const response = await fetch(`/api/staff/${staffId}/blocks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(blockForm),
@@ -186,7 +179,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     if (!confirm("Deseja remover este bloqueio?")) return;
 
     try {
-      const response = await fetch(`/api/staff/${params.id}/blocks/${blockId}`, {
+      const response = await fetch(`/api/staff/${staffId}/blocks/${blockId}`, {
         method: "DELETE",
       });
 
@@ -224,7 +217,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     try {
       setLoading(true);
 
-      const response = await fetch(`/api/staff/${params.id}`, {
+      const response = await fetch(`/api/staff/${staffId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
