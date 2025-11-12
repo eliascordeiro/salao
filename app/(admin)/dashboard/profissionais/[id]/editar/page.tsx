@@ -37,7 +37,7 @@ interface Block {
   recurring: boolean;
 }
 
-export default function EditStaffPage({ params }: { params: { id: string } }) {
+export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
@@ -46,6 +46,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [activeTab, setActiveTab] = useState<"info" | "schedule" | "blocks">("info");
+  const [staffId, setStaffId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -74,14 +75,21 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Resolver params
+  useEffect(() => {
+    params.then(({ id }) => setStaffId(id));
+  }, [params]);
+
   // Carregar dados do profissional
   useEffect(() => {
+    if (!staffId) return;
+    
     const fetchData = async () => {
       try {
         setLoadingData(true);
 
         // Buscar profissional
-        const staffRes = await fetch(`/api/staff/${params.id}`);
+        const staffRes = await fetch(`/api/staff/${staffId}`);
         if (!staffRes.ok) {
           throw new Error("Profissional não encontrado");
         }
@@ -107,7 +115,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
         });
 
         // Buscar bloqueios
-        const blocksRes = await fetch(`/api/staff/${params.id}/blocks`);
+        const blocksRes = await fetch(`/api/staff/${staffId}/blocks`);
         if (blocksRes.ok) {
           const blocksData = await blocksRes.json();
           setBlocks(blocksData);
@@ -122,7 +130,7 @@ export default function EditStaffPage({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [params.id, router]);
+  }, [staffId, router]);
 
   const toggleWorkDay = (day: string) => {
     setScheduleData(prev => ({
