@@ -66,10 +66,7 @@ export async function GET(request: NextRequest) {
       orderBy: { dueDate: "asc" },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: expenses,
-    });
+    return NextResponse.json(expenses);
   } catch (error) {
     console.error("❌ Erro ao buscar despesas:", error);
     return NextResponse.json(

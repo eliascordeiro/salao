@@ -43,11 +43,6 @@ const menuItems = [
     href: "/dashboard/profissionais",
   },
   {
-    label: "Assinatura",
-    icon: CreditCard,
-    href: "/dashboard/assinatura",
-  },
-  {
     label: "Meu Salão",
     icon: Store,
     href: "/dashboard/meu-salao",
@@ -66,6 +61,19 @@ const menuItems = [
     label: "Análise Financeira",
     icon: TrendingUp,
     href: "/dashboard/analise-financeira",
+  },
+  {
+    separator: true,
+  },
+  {
+    label: "Assinatura",
+    icon: CreditCard,
+    href: "/dashboard/assinatura",
+  },
+  {
+    label: "Configurações",
+    icon: Settings,
+    href: "/dashboard/configuracoes",
   },
 ]
 
@@ -162,10 +170,23 @@ export function Sidebar() {
 
         {/* Menu Items */}
         <nav className={cn(
-          "space-y-2 overflow-y-auto h-[calc(100vh-140px)]",
+          "space-y-2 overflow-y-auto h-[calc(100vh-80px)]",
           collapsed ? "p-2" : "p-4"
         )}>
-          {menuItems.map((item) => {
+          {menuItems.map((item, index) => {
+            // Renderizar separador
+            if (item.separator) {
+              return (
+                <div 
+                  key={`separator-${index}`} 
+                  className={cn(
+                    "border-t border-border/50",
+                    collapsed ? "my-2" : "my-3"
+                  )} 
+                />
+              )
+            }
+
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
             const Icon = item.icon
 
@@ -206,26 +227,6 @@ export function Sidebar() {
             )
           })}
         </nav>
-
-        {/* Footer Settings */}
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 border-t border-border/50",
-          collapsed ? "p-2" : "p-4"
-        )}>
-          <Link
-            href="/dashboard/configuracoes"
-            className={cn(
-              "flex items-center rounded-lg transition-all",
-              "hover:bg-background-alt text-foreground-muted hover:text-primary",
-              collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
-            )}
-          >
-            <Settings className={cn(
-              collapsed ? "h-6 w-6" : "h-5 w-5"
-            )} />
-            {!collapsed && <span className="font-medium">Configurações</span>}
-          </Link>
-        </div>
       </aside>
     </>
   )

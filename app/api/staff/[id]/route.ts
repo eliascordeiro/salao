@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 // GET - Buscar profissional por ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,8 +14,10 @@ export async function GET(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    const { id } = await context.params
+
     const staff = await prisma.staff.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         salon: true,
         services: {
@@ -46,7 +48,7 @@ export async function GET(
 // PUT - Atualizar profissional
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -54,6 +56,7 @@ export async function PUT(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    const { id } = await context.params
     const data = await request.json()
     const { name, email, phone, specialty, active, serviceIds } = data
 
@@ -61,14 +64,14 @@ export async function PUT(
     if (serviceIds !== undefined) {
       // Primeiro, remover todas as associações antigas
       await prisma.serviceStaff.deleteMany({
-        where: { staffId: params.id }
+        where: { staffId: id }
       })
 
       // Criar novas associações
       if (serviceIds.length > 0) {
         await prisma.serviceStaff.createMany({
           data: serviceIds.map((serviceId: string) => ({
-            staffId: params.id,
+            staffId: id,
             serviceId,
           })),
         })
@@ -76,7 +79,7 @@ export async function PUT(
     }
 
     const staff = await prisma.staff.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         email: email || null,
@@ -107,7 +110,7 @@ export async function PUT(
 // PATCH - Atualizar horários do profissional
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -115,6 +118,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    const { id } = await context.params
     const data = await request.json()
     const { workDays, workStart, workEnd, lunchStart, lunchEnd, slotInterval } = data
 
@@ -169,7 +173,7 @@ export async function PATCH(
 
     // Atualizar dados do profissional
     const staff = await prisma.staff.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         workDays: workDays && workDays.length > 0 ? workDays.join(",") : null,
         workStart: workStart || null,
@@ -211,7 +215,7 @@ export async function PATCH(
 // DELETE - Deletar profissional
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -219,8 +223,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    const { id } = await context.params
+
     await prisma.staff.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: "Profissional deletado com sucesso" })
