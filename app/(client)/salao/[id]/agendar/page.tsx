@@ -952,11 +952,11 @@ export default function AgendarSalaoPage() {
                                 variant={selectedTime === slot.time ? "default" : "outline"}
                                 disabled={isDisabled}
                                 onClick={() => !isDisabled && setSelectedTime(slot.time)}
-                                className={`h-auto py-3 w-full ${
+                                className={`h-auto py-4 w-full text-base font-semibold ${
                                   selectedTime === slot.time 
                                     ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
                                     : slot.available && !isClientConflict
-                                    ? "glass-card hover:bg-background-alt"
+                                    ? "glass-card hover:bg-background-alt hover:border-primary/30"
                                     : isClientConflict
                                     ? "border-2 border-orange-500/40 bg-orange-500/10 text-orange-600/70 cursor-not-allowed"
                                     : "opacity-50 cursor-not-allowed"

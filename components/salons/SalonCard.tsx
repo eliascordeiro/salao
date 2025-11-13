@@ -2,7 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { GlassCard } from "@/components/ui/glass-card";
-import { MapPin, Star, Users, Briefcase, CheckCircle, Crown, Sparkles, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Star, Users, Briefcase, CheckCircle, Crown, Sparkles, ArrowRight, Phone, Navigation, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,8 @@ interface SalonCardProps {
     id: string;
     name: string;
     description?: string | null;
+    phone?: string | null;
+    address?: string | null;
     city?: string | null;
     state?: string | null;
     coverPhoto?: string | null;
@@ -28,9 +31,84 @@ interface SalonCardProps {
 }
 
 export function SalonCard({ salon }: SalonCardProps) {
+  // Função para compartilhar salão
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const shareData = {
+      title: salon.name,
+      text: `Confira ${salon.name} - ${salon.city}, ${salon.state}`,
+      url: `${window.location.origin}/salao/${salon.id}`,
+    };
+    
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copiar link
+        await navigator.clipboard.writeText(shareData.url);
+        alert("Link copiado para a área de transferência!");
+      }
+    } catch (error) {
+      console.error("Erro ao compartilhar:", error);
+    }
+  };
+  
+  // Função para abrir no mapa
+  const handleOpenMap = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const address = salon.address 
+      ? `${salon.address}, ${salon.city}, ${salon.state}`
+      : `${salon.name}, ${salon.city}, ${salon.state}`;
+    
+    const encodedAddress = encodeURIComponent(address);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, "_blank");
+  };
+  
   return (
     <Link href={`/salao/${salon.id}`} className="block h-full">
-      <GlassCard className="group overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 cursor-pointer">
+      <GlassCard className="group overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 cursor-pointer relative">
+        {/* Quick Actions - Aparece no hover em desktop, sempre visível em mobile */}
+        <div className="absolute top-16 right-3 z-10 flex flex-col gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          {salon.phone && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = `tel:${salon.phone}`;
+              }}
+              title="Ligar"
+            >
+              <Phone className="h-4 w-4" />
+            </Button>
+          )}
+          
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
+            onClick={handleOpenMap}
+            title="Ver no mapa"
+          >
+            <Navigation className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
+            onClick={handleShare}
+            title="Compartilhar"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+        </div>
         {/* Cover Photo com Overlay */}
         <div className="relative h-56 w-full bg-gradient-to-br from-primary/10 to-purple-500/10 overflow-hidden">
           {salon.coverPhoto ? (

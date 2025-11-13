@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -12,8 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SalonCard } from "@/components/salons/SalonCard";
-import { Search, MapPin, Filter, Loader2 } from "lucide-react";
+import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X } from "lucide-react";
 import { GridBackground } from "@/components/ui/grid-background";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 interface Salon {
   id: string;
@@ -52,6 +54,7 @@ export default function SaloesPage() {
   const [selectedCity, setSelectedCity] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState("rating");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   
   // Carregar localizações disponíveis
   useEffect(() => {
@@ -121,6 +124,13 @@ export default function SaloesPage() {
     ? locations.byState[selectedState] || []
     : locations.cities;
   
+  // Contar filtros ativos
+  const activeFiltersCount = [
+    selectedState && selectedState !== "ALL",
+    selectedCity && selectedCity !== "ALL",
+    showFeaturedOnly,
+  ].filter(Boolean).length;
+  
   return (
     <GridBackground>
       <div className="container mx-auto px-4 py-8 space-y-8 overflow-visible">
@@ -135,110 +145,92 @@ export default function SaloesPage() {
           </p>
         </div>
         
-        {/* Filtros */}
-        <div className="glass-card p-6 space-y-4 overflow-visible">
-          <div className="flex items-center gap-2 text-lg font-semibold mb-4">
-            <Filter className="h-5 w-5" />
-            <span>Filtros</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Barra de Busca Sticky + Botão de Filtros */}
+        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border pb-4 -mx-4 px-4">
+          <div className="flex items-center gap-2">
             {/* Busca por nome */}
-            <div className="space-y-2">
-              <Label>Buscar por nome</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nome do salão..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar salão..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-11 text-base"
+              />
             </div>
             
-            {/* Estado */}
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select value={selectedState} onValueChange={handleStateChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os estados" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os estados</SelectItem>
-                  {locations.states.map((state) => (
-                    <SelectItem key={state} value={state}>
-                      {state}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Cidade */}
-            <div className="space-y-2">
-              <Label>Cidade</Label>
-              <Select
-                value={selectedCity}
-                onValueChange={setSelectedCity}
-                disabled={!selectedState && availableCities.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as cidades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todas as cidades</SelectItem>
-                  {availableCities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Ordenação */}
-            <div className="space-y-2">
-              <Label>Ordenar por</Label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rating">Melhor avaliados</SelectItem>
-                  <SelectItem value="newest">Mais recentes</SelectItem>
-                  <SelectItem value="name">Nome (A-Z)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Botão de Filtros */}
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setFiltersOpen(true)}
+              className="relative h-11 px-4 gap-2 whitespace-nowrap"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Filtros</span>
+              {activeFiltersCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-primary">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
           </div>
           
-          {/* Toggle Featured */}
-          <div className="flex items-center gap-2 pt-2">
-            <Button
-              variant={showFeaturedOnly ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
-            >
-              ⭐ {showFeaturedOnly ? "Mostrando apenas destaques" : "Mostrar apenas destaques"}
-            </Button>
-            
-            {/* Clear filters */}
-            {(searchTerm || selectedState || selectedCity || showFeaturedOnly) && (
+          {/* Chips de Filtros Ativos */}
+          {activeFiltersCount > 0 && (
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <span className="text-xs text-muted-foreground">Filtros ativos:</span>
+              
+              {selectedState && selectedState !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 pl-2 pr-1.5">
+                  {selectedState}
+                  <button
+                    onClick={() => setSelectedState("ALL")}
+                    className="hover:bg-background/50 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {selectedCity && selectedCity !== "ALL" && (
+                <Badge variant="secondary" className="gap-1.5 pl-2 pr-1.5">
+                  {selectedCity}
+                  <button
+                    onClick={() => setSelectedCity("ALL")}
+                    className="hover:bg-background/50 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
+              {showFeaturedOnly && (
+                <Badge variant="secondary" className="gap-1.5 pl-2 pr-1.5">
+                  ⭐ Destaques
+                  <button
+                    onClick={() => setShowFeaturedOnly(false)}
+                    className="hover:bg-background/50 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setSearchTerm("");
-                  setSelectedState("");
-                  setSelectedCity("");
+                  setSelectedState("ALL");
+                  setSelectedCity("ALL");
                   setShowFeaturedOnly(false);
                 }}
+                className="h-6 text-xs"
               >
-                Limpar filtros
+                Limpar todos
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         
         {/* Resultados */}
@@ -285,6 +277,108 @@ export default function SaloesPage() {
           )}
         </div>
       </div>
+      
+      {/* Bottom Sheet de Filtros */}
+      <BottomSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title="Filtros de Busca"
+        description="Refine sua busca por localização e preferências"
+      >
+        <div className="space-y-6">
+          {/* Estado */}
+          <div className="space-y-2">
+            <Label>Estado</Label>
+            <Select value={selectedState} onValueChange={handleStateChange}>
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="Todos os estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todos os estados</SelectItem>
+                {locations.states.map((state) => (
+                  <SelectItem key={state} value={state}>
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Cidade */}
+          <div className="space-y-2">
+            <Label>Cidade</Label>
+            <Select
+              value={selectedCity}
+              onValueChange={setSelectedCity}
+              disabled={!selectedState || selectedState === "ALL"}
+            >
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="Todas as cidades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todas as cidades</SelectItem>
+                {availableCities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Ordenação */}
+          <div className="space-y-2">
+            <Label>Ordenar por</Label>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="h-12">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">Melhor avaliados</SelectItem>
+                <SelectItem value="newest">Mais recentes</SelectItem>
+                <SelectItem value="name">Nome (A-Z)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Toggle Featured */}
+          <div className="space-y-2">
+            <Label>Preferências</Label>
+            <Button
+              variant={showFeaturedOnly ? "default" : "outline"}
+              size="lg"
+              onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
+              className="w-full justify-start gap-2"
+            >
+              ⭐ {showFeaturedOnly ? "Mostrando apenas destaques" : "Mostrar apenas destaques"}
+            </Button>
+          </div>
+          
+          {/* Botões de Ação */}
+          <div className="flex gap-2 pt-4 border-t">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                setSelectedState("ALL");
+                setSelectedCity("ALL");
+                setSortBy("rating");
+                setShowFeaturedOnly(false);
+              }}
+              className="flex-1"
+            >
+              Limpar tudo
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => setFiltersOpen(false)}
+              className="flex-1"
+            >
+              Aplicar filtros
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
     </GridBackground>
   );
 }
