@@ -73,173 +73,6 @@ export default function LandingPage() {
         </section>
       </GridBackground>
       
-      {/* Features Section */}
-      <section className="container px-4 py-12 sm:py-16 md:py-20">
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-            Funcionalidades completas para{" "}
-            <span className="text-primary">
-              seu negócio crescer
-            </span>
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-            Ferramentas profissionais para modernizar sua gestão e aumentar seu faturamento
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 max-w-7xl mx-auto">
-          {/* Cashier/POS */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Frente de Caixa</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Sistema completo de fechamento de contas com múltiplos métodos de pagamento, descontos e geração de recibos automáticos.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                <span>Pagamento em dinheiro, cartão e PIX</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                <span>Aplicação de descontos</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                <span>Histórico completo de transações</span>
-              </li>
-            </ul>
-          </GlassCard>
-
-          {/* Analytics */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Relatórios Analytics</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Dashboard profissional com gráficos, métricas de desempenho e relatórios exportáveis em CSV.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                <span>Acompanhamento de receita em tempo real</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                <span>Análise de serviços mais populares</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                <span>Exportação de dados para Excel</span>
-              </li>
-            </ul>
-          </GlassCard>
-
-          {/* Online Scheduling */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Agendamento Online</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Seus clientes agendam 24/7 através da plataforma, sem ligações ou mensagens. Tudo automatizado.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
-                <span>Disponível 24 horas por dia</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
-                <span>Confirmação automática por email</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
-                <span>Sistema anti-conflito de horários</span>
-              </li>
-            </ul>
-          </GlassCard>
-
-          {/* Payments */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Pagamentos Integrados</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Integração com Stripe para cobranças automáticas da plataforma com transparência total.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500 flex-shrink-0" />
-                <span>Cobrança automática mensal</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500 flex-shrink-0" />
-                <span>Cartão de crédito seguro</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500 flex-shrink-0" />
-                <span>Histórico de faturas</span>
-              </li>
-            </ul>
-          </GlassCard>
-
-          {/* Notifications */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Notificações Automáticas</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Sistema de emails automáticos para confirmar, lembrar e atualizar clientes sobre agendamentos.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 flex-shrink-0" />
-                <span>Confirmação imediata por email</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 flex-shrink-0" />
-                <span>Lembretes 24h antes</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500 flex-shrink-0" />
-                <span>Avisos de cancelamento</span>
-              </li>
-            </ul>
-          </GlassCard>
-
-          {/* Premium UI */}
-          <GlassCard className="p-4 sm:p-5 md:p-6 group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="mb-3 sm:mb-4 w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Interface Premium</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              Design moderno com efeitos glass morphism, animações 3D e experiência profissional.
-            </p>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500 flex-shrink-0" />
-                <span>Design responsivo mobile-first</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500 flex-shrink-0" />
-                <span>Tema claro e escuro</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500 flex-shrink-0" />
-                <span>Animações suaves</span>
-              </li>
-            </ul>
-          </GlassCard>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section className="container px-4 py-12 sm:py-16 md:py-20">
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
@@ -491,6 +324,137 @@ export default function LandingPage() {
                   Design moderno glass morphism que impressiona clientes e facilita o uso
                 </p>
               </GlassCard>
+            </div>
+            
+            {/* Pricing Section Before CTA */}
+            <div className="mt-12 sm:mt-16 md:mt-20 mb-12 sm:mb-16">
+              <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+                  Planos{" "}
+                  <span className="text-primary">
+                    simples e transparentes
+                  </span>
+                </h2>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
+                  Sem surpresas. Pague apenas pelo que usar com cobrança condicional inteligente.
+                </p>
+              </div>
+
+              <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-8">
+                {/* Free Trial */}
+                <GlassCard className="p-6 sm:p-7 md:p-8 hover:shadow-2xl transition-all duration-300">
+                  <div className="mb-4 sm:mb-5 md:mb-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-medium mb-3 sm:mb-4">
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span>Recomendado para começar</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2">Trial Gratuito</h3>
+                    <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+                      <span className="text-3xl sm:text-4xl font-bold">R$ 0</span>
+                      <span className="text-sm sm:text-base text-muted-foreground">por 30 dias</span>
+                    </div>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Teste todas as funcionalidades premium sem compromisso. Cancele quando quiser.
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm sm:text-base">Acesso completo a todas as funcionalidades</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm sm:text-base">Sistema de frente de caixa</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm sm:text-base">Relatórios e analytics</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
+                      </div>
+                      <span className="text-sm sm:text-base">Suporte por email</span>
+                    </li>
+                  </ul>
+                  <Link href="/cadastro-salao" className="block">
+                    <Button className="w-full" size="lg">
+                      Começar Grátis
+                    </Button>
+                  </Link>
+                </GlassCard>
+
+                {/* Paid Plan */}
+                <GlassCard className="p-6 sm:p-7 md:p-8 hover:shadow-2xl transition-all duration-300 border-2 border-primary/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 blur-3xl rounded-full -z-10" />
+                  <div className="mb-4 sm:mb-5 md:mb-6">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-4">
+                      <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span>Plano Pro</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2">Assinatura Mensal</h3>
+                    <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+                      <span className="text-3xl sm:text-4xl font-bold">R$ 39</span>
+                      <span className="text-sm sm:text-base text-muted-foreground">por mês</span>
+                    </div>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Cobrança inteligente: pague apenas se faturar mais de R$ 1.000 no mês.
+                    </p>
+                  </div>
+                  <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-sm sm:text-base">Tudo do plano gratuito</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-sm sm:text-base">Agendamentos ilimitados</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-sm sm:text-base">Profissionais ilimitados</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-sm sm:text-base">Suporte prioritário</span>
+                    </li>
+                    <li className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-sm sm:text-base font-semibold">Cobrança condicional: só paga se faturar R$ 1.000+</span>
+                    </li>
+                  </ul>
+                  <Link href="/cadastro-salao" className="block">
+                    <Button className="w-full" size="lg" variant="default">
+                      Iniciar Trial de 30 Dias
+                    </Button>
+                  </Link>
+                </GlassCard>
+              </div>
+
+              {/* Fair Pricing Alert */}
+              <div className="max-w-4xl mx-auto">
+                <div className="p-4 sm:p-5 rounded-xl bg-primary/5 border border-primary/20">
+                  <p className="text-sm sm:text-base text-center">
+                    <span className="font-semibold">💡 Sistema Justo:</span> Nos primeiros 30 dias é grátis. Depois, você só paga R$ 39/mês se seu salão faturar mais de R$ 1.000 no período. Faturou menos? Não paga nada naquele mês!
+                  </p>
+                </div>
+              </div>
             </div>
             
             <div className="text-center px-4">
