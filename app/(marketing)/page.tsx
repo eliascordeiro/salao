@@ -69,22 +69,6 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 lg:gap-8 pt-8 sm:pt-12 max-w-2xl mx-auto px-2">
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">R$ 0</div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Taxa de adesão</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">30 dias</div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Trial gratuito</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-600 dark:text-amber-400">R$ 39</div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Por mês depois</div>
-              </div>
-            </div>
           </div>
         </section>
       </GridBackground>
@@ -93,9 +77,9 @@ export default function LandingPage() {
       <section className="container px-4 py-12 sm:py-16 md:py-20">
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-            Tudo que seu salão precisa em{" "}
+            Funcionalidades completas para{" "}
             <span className="text-primary">
-              uma única plataforma
+              seu negócio crescer
             </span>
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground">

@@ -131,19 +131,27 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
 
     const newErrors: Record<string, string> = {};
 
+    // Validação de dias de trabalho
     if (formData.workDays.length === 0) {
-      newErrors.workDays = "Selecione pelo menos um dia de trabalho";
+      newErrors.workDays = "⚠️ Selecione pelo menos um dia de trabalho";
+      alert("Por favor, selecione pelo menos um dia da semana em que o profissional trabalha.");
     }
 
-    if (!validateTime(formData.workStart)) {
+    // Validação de horário de início
+    if (!formData.workStart) {
+      newErrors.workStart = "Campo obrigatório";
+    } else if (!validateTime(formData.workStart)) {
       newErrors.workStart = "Horário inválido (formato: HH:mm)";
     }
 
-    if (!validateTime(formData.workEnd)) {
+    // Validação de horário de término
+    if (!formData.workEnd) {
+      newErrors.workEnd = "Campo obrigatório";
+    } else if (!validateTime(formData.workEnd)) {
       newErrors.workEnd = "Horário inválido (formato: HH:mm)";
     }
 
-    if (formData.workStart >= formData.workEnd) {
+    if (formData.workStart && formData.workEnd && formData.workStart >= formData.workEnd) {
       newErrors.workEnd = "Horário de término deve ser após o início";
     }
 
@@ -171,6 +179,19 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      
+      // Mensagem mais detalhada para o usuário
+      const errorMessages = [];
+      if (newErrors.workDays) errorMessages.push("- Dias da semana");
+      if (newErrors.workStart) errorMessages.push("- Horário de início");
+      if (newErrors.workEnd) errorMessages.push("- Horário de término");
+      if (newErrors.lunchStart || newErrors.lunchEnd) errorMessages.push("- Horário de almoço");
+      if (newErrors.slotInterval) errorMessages.push("- Intervalo entre slots");
+      
+      if (errorMessages.length > 0 && !newErrors.workDays) {
+        alert(`Por favor, corrija os seguintes campos:\n\n${errorMessages.join("\n")}`);
+      }
+      
       return;
     }
 
@@ -325,6 +346,26 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
             </div>
           )}
 
+          {/* Alerta de Erros */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/30">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-destructive mb-2">Por favor, corrija os seguintes campos:</p>
+                  <ul className="text-sm text-destructive/90 space-y-1 list-disc list-inside">
+                    {errors.workDays && <li>{errors.workDays}</li>}
+                    {errors.workStart && <li>Horário de início: {errors.workStart}</li>}
+                    {errors.workEnd && <li>Horário de término: {errors.workEnd}</li>}
+                    {errors.lunchStart && <li>Horário de almoço (início): {errors.lunchStart}</li>}
+                    {errors.lunchEnd && <li>Horário de almoço (término): {errors.lunchEnd}</li>}
+                    {errors.slotInterval && <li>Intervalo entre slots: {errors.slotInterval}</li>}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Configuração de Horários */}
             <GlassCard className="p-6">
@@ -336,17 +377,18 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Dias de Trabalho */}
                 <div>
-                  <Label>Dias de Trabalho</Label>
+                  <Label>Dias de Trabalho *</Label>
                   <div className="grid grid-cols-7 gap-2 mt-2">
                     {DAYS_OF_WEEK.map((day) => (
                       <button
                         key={day.value}
                         type="button"
                         onClick={() => handleDayToggle(day.value)}
-                        className={`p-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${ formData.workDays.includes(day.value)
+                        className={`p-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                          formData.workDays.includes(day.value)
                             ? "bg-primary text-primary-foreground shadow-lg shadow-primary/50"
                             : "bg-background-alt/50 text-muted-foreground hover:bg-background-alt"
-                        }`}
+                        } ${errors.workDays ? "ring-2 ring-destructive/50" : ""}`}
                         title={day.full}
                       >
                         {day.label}
@@ -354,35 +396,49 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
                     ))}
                   </div>
                   {errors.workDays && (
-                    <p className="text-xs text-destructive mt-1">{errors.workDays}</p>
+                    <p className="text-sm text-destructive mt-2 flex items-center gap-1 font-medium">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.workDays}
+                    </p>
                   )}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    * Campo obrigatório - Selecione pelo menos um dia da semana
+                  </p>
                 </div>
 
                 {/* Expediente */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="workStart">Início do Expediente</Label>
+                    <Label htmlFor="workStart">Início do Expediente *</Label>
                     <Input
                       id="workStart"
                       type="time"
                       value={formData.workStart}
                       onChange={(e) => setFormData({ ...formData, workStart: e.target.value })}
+                      className={errors.workStart ? "ring-2 ring-destructive/50" : ""}
                     />
                     {errors.workStart && (
-                      <p className="text-xs text-destructive mt-1">{errors.workStart}</p>
+                      <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.workStart}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="workEnd">Fim do Expediente</Label>
+                    <Label htmlFor="workEnd">Fim do Expediente *</Label>
                     <Input
                       id="workEnd"
                       type="time"
                       value={formData.workEnd}
                       onChange={(e) => setFormData({ ...formData, workEnd: e.target.value })}
+                      className={errors.workEnd ? "ring-2 ring-destructive/50" : ""}
                     />
                     {errors.workEnd && (
-                      <p className="text-xs text-destructive mt-1">{errors.workEnd}</p>
+                      <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.workEnd}
+                      </p>
                     )}
                   </div>
                 </div>
