@@ -74,6 +74,7 @@ export default function SaloesPage() {
   // Geolocalização
   const geolocation = useGeolocation();
   const [useLocation, setUseLocation] = useState(false);
+  const [maxDistance, setMaxDistance] = useState(50); // Raio máximo em km (padrão: 50km)
   
   // Carregar localizações disponíveis
   useEffect(() => {
@@ -192,6 +193,12 @@ export default function SaloesPage() {
         return { ...salon, distance: undefined };
       });
       
+      // Filtrar por distância máxima
+      result = result.filter(salon => {
+        if (salon.distance === undefined) return false; // Remover salões sem coordenadas
+        return salon.distance <= maxDistance;
+      });
+      
       // Ordenar por distância quando geolocalização está ativa
       result.sort((a, b) => {
         if (a.distance === undefined) return 1;
@@ -201,7 +208,7 @@ export default function SaloesPage() {
     }
     
     return result;
-  }, [salons, searchTerm, selectedState, selectedCity, useLocation, geolocation.latitude, geolocation.longitude]);
+  }, [salons, searchTerm, selectedState, selectedCity, useLocation, geolocation.latitude, geolocation.longitude, maxDistance]);
   
   // Limpar cidade ao mudar estado
   const handleStateChange = (state: string) => {
@@ -305,11 +312,39 @@ export default function SaloesPage() {
           
           {/* Badge de Localização Ativa */}
           {useLocation && geolocation.hasLocation && (
-            <div className="mt-3 p-2 bg-primary/10 border border-primary/20 rounded-lg">
-              <p className="text-sm text-primary flex items-center gap-2">
-                <Navigation className="h-4 w-4" />
-                Mostrando salões mais próximos de você
-              </p>
+            <div className="mt-3 space-y-2">
+              <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-sm text-primary flex items-center gap-2">
+                  <Navigation className="h-4 w-4" />
+                  Mostrando salões em um raio de {maxDistance}km
+                </p>
+              </div>
+              
+              {/* Controle de Raio de Busca */}
+              <div className="p-3 glass-card rounded-lg space-y-2">
+                <label className="text-xs text-foreground-muted font-medium flex items-center justify-between">
+                  <span>Raio de busca: {maxDistance}km</span>
+                  <button
+                    onClick={() => setMaxDistance(50)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Resetar
+                  </button>
+                </label>
+                <input
+                  type="range"
+                  min="5"
+                  max="200"
+                  step="5"
+                  value={maxDistance}
+                  onChange={(e) => setMaxDistance(Number(e.target.value))}
+                  className="w-full h-2 bg-background-alt/50 rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <div className="flex justify-between text-xs text-foreground-muted">
+                  <span>5km</span>
+                  <span>200km</span>
+                </div>
+              </div>
             </div>
           )}
           
@@ -399,12 +434,25 @@ export default function SaloesPage() {
                   Nenhum salão encontrado
                 </h3>
                 <p className="text-muted-foreground">
-                  Tente ajustar os filtros para ver mais resultados
+                  {useLocation && geolocation.hasLocation 
+                    ? `Nenhum salão encontrado em um raio de ${maxDistance}km. Tente aumentar o raio de busca.`
+                    : "Tente ajustar os filtros para ver mais resultados"}
                 </p>
               </div>
             </div>
           ) : (
             <>
+              {/* Contador de Resultados */}
+              {useLocation && geolocation.hasLocation && (
+                <div className="mb-4 p-3 glass-card rounded-lg">
+                  <p className="text-sm text-foreground flex items-center gap-2">
+                    <Navigation className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{filteredSalons.length}</span> 
+                    {filteredSalons.length === 1 ? "salão encontrado" : "salões encontrados"} em um raio de <span className="font-medium">{maxDistance}km</span>
+                  </p>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredSalons.map((salon) => (
                   <SalonCard key={salon.id} salon={salon} />
