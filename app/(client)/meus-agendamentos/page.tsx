@@ -23,6 +23,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { GridBackground } from "@/components/ui/grid-background";
+import { AddToCalendarButton } from "@/components/ui/add-to-calendar-button";
 
 interface Booking {
   id: string;
@@ -41,6 +42,7 @@ interface Booking {
   salon: {
     name: string;
     address?: string;
+    phone?: string;
   };
 }
 
@@ -432,6 +434,11 @@ function MyBookingsContent() {
 
                       {/* Actions */}
                       <div className="space-y-3">
+                        {/* Add to Calendar Button */}
+                        {(booking.status === "CONFIRMED" || booking.status === "PENDING") && (
+                          <AddToCalendarButton booking={booking} />
+                        )}
+
                         {/* Cancel Button */}
                         {canCancelBooking(booking) && (
                           <button

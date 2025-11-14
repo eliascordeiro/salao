@@ -13,10 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SalonCard } from "@/components/salons/SalonCard";
+import { SalonListSkeleton } from "@/components/ui/salon-skeleton";
 import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X, Navigation } from "lucide-react";
 import { GridBackground } from "@/components/ui/grid-background";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { calculateDistance, formatDistance } from "@/lib/utils/distance";
 
 interface Salon {
@@ -56,12 +58,18 @@ export default function SaloesPage() {
     byState: {},
   });
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedState, setSelectedState] = useState<string>("ALL");
   const [selectedCity, setSelectedCity] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState("rating");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 12;
   
   // Geolocalização
   const geolocation = useGeolocation();
@@ -89,21 +97,25 @@ export default function SaloesPage() {
   useEffect(() => {
     async function loadSalons() {
       setLoading(true);
+      setPage(1);
+      setHasMore(true);
       
       try {
         // Construir query params
         const params = new URLSearchParams();
-        if (selectedCity) params.set("city", selectedCity);
-        if (selectedState) params.set("state", selectedState);
+        if (selectedCity && selectedCity !== "ALL") params.set("city", selectedCity);
+        if (selectedState && selectedState !== "ALL") params.set("state", selectedState);
         if (showFeaturedOnly) params.set("featured", "true");
         params.set("sort", sortBy);
-        params.set("limit", "50");
+        params.set("limit", LIMIT.toString());
+        params.set("page", "1");
         
         const response = await fetch(`/api/public/salons?${params.toString()}`);
         const result = await response.json();
         
         if (result.success) {
           setSalons(result.data);
+          setHasMore(result.data.length === LIMIT);
         }
       } catch (error) {
         console.error("Erro ao carregar salões:", error);
@@ -114,6 +126,44 @@ export default function SaloesPage() {
     
     loadSalons();
   }, [selectedCity, selectedState, sortBy, showFeaturedOnly]);
+  
+  // Carregar mais salões (infinite scroll)
+  const loadMoreSalons = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    
+    try {
+      const params = new URLSearchParams();
+      if (selectedCity && selectedCity !== "ALL") params.set("city", selectedCity);
+      if (selectedState && selectedState !== "ALL") params.set("state", selectedState);
+      if (showFeaturedOnly) params.set("featured", "true");
+      params.set("sort", sortBy);
+      params.set("limit", LIMIT.toString());
+      params.set("page", nextPage.toString());
+      
+      const response = await fetch(`/api/public/salons?${params.toString()}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setSalons(prev => [...prev, ...result.data]);
+        setPage(nextPage);
+        setHasMore(result.data.length === LIMIT);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar mais salões:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+  
+  // Infinite scroll trigger
+  const setTriggerRef = useInfiniteScroll({
+    hasMore,
+    loading: loadingMore,
+    onLoadMore: loadMoreSalons,
+  });
   
   // Filtrar por busca local (nome)
   const filteredSalons = useMemo(() => {
@@ -340,9 +390,7 @@ export default function SaloesPage() {
           
           {/* Grid */}
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <SalonListSkeleton count={12} />
           ) : filteredSalons.length === 0 ? (
             <div className="text-center py-20 space-y-4">
               <MapPin className="h-16 w-16 mx-auto text-muted-foreground/50" />
@@ -356,11 +404,33 @@ export default function SaloesPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredSalons.map((salon) => (
-                <SalonCard key={salon.id} salon={salon} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredSalons.map((salon) => (
+                  <SalonCard key={salon.id} salon={salon} />
+                ))}
+              </div>
+              
+              {/* Infinite Scroll Trigger */}
+              {hasMore && (
+                <div ref={setTriggerRef} className="py-8">
+                  {loadingMore && (
+                    <div className="flex justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* End Message */}
+              {!hasMore && filteredSalons.length > 0 && (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">
+                    ✨ Você viu todos os salões disponíveis
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateCarousel } from "@/components/ui/date-carousel";
 import {
   ArrowLeft,
   Check,
@@ -860,49 +861,15 @@ export default function AgendarSalaoPage() {
               
               {/* Seletor de Data */}
               <div>
-                <p className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+                <p className="font-semibold mb-4 flex items-center gap-2 text-sm sm:text-base">
                   <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Selecione a data
                 </p>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                  {next14Days.map((date) => {
-                    const isSelected =
-                      selectedDate?.toDateString() === date.toDateString();
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    
-                    return (
-                      <Button
-                        key={date.toISOString()}
-                        variant={isSelected ? "default" : "outline"}
-                        className={`flex flex-col h-auto py-2 sm:py-3 transition-all ${
-                          isSelected 
-                            ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
-                            : "glass-card hover:bg-background-alt hover:border-primary/30"
-                        }`}
-                        onClick={() => handleSelectDate(date)}
-                      >
-                        <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
-                          {format(date, "EEE", { locale: ptBR })}
-                        </span>
-                        <span className="text-base sm:text-lg font-bold my-0.5 sm:my-1">
-                          {format(date, "dd", { locale: ptBR })}
-                        </span>
-                        <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-white/70' : 'text-foreground-muted'}`}>
-                          {format(date, "MMM", { locale: ptBR })}
-                        </span>
-                        {isToday && (
-                          <Badge className={`mt-1 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 ${
-                            isSelected 
-                              ? 'bg-white/20 text-white border-white/30' 
-                              : 'bg-primary/20 text-primary border-primary/30'
-                          }`}>
-                            Hoje
-                          </Badge>
-                        )}
-                      </Button>
-                    );
-                  })}
-                </div>
+                <DateCarousel
+                  dates={next14Days}
+                  selectedDate={selectedDate}
+                  onSelectDate={handleSelectDate}
+                />
               </div>
               
               {/* Seletor de Horário */}
