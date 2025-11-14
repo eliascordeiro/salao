@@ -178,6 +178,12 @@ export default function SaloesPage() {
     
     // Calcular distância se geolocalização estiver ativa
     if (useLocation && geolocation.latitude && geolocation.longitude) {
+      console.log("🌍 GPS ativo:", {
+        userLat: geolocation.latitude,
+        userLon: geolocation.longitude,
+        totalSalons: result.length
+      });
+      
       result = result.map(salon => {
         // Se o salão tem coordenadas, calcular distância real
         if (salon.latitude && salon.longitude) {
@@ -187,17 +193,28 @@ export default function SaloesPage() {
             salon.latitude,
             salon.longitude
           );
+          
+          console.log(`📍 Salão: ${salon.name}`, {
+            salonLat: salon.latitude,
+            salonLon: salon.longitude,
+            distance: distance.toFixed(2) + "km"
+          });
+          
           return { ...salon, distance };
         }
         // Se não tem coordenadas, deixar sem distância
+        console.log(`⚠️ Salão sem coordenadas: ${salon.name}`);
         return { ...salon, distance: undefined };
       });
       
       // Filtrar por distância máxima
+      const beforeFilter = result.length;
       result = result.filter(salon => {
         if (salon.distance === undefined) return false; // Remover salões sem coordenadas
         return salon.distance <= maxDistance;
       });
+      
+      console.log(`🔍 Filtro de ${maxDistance}km: ${beforeFilter} salões → ${result.length} salões`);
       
       // Ordenar por distância quando geolocalização está ativa
       result.sort((a, b) => {
@@ -313,6 +330,20 @@ export default function SaloesPage() {
           {/* Badge de Localização Ativa */}
           {useLocation && geolocation.hasLocation && (
             <div className="mt-3 space-y-2">
+              {/* Debug Info */}
+              <div className="p-3 glass-card rounded-lg space-y-1.5 bg-blue-500/5 border-blue-500/20">
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400">🔍 Debug GPS</p>
+                <div className="space-y-0.5 text-xs text-foreground-muted">
+                  <p>📍 Sua localização:</p>
+                  <p className="pl-4 font-mono">Lat: {geolocation.latitude?.toFixed(6)}</p>
+                  <p className="pl-4 font-mono">Lon: {geolocation.longitude?.toFixed(6)}</p>
+                  <p className="mt-1">📊 Salões disponíveis:</p>
+                  <p className="pl-4">Total no banco: {salons.length}</p>
+                  <p className="pl-4">Com coordenadas: {salons.filter(s => s.latitude && s.longitude).length}</p>
+                  <p className="pl-4">No raio de {maxDistance}km: {filteredSalons.length}</p>
+                </div>
+              </div>
+              
               <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg">
                 <p className="text-sm text-primary flex items-center gap-2">
                   <Navigation className="h-4 w-4" />
