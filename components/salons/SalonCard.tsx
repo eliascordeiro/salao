@@ -7,6 +7,7 @@ import { MapPin, Star, Users, Briefcase, CheckCircle, Crown, Sparkles, ArrowRigh
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { formatDistance } from "@/lib/utils/distance";
 
 interface SalonCardProps {
   salon: {
@@ -23,6 +24,7 @@ interface SalonCardProps {
     featured: boolean;
     verified: boolean;
     specialties: string[];
+    distance?: number; // Distância em km (calculada pela geolocalização)
     _count?: {
       services: number;
       staff: number;
@@ -131,6 +133,13 @@ export function SalonCard({ salon }: SalonCardProps) {
           
           {/* Badges Flutuantes */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
+            {salon.distance !== undefined && (
+              <Badge className="bg-primary/90 backdrop-blur-sm text-white border-0 shadow-lg">
+                <Navigation className="h-3 w-3 mr-1" />
+                {formatDistance(salon.distance)}
+              </Badge>
+            )}
+            
             {salon.featured && (
               <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 shadow-lg animate-pulse">
                 <Crown className="h-3 w-3 mr-1" />

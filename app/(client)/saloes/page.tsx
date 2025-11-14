@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,22 +13,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SalonCard } from "@/components/salons/SalonCard";
-import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X } from "lucide-react";
+import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X, Navigation } from "lucide-react";
 import { GridBackground } from "@/components/ui/grid-background";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { useGeolocation } from "@/lib/hooks/use-geolocation";
+import { calculateDistance, formatDistance } from "@/lib/utils/distance";
 
 interface Salon {
   id: string;
   name: string;
   description?: string | null;
+  phone?: string | null;
+  address?: string | null;
   city?: string | null;
   state?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   coverPhoto?: string | null;
   rating: number;
   reviewsCount: number;
   featured: boolean;
   verified: boolean;
   specialties: string[];
+  distance?: number; // Adicionado para cálculo de distância
   _count?: {
     services: number;
     staff: number;
@@ -55,6 +62,10 @@ export default function SaloesPage() {
   const [sortBy, setSortBy] = useState("rating");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  // Geolocalização
+  const geolocation = useGeolocation();
+  const [useLocation, setUseLocation] = useState(false);
   
   // Carregar localizações disponíveis
   useEffect(() => {
@@ -105,13 +116,42 @@ export default function SaloesPage() {
   }, [selectedCity, selectedState, sortBy, showFeaturedOnly]);
   
   // Filtrar por busca local (nome)
-  const filteredSalons = salons.filter((salon) => {
-    const matchesSearch = salon.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesState = !selectedState || selectedState === "ALL" || salon.state === selectedState;
-    const matchesCity = !selectedCity || selectedCity === "ALL" || salon.city === selectedCity;
+  const filteredSalons = useMemo(() => {
+    let result = salons.filter((salon) => {
+      const matchesSearch = salon.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesState = !selectedState || selectedState === "ALL" || salon.state === selectedState;
+      const matchesCity = !selectedCity || selectedCity === "ALL" || salon.city === selectedCity;
+      
+      return matchesSearch && matchesState && matchesCity;
+    });
     
-    return matchesSearch && matchesState && matchesCity;
-  });
+    // Calcular distância se geolocalização estiver ativa
+    if (useLocation && geolocation.latitude && geolocation.longitude) {
+      result = result.map(salon => {
+        // Se o salão tem coordenadas, calcular distância real
+        if (salon.latitude && salon.longitude) {
+          const distance = calculateDistance(
+            geolocation.latitude!,
+            geolocation.longitude!,
+            salon.latitude,
+            salon.longitude
+          );
+          return { ...salon, distance };
+        }
+        // Se não tem coordenadas, deixar sem distância
+        return { ...salon, distance: undefined };
+      });
+      
+      // Ordenar por distância quando geolocalização está ativa
+      result.sort((a, b) => {
+        if (a.distance === undefined) return 1;
+        if (b.distance === undefined) return -1;
+        return a.distance - b.distance;
+      });
+    }
+    
+    return result;
+  }, [salons, searchTerm, selectedState, selectedCity, useLocation, geolocation.latitude, geolocation.longitude]);
   
   // Limpar cidade ao mudar estado
   const handleStateChange = (state: string) => {
@@ -159,6 +199,33 @@ export default function SaloesPage() {
               />
             </div>
             
+            {/* Botão de Geolocalização */}
+            <Button
+              variant={useLocation ? "default" : "outline"}
+              size="lg"
+              onClick={() => {
+                if (!useLocation) {
+                  geolocation.getLocation();
+                  setUseLocation(true);
+                } else {
+                  geolocation.clearLocation();
+                  setUseLocation(false);
+                }
+              }}
+              disabled={geolocation.loading}
+              className="h-11 px-3 sm:px-4 gap-2 whitespace-nowrap"
+              title="Salões próximos a mim"
+            >
+              {geolocation.loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Navigation className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {useLocation ? "Próximos" : "Perto de mim"}
+              </span>
+            </Button>
+            
             {/* Botão de Filtros */}
             <Button
               variant="outline"
@@ -175,6 +242,26 @@ export default function SaloesPage() {
               )}
             </Button>
           </div>
+          
+          {/* Alerta de Erro de Geolocalização */}
+          {geolocation.error && (
+            <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-sm text-destructive flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                {geolocation.error}
+              </p>
+            </div>
+          )}
+          
+          {/* Badge de Localização Ativa */}
+          {useLocation && geolocation.hasLocation && (
+            <div className="mt-3 p-2 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm text-primary flex items-center gap-2">
+                <Navigation className="h-4 w-4" />
+                Mostrando salões mais próximos de você
+              </p>
+            </div>
+          )}
           
           {/* Chips de Filtros Ativos */}
           {activeFiltersCount > 0 && (
