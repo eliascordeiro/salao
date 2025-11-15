@@ -11,6 +11,8 @@ import { GridBackground } from "@/components/ui/grid-background";
 import { GlassCard } from "@/components/ui/glass-card";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { SalonMap } from "@/components/maps/salon-map";
+import { DirectionsButton } from "@/components/maps/directions-button";
 import {
   MapPin,
   Phone,
@@ -80,6 +82,8 @@ interface Salon {
   city?: string | null;
   state?: string | null;
   zipCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   description?: string | null;
   coverPhoto?: string | null;
   photos: string[];
@@ -305,8 +309,8 @@ export default function SalaoPage() {
               {/* Location */}
               
               {/* Location */}
-              <div className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors cursor-pointer group">
-                <MapPin className="h-4 w-4 group-hover:animate-bounce" />
+              <div className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group">
+                <MapPin className="h-4 w-4 group-hover:animate-bounce flex-shrink-0" />
                 <span className="text-sm">{salon.address}</span>
                 {salon.city && salon.state && (
                   <span className="text-xs opacity-70">
@@ -314,6 +318,18 @@ export default function SalaoPage() {
                   </span>
                 )}
               </div>
+              
+              {/* Como Chegar Button */}
+              {salon.latitude && salon.longitude && (
+                <DirectionsButton
+                  latitude={salon.latitude}
+                  longitude={salon.longitude}
+                  salonName={salon.name}
+                  address={salon.address}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
               
               {/* Phone com link clicável */}
               <a 
@@ -610,6 +626,32 @@ export default function SalaoPage() {
                   </div>
                 </div>
               </div>
+              
+              {/* Mapa de Localização */}
+              {salon.latitude && salon.longitude && (
+                <GlassCard className="p-5 space-y-3">
+                  <h3 className="font-semibold text-lg flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Localização
+                  </h3>
+                  <SalonMap
+                    latitude={salon.latitude}
+                    longitude={salon.longitude}
+                    salonName={salon.name}
+                    height={350}
+                    zoom={15}
+                  />
+                  <DirectionsButton
+                    latitude={salon.latitude}
+                    longitude={salon.longitude}
+                    salonName={salon.name}
+                    address={salon.address}
+                    variant="default"
+                    size="default"
+                    className="w-full"
+                  />
+                </GlassCard>
+              )}
             </GlassCard>
           )}
           

@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/select";
 import { SalonCard } from "@/components/salons/SalonCard";
 import { SalonListSkeleton } from "@/components/ui/salon-skeleton";
-import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X, Navigation } from "lucide-react";
+import { Search, MapPin, Filter, Loader2, SlidersHorizontal, X, Navigation, Map, List } from "lucide-react";
 import { GridBackground } from "@/components/ui/grid-background";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { calculateDistance, formatDistance } from "@/lib/utils/distance";
+import { SalonsMapView } from "@/components/maps/salons-map-view";
 
 interface Salon {
   id: string;
@@ -29,8 +30,8 @@ interface Salon {
   address?: string | null;
   city?: string | null;
   state?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude: number | null;
+  longitude: number | null;
   coverPhoto?: string | null;
   rating: number;
   reviewsCount: number;
@@ -65,6 +66,7 @@ export default function SaloesPage() {
   const [sortBy, setSortBy] = useState("rating");
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   
   // Pagination
   const [page, setPage] = useState(1);
@@ -315,6 +317,28 @@ export default function SaloesPage() {
                 </Badge>
               )}
             </Button>
+            
+            {/* Toggle Lista/Mapa */}
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="gap-1.5 h-9"
+              >
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Lista</span>
+              </Button>
+              <Button
+                variant={viewMode === "map" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("map")}
+                className="gap-1.5 h-9"
+              >
+                <Map className="h-4 w-4" />
+                <span className="hidden sm:inline">Mapa</span>
+              </Button>
+            </div>
           </div>
           
           {/* Alerta de Erro de Geolocalização */}
@@ -454,7 +478,7 @@ export default function SaloesPage() {
             </p>
           </div>
           
-          {/* Grid */}
+          {/* Grid ou Mapa */}
           {loading ? (
             <SalonListSkeleton count={12} />
           ) : filteredSalons.length === 0 ? (
@@ -471,7 +495,26 @@ export default function SaloesPage() {
                 </p>
               </div>
             </div>
+          ) : viewMode === "map" ? (
+            /* Visualização em Mapa */
+            <SalonsMapView
+              salons={filteredSalons}
+              userLocation={
+                useLocation && geolocation.hasLocation
+                  ? {
+                      latitude: geolocation.latitude!,
+                      longitude: geolocation.longitude!,
+                    }
+                  : undefined
+              }
+              onSalonClick={(salonId) => {
+                // Abrir página do salão
+                window.open(`/salao/${salonId}`, '_blank');
+              }}
+              height={600}
+            />
           ) : (
+            /* Visualização em Lista */
             <>
               {/* Contador de Resultados */}
               {useLocation && geolocation.hasLocation && (
