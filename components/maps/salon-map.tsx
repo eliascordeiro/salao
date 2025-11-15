@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Map, Marker, NavigationControl, FullscreenControl } from "react-map-gl/mapbox";
 import { MapPin } from "lucide-react";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -25,8 +25,26 @@ export function SalonMap({
   interactive = true,
 }: SalonMapProps) {
   const mapRef = useRef<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+  if (!mounted) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-muted rounded-lg animate-pulse"
+        style={{ height }}
+      >
+        <p className="text-sm text-muted-foreground">
+          Carregando mapa...
+        </p>
+      </div>
+    );
+  }
 
   if (!mapboxToken) {
     return (

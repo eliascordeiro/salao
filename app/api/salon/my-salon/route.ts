@@ -55,7 +55,7 @@ export async function PUT(request: Request) {
       openTime,
       closeTime,
       workDays,
-      // bookingType, // Campo removido do schema
+      bookingType,
       active
     } = data
 
@@ -82,7 +82,12 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Campo bookingType removido - sistema agora usa apenas slots
+    if (bookingType && !['DYNAMIC', 'SLOT_BASED', 'BOTH'].includes(bookingType)) {
+      return NextResponse.json(
+        { error: "Tipo de agendamento inválido" },
+        { status: 400 }
+      )
+    }
 
     // Atualizar salão
     const updatedSalon = await prisma.salon.update({

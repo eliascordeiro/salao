@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Map, Marker, NavigationControl, FullscreenControl } from "react-map-gl/mapbox";
 import { MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,11 @@ export function SalonsMapView({
 }: SalonsMapViewProps) {
   const mapRef = useRef<any>(null);
   const [selectedSalon, setSelectedSalon] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -38,6 +43,19 @@ export function SalonsMapView({
   const validSalons = salons.filter(
     (s) => s.latitude !== null && s.longitude !== null
   );
+
+  if (!mounted) {
+    return (
+      <div 
+        className="flex items-center justify-center bg-muted rounded-lg animate-pulse"
+        style={{ height }}
+      >
+        <p className="text-sm text-muted-foreground">
+          Carregando mapa...
+        </p>
+      </div>
+    );
+  }
 
   // Calcular centro do mapa baseado nos salões ou localização do usuário
   const calculateCenter = useCallback(() => {
