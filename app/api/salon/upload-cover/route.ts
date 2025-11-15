@@ -3,8 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserSalon } from "@/lib/salon-helper";
+import { v2 as cloudinary } from "cloudinary";
 
-// Forçar Node Runtime para permitir acesso ao sistema de arquivos
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Forçar Node Runtime para permitir upload
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
@@ -55,25 +63,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Converter File para Buffer e salvar
-    const { writeFile, mkdir } = await import("fs/promises");
-    const { join } = await import("path");
-    const { existsSync } = await import("fs");
-
-    const uploadsDir = join(process.cwd(), "public", "uploads", "covers");
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
+    // Converter para base64 e fazer upload para Cloudinary
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const ext = file.name.split(".").pop() || "jpg";
-    const fileName = `${salon.id}-${Date.now()}.${ext}`;
-    const filePath = join(uploadsDir, fileName);
+    const base64 = buffer.toString('base64');
+    const dataURI = `data:${file.type};base64,${base64}`;
 
-    await writeFile(filePath, buffer);
+    // Upload para Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(dataURI, {
+      folder: 'salao/covers',
+      public_id: `${salon.id}-${Date.now()}`,
+      overwrite: true,
+      resource_type: 'image',
+    });
 
-    const coverPhotoUrl = `/uploads/covers/${fileName}`;
+    const coverPhotoUrl = uploadResponse.secure_url;
 
     // Atualizar banco de dados
     await prisma.salon.update({
@@ -113,6 +117,21 @@ export async function DELETE(request: NextRequest) {
         { error: "Salão não encontrado" },
         { status: 404 }
       );
+    }
+
+    // Se tiver foto no Cloudinary, deletar
+    if (salon.coverPhoto && salon.coverPhoto.includes('cloudinary.com')) {
+      try {
+        // Extrair public_id da URL do Cloudinary
+        const urlParts = salon.coverPhoto.split('/');
+        const publicIdWithExt = urlParts.slice(-2).join('/'); // Ex: "salao/covers/id-timestamp.jpg"
+        const publicId = publicIdWithExt.split('.')[0]; // Remove extensão
+        
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Erro ao deletar do Cloudinary:', err);
+        // Continua mesmo se falhar (pode já ter sido deletado)
+      }
     }
 
     // Atualizar banco de dados (remover foto)
