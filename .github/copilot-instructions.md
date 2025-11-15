@@ -28,6 +28,7 @@
 - [x] Bottom Sheet de Resumo flutuante
 - [x] Sistema de despesas recorrentes (auto-criação)
 - [x] Relatórios financeiros avançados (lucro, despesas por categoria)
+- [x] Sistema de permissões multi-usuário
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -227,6 +228,21 @@
   - Seletor de período (3m, 6m, 12m)
   - Cálculo de médias mensais e comparações
   - Integração com Recharts para visualizações
+✅ Sistema de Permissões Multi-Usuário:
+  - Schema User com roleType (OWNER/STAFF/CUSTOM), ownerId, permissions[]
+  - 33 permissões definidas em 10 módulos (lib/permissions.ts)
+  - PERMISSION_GROUPS para organização na UI
+  - Página /dashboard/usuarios para gestão
+  - Formulário de criação com seletor de permissões por módulo
+  - APIs completas: criar, listar, editar, desativar, reenviar convite
+  - Sistema de convite por email com senha temporária
+  - Hook usePermissions para verificações no frontend
+  - Componente ProtectedFeature para renderização condicional
+  - Sidebar filtra itens baseado em permissões
+  - Session estendida com permissions e roleType
+  - Validação de usuário ativo no login
+  - Self-referential User model (owner → managedUsers)
+  - Permissões incluem: dashboard, salão, agendamentos, profissionais, serviços, caixa, despesas, financeiro, usuários, configurações
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
@@ -255,9 +271,10 @@
 19. ✅ ~~Bottom Sheet de Resumo~~ COMPLETO
 20. ✅ ~~Sistema de despesas recorrentes~~ COMPLETO
 21. ✅ ~~Relatórios financeiros avançados~~ COMPLETO
-22. Sistema de reembolsos (admin)
-23. Notificações SMS (opcional)
-24. App mobile (opcional)
+22. ✅ ~~Sistema de permissões multi-usuário~~ COMPLETO
+23. Sistema de reembolsos (admin)
+24. Notificações SMS (opcional)
+25. App mobile (opcional)
 
 ## Observações Técnicas
 - Node.js 18.17.0+ necessário
