@@ -26,6 +26,8 @@
 - [x] Integração com Mapbox (mapas e geolocalização)
 - [x] Sistema de Favoritos (localStorage)
 - [x] Bottom Sheet de Resumo flutuante
+- [x] Sistema de despesas recorrentes (auto-criação)
+- [x] Relatórios financeiros avançados (lucro, despesas por categoria)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -206,6 +208,25 @@
   - Botão 'Continuar' sempre visível
   - Responsivo: bottom sheet mobile, card sticky desktop
   - Atualização dinâmica conforme seleções
+✅ Sistema de Despesas Recorrentes:
+  - Campos no schema: isRecurring, recurrence, recurringDay, lastGenerated
+  - Serviço processRecurringExpenses para auto-geração
+  - API /api/cron/recurring-expenses (protegida com Bearer token)
+  - Frequências suportadas: MONTHLY, WEEKLY, YEARLY
+  - Cálculo automático de recurringDay
+  - UI atualizada com checkbox de recorrência
+  - Documentação completa do cron job
+✅ Relatórios Financeiros Avançados:
+  - API /api/analytics/financial com métricas completas
+  - Página /dashboard/financeiro com visualizações
+  - Cards de resumo: Receita, Despesas, Lucro, Margem
+  - Gráfico de evolução mensal (Receita vs Despesas vs Lucro)
+  - Gráfico de despesas por categoria (pizza chart)
+  - Tabela de top categorias com porcentagens
+  - Indicadores de tendência com growth arrows
+  - Seletor de período (3m, 6m, 12m)
+  - Cálculo de médias mensais e comparações
+  - Integração com Recharts para visualizações
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
@@ -232,8 +253,8 @@
 17. ✅ ~~Integração com Mapbox~~ COMPLETO
 18. ✅ ~~Sistema de Favoritos~~ COMPLETO
 19. ✅ ~~Bottom Sheet de Resumo~~ COMPLETO
-20. Sistema de despesas recorrentes (auto-criação)
-21. Relatórios financeiros avançados (lucro, despesas por categoria)
+20. ✅ ~~Sistema de despesas recorrentes~~ COMPLETO
+21. ✅ ~~Relatórios financeiros avançados~~ COMPLETO
 22. Sistema de reembolsos (admin)
 23. Notificações SMS (opcional)
 24. App mobile (opcional)
