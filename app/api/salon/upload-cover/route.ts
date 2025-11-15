@@ -17,6 +17,12 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔧 Cloudinary Config:', {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? '✅ Configurado' : '❌ Faltando',
+      api_secret: process.env.CLOUDINARY_API_SECRET ? '✅ Configurado' : '❌ Faltando',
+    });
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -69,6 +75,8 @@ export async function POST(request: NextRequest) {
     const base64 = buffer.toString('base64');
     const dataURI = `data:${file.type};base64,${base64}`;
 
+    console.log('📤 Iniciando upload para Cloudinary...');
+
     // Upload para Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(dataURI, {
       folder: 'salao/covers',
@@ -76,6 +84,8 @@ export async function POST(request: NextRequest) {
       overwrite: true,
       resource_type: 'image',
     });
+
+    console.log('✅ Upload concluído:', uploadResponse.secure_url);
 
     const coverPhotoUrl = uploadResponse.secure_url;
 

@@ -9,6 +9,15 @@ const nextConfig = {
     // Necessário por causa de problemas com types de bibliotecas
     ignoreBuildErrors: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
