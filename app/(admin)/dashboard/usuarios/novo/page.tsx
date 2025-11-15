@@ -153,12 +153,12 @@ export default function NovoUsuarioPage() {
 
           <div className="space-y-4">
             {PERMISSION_GROUPS.map((group) => {
-              const groupPermissions = group.permissions as Permission[]
+              const groupPermissions = group.permissions.map(p => p.key as Permission)
               const allSelected = groupPermissions.every((p) => selectedPermissions.has(p))
               const someSelected = groupPermissions.some((p) => selectedPermissions.has(p))
 
               return (
-                <div key={group.module} className="border rounded-lg p-4 space-y-3">
+                <div key={group.label} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold">{group.label}</h3>
@@ -175,36 +175,25 @@ export default function NovoUsuarioPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {groupPermissions.map((permission) => (
-                      <label
-                        key={permission}
-                        className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedPermissions.has(permission)}
-                          onChange={() => handleTogglePermission(permission)}
-                          className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                        />
-                        <span className="text-sm font-medium">
-                          {permission.split(".")[1] === "view"
-                            ? "Visualizar"
-                            : permission.split(".")[1] === "create"
-                            ? "Criar"
-                            : permission.split(".")[1] === "edit"
-                            ? "Editar"
-                            : permission.split(".")[1] === "delete"
-                            ? "Deletar"
-                            : permission.split(".")[1] === "changeStatus"
-                            ? "Alterar Status"
-                            : permission.split(".")[1] === "openSession"
-                            ? "Abrir Sessão"
-                            : permission.split(".")[1] === "closeSession"
-                            ? "Fechar Sessão"
-                            : permission.split(".")[1]}
-                        </span>
-                      </label>
-                    ))}
+                    {group.permissions.map((permissionItem) => {
+                      const permission = permissionItem.key as Permission
+                      return (
+                        <label
+                          key={permission}
+                          className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedPermissions.has(permission)}
+                            onChange={() => handleTogglePermission(permission)}
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                          />
+                          <span className="text-sm font-medium">
+                            {permissionItem.label}
+                          </span>
+                        </label>
+                      )
+                    })}
                   </div>
                 </div>
               )
