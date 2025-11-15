@@ -13,14 +13,25 @@ model User {
   email           String           @unique
   phone           String?
   password        String
-  role            String           @default("CLIENT")
+  role            String           @default("CLIENT") // "CLIENT", "ADMIN"
+  roleType        String?          // "OWNER", "STAFF", "CUSTOM" (para usuários do salão)
+  ownerId         String?          // ID do usuário proprietário (se for STAFF ou CUSTOM)
+  permissions     String[]         @default([]) // Array de permissões ["dashboard.view", "bookings.view", etc]
   image           String?
+  active          Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  
+  // Relações
   bookings        Booking[]
   reviews         Review[]
   ownedSalons     Salon[]
-  cashierSessions CashierSession[] // Sessões de caixa do cliente
+  cashierSessions CashierSession[]
+  owner           User?            @relation("UserOwner", fields: [ownerId], references: [id])
+  managedUsers    User[]           @relation("UserOwner")
+  
+  @@index([ownerId])
+  @@index([roleType])
 }
 
 model Salon {
