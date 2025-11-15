@@ -15,32 +15,30 @@ import {
   ChevronLeft,
   Menu,
   X,
-  Wallet
+  Wallet,
+  LucideIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect } from "react"
 import { useSidebar } from "@/contexts/sidebar-context"
 
-const menuItems = [
+type MenuItem = {
+  label: string
+  icon: LucideIcon
+  href: string
+  separator?: never
+} | {
+  separator: true
+  label?: never
+  icon?: never
+  href?: never
+}
+
+const menuItems: MenuItem[] = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard",
-  },
-  {
-    label: "Agendamentos",
-    icon: Calendar,
-    href: "/dashboard/agendamentos",
-  },
-  {
-    label: "Serviços",
-    icon: Scissors,
-    href: "/dashboard/servicos",
-  },
-  {
-    label: "Profissionais",
-    icon: Users,
-    href: "/dashboard/profissionais",
   },
   {
     label: "Meu Salão",
@@ -48,9 +46,19 @@ const menuItems = [
     href: "/dashboard/meu-salao",
   },
   {
-    label: "Contas a Pagar",
-    icon: Receipt,
-    href: "/dashboard/contas-a-pagar",
+    label: "Agendamentos",
+    icon: Calendar,
+    href: "/dashboard/agendamentos",
+  },
+  {
+    label: "Profissionais",
+    icon: Users,
+    href: "/dashboard/profissionais",
+  },
+  {
+    label: "Serviços",
+    icon: Scissors,
+    href: "/dashboard/servicos",
   },
   {
     label: "Caixa",
@@ -61,6 +69,11 @@ const menuItems = [
     label: "Análise Financeira",
     icon: TrendingUp,
     href: "/dashboard/analise-financeira",
+  },
+  {
+    label: "Contas a Pagar",
+    icon: Receipt,
+    href: "/dashboard/contas-a-pagar",
   },
   {
     separator: true,
@@ -170,7 +183,11 @@ export function Sidebar() {
 
         {/* Menu Items */}
         <nav className={cn(
-          "space-y-2 overflow-y-auto h-[calc(100vh-140px)]",
+          "space-y-1 overflow-y-auto",
+          // Mobile: altura considera botão menu + padding extra
+          "h-[calc(100vh-80px)]",
+          // Desktop: altura normal
+          "lg:h-[calc(100vh-140px)]",
           collapsed ? "p-2" : "p-4"
         )}>
           {menuItems.map((item, index) => {
@@ -187,6 +204,9 @@ export function Sidebar() {
               )
             }
 
+            // Garantir que temos href e icon
+            if (!item.href || !item.icon) return null
+
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
             const Icon = item.icon
 
@@ -195,21 +215,24 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center rounded-lg transition-all",
-                  "hover:bg-background-alt group relative",
+                  "flex items-center rounded-lg transition-all relative",
+                  "hover:bg-background-alt group",
+                  // Touch target mínimo de 44px para mobile
+                  "min-h-[44px]",
                   isActive && "bg-gradient-primary text-white shadow-lg shadow-primary/20",
                   !isActive && "text-foreground-muted hover:text-primary",
                   // Espaçamento condicional
-                  collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
+                  collapsed ? "justify-center p-3" : "gap-3 px-4 py-3"
                 )}
               >
                 <Icon className={cn(
-                  "transition-transform group-hover:scale-110",
-                  collapsed ? "h-6 w-6" : "h-5 w-5",
+                  "flex-shrink-0 transition-transform group-hover:scale-110",
+                  // Ícones maiores no mobile para melhor usabilidade
+                  collapsed ? "h-6 w-6 min-w-[24px] min-h-[24px]" : "h-6 w-6 min-w-[24px] min-h-[24px] lg:h-5 lg:w-5 lg:min-w-[20px] lg:min-h-[20px]",
                   isActive && "text-white"
                 )} />
                 {!collapsed && (
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium text-sm lg:text-base">{item.label}</span>
                 )}
                 
                 {/* Tooltip quando collapsed (apenas desktop) */}
@@ -228,25 +251,8 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Footer Settings */}
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 border-t border-border/50",
-          collapsed ? "p-2" : "p-4"
-        )}>
-          <Link
-            href="/dashboard/configuracoes"
-            className={cn(
-              "flex items-center rounded-lg transition-all",
-              "hover:bg-background-alt text-foreground-muted hover:text-primary",
-              collapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5"
-            )}
-          >
-            <Settings className={cn(
-              collapsed ? "h-6 w-6" : "h-5 w-5"
-            )} />
-            {!collapsed && <span className="font-medium">Configurações</span>}
-          </Link>
-        </div>
+        {/* Footer (apenas no desktop - removido para evitar duplicação) */}
+        {/* Configurações já está no menu principal */}
       </aside>
     </>
   )
