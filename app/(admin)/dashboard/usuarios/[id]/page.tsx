@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Save } from "lucide-react"
+import { ArrowLeft, Save, Mail } from "lucide-react"
 import { useRouter, useParams } from "next/navigation"
 import { PERMISSION_GROUPS, Permission } from "@/lib/permissions"
 
@@ -25,6 +25,7 @@ export default function EditarUsuarioPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [resendingInvite, setResendingInvite] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
     name: "",
@@ -130,6 +131,33 @@ export default function EditarUsuarioPage() {
     }
   }
 
+  const handleResendInvite = async () => {
+    if (!confirm(`Reenviar convite para ${user?.email}?\n\nUma nova senha temporária será gerada e enviada por email.`)) {
+      return
+    }
+
+    setResendingInvite(true)
+
+    try {
+      const res = await fetch(`/api/users/${userId}/resend-invite`, {
+        method: "POST",
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        alert(`✅ Convite reenviado com sucesso para ${user?.email}!\n\nO usuário receberá um email com a nova senha temporária.`)
+      } else {
+        alert(data.error || "Erro ao reenviar convite")
+      }
+    } catch (error) {
+      console.error("Erro:", error)
+      alert("Erro ao reenviar convite")
+    } finally {
+      setResendingInvite(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -151,22 +179,36 @@ export default function EditarUsuarioPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Editar Usuário</h1>
+            <p className="text-muted-foreground mt-1">
+              Atualize as informações e permissões do usuário
+            </p>
+          </div>
+        </div>
+        
+        {/* Botão Reenviar Convite */}
         <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
+          type="button"
+          variant="outline"
+          onClick={handleResendInvite}
+          disabled={resendingInvite}
           className="gap-2"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
+          <Mail className="h-4 w-4" />
+          {resendingInvite ? "Enviando..." : "Reenviar Convite"}
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Editar Usuário</h1>
-          <p className="text-muted-foreground mt-1">
-            Atualize as informações e permissões do usuário
-          </p>
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
