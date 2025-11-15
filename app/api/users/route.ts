@@ -197,7 +197,7 @@ export async function POST(request: Request) {
         name,
         email,
         password: hashedPassword,
-        role: "CLIENT", // Managed users are always CLIENT role
+        role: "ADMIN", // Managed users need ADMIN role to access dashboard
         roleType: roleType || "CUSTOM",
         ownerId: currentUser.id,
         permissions,

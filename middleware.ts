@@ -26,8 +26,10 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
       
-      // Verificar se é ADMIN
-      if (token.role !== "ADMIN") {
+      // Permitir acesso para ADMIN ou usuários com roleType (OWNER, STAFF, CUSTOM)
+      const hasAccess = token.role === "ADMIN" || (token as any).roleType
+      
+      if (!hasAccess) {
         return NextResponse.redirect(new URL("/saloes", request.url));
       }
     }
@@ -37,8 +39,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     
-    // Bloquear acesso de clientes
-    if (token?.role === "CLIENT" && pathname.startsWith("/dashboard")) {
+    // Bloquear acesso de clientes sem roleType (clientes normais da plataforma)
+    if (token?.role === "CLIENT" && !(token as any).roleType && pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/meus-agendamentos", request.url));
     }
   }
@@ -89,10 +91,12 @@ export async function middleware(request: NextRequest) {
     
     // Se não for rota pública, redirecionar baseado no usuário
     if (!isPublicRoute) {
-      if (token?.role === "ADMIN") {
+      // Usuários com roleType (OWNER, STAFF, CUSTOM) vão para dashboard
+      if (token && (token.role === "ADMIN" || (token as any).roleType)) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
-      if (token?.role === "CLIENT") {
+      // Clientes normais vão para listagem de salões
+      if (token?.role === "CLIENT" && !(token as any).roleType) {
         return NextResponse.redirect(new URL("/saloes", request.url));
       }
       // Usuário não autenticado tentando acessar rota protegida
@@ -112,7 +116,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     
-    if (token.role !== "ADMIN") {
+    // Permitir acesso para ADMIN ou usuários com roleType (OWNER, STAFF, CUSTOM)
+    const hasAccess = token.role === "ADMIN" || (token as any).roleType
+    
+    if (!hasAccess) {
       return NextResponse.redirect(new URL("/saloes", request.url));
     }
   }
