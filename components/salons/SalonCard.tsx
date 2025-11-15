@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatDistance } from "@/lib/utils/distance";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
 
 interface SalonCardProps {
   salon: {
@@ -73,6 +74,11 @@ export function SalonCard({ salon }: SalonCardProps) {
   return (
     <Link href={`/salao/${salon.id}`} className="block h-full">
       <GlassCard className="group overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 cursor-pointer relative">
+        {/* Botão de Favorito - Canto superior esquerdo */}
+        <div className="absolute top-3 left-3 z-20">
+          <FavoriteButton salonId={salon.id} size="md" />
+        </div>
+        
         {/* Quick Actions - Aparece no hover em desktop, sempre visível em mobile */}
         <div className="absolute top-16 right-3 z-10 flex flex-col gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           {salon.phone && (

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Scissors, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Scissors, User, LogOut, LayoutDashboard, Heart, Calendar } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,8 +74,14 @@ export function Navbar({ showAuth = true }: NavbarProps) {
                     <>
                       <DropdownMenuItem asChild>
                         <Link href="/meus-agendamentos" className="cursor-pointer">
-                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          <Calendar className="h-4 w-4 mr-2" />
                           Meus Agendamentos
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/favoritos" className="cursor-pointer">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Meus Favoritos
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
