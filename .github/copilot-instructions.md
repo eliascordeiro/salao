@@ -243,6 +243,17 @@
   - Validação de usuário ativo no login
   - Self-referential User model (owner → managedUsers)
   - Permissões incluem: dashboard, salão, agendamentos, profissionais, serviços, caixa, despesas, financeiro, usuários, configurações
+✅ Sistema de Email Centralizado:
+  - API /api/email/send para envio via SMTP
+  - Suporte a múltiplos provedores (Gmail, SendGrid, Mailtrap, AWS SES)
+  - Página /dashboard/configuracoes/email para configuração e teste
+  - Validação automática de configuração SMTP
+  - Templates HTML responsivos
+  - Integração com sistema de usuários (convites automáticos)
+  - Variáveis: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM
+  - Logs detalhados de envio
+  - Interface de teste com feedback visual
+  - Documentação completa (docs/SISTEMA_EMAIL.md)
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
