@@ -11,6 +11,7 @@ import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DateCarousel } from "@/components/ui/date-carousel";
+import { FloatingBookingSummary } from "@/components/booking/floating-booking-summary";
 import {
   ArrowLeft,
   Check,
@@ -1137,6 +1138,33 @@ export default function AgendarSalaoPage() {
           )}
         </div>
       </div>
+
+      {/* Floating Booking Summary */}
+      <FloatingBookingSummary
+        serviceName={selectedService?.name}
+        servicePrice={selectedService?.price}
+        serviceDuration={selectedService?.duration}
+        staffName={selectedStaff?.name}
+        date={selectedDate}
+        time={selectedTime}
+        onContinue={nextStep}
+        continueLabel={
+          currentStep === 1
+            ? "Escolher Profissional"
+            : currentStep === 2
+            ? "Escolher Data e Horário"
+            : currentStep === 3
+            ? "Confirmar Agendamento"
+            : "Finalizar"
+        }
+        continueDisabled={
+          (currentStep === 1 && !selectedService) ||
+          (currentStep === 2 && !selectedStaff) ||
+          (currentStep === 3 && (!selectedDate || !selectedTime)) ||
+          currentStep === 4
+        }
+        showContinueButton={currentStep < 4}
+      />
     </GridBackground>
   );
 }
