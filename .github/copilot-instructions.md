@@ -20,6 +20,12 @@
 - [x] Padronização de inputs com glass-card
 - [x] Simplificação para slots apenas (removido agendamento dinâmico)
 - [x] Sistema de contas a pagar (controle de despesas)
+- [x] Swipeable Date Picker (carrossel de datas)
+- [x] Lazy Loading de salões (Infinite Scroll)
+- [x] Adicionar ao Calendário (.ics export)
+- [x] Integração com Mapbox (mapas e geolocalização)
+- [x] Sistema de Favoritos (localStorage)
+- [x] Bottom Sheet de Resumo flutuante
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -160,6 +166,46 @@
   - Multi-tenant com isolamento por salão
   - Helper functions para cálculo de lucro e análises
   - Documentação completa (docs/CONTAS_A_PAGAR.md)
+✅ Swipeable Date Picker (Carrossel de Datas):
+  - Componente DateCarousel com navegação por swipe
+  - Scroll suave e responsivo
+  - Indicadores visuais de data selecionada
+  - Integrado no fluxo de agendamento
+✅ Lazy Loading de Salões (Infinite Scroll):
+  - Carregamento progressivo de salões
+  - Intersection Observer API
+  - Loading skeleton durante fetch
+  - Melhor performance e UX
+✅ Adicionar ao Calendário:
+  - Exportação de agendamentos em formato .ics
+  - Compatível com Google Calendar, Outlook, Apple Calendar
+  - Inclui todos os detalhes: serviço, profissional, endereço, telefone
+✅ Integração com Mapbox:
+  - Mapas interativos com Mapbox GL JS
+  - Componente SalonMap (mapa individual)
+  - Componente SalonsMapView (múltiplos salões)
+  - Botão DirectionsButton (navegação inteligente)
+  - Toggle List/Map view na lista de salões
+  - Geolocalização e cálculo de distância
+  - GPS coordinates no banco de dados
+  - Deployed to Railway
+✅ Sistema de Favoritos:
+  - Hook useFavorites para gerenciar com localStorage
+  - Componente FavoriteButton com animação de coração
+  - Botão nos cards de salão (canto superior esquerdo)
+  - Página /favoritos para listar salões favoritos
+  - Link 'Meus Favoritos' no menu do cliente
+  - Persistência local sem necessidade de login
+  - Estados vazios com call-to-action
+✅ Bottom Sheet de Resumo Flutuante:
+  - Componente FloatingBookingSummary
+  - Resumo do agendamento: serviço, profissional, data, hora, preço
+  - Bottom sheet fixo na parte inferior (mobile)
+  - Colapsa/expande com animação suave
+  - Backdrop blur quando expandido
+  - Botão 'Continuar' sempre visível
+  - Responsivo: bottom sheet mobile, card sticky desktop
+  - Atualização dinâmica conforme seleções
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
@@ -180,11 +226,17 @@
 11. ✅ ~~Associação profissional ↔ serviços~~ COMPLETO
 12. ✅ ~~Padronização de UI (glass-card)~~ COMPLETO
 13. ✅ ~~Sistema de contas a pagar~~ COMPLETO
-14. Sistema de despesas recorrentes (auto-criação)
-15. Relatórios financeiros avançados (lucro, despesas por categoria)
-16. Sistema de reembolsos (admin)
-17. Notificações SMS (opcional)
-18. App mobile (opcional)
+14. ✅ ~~Swipeable Date Picker~~ COMPLETO
+15. ✅ ~~Lazy Loading de salões~~ COMPLETO
+16. ✅ ~~Adicionar ao Calendário (.ics)~~ COMPLETO
+17. ✅ ~~Integração com Mapbox~~ COMPLETO
+18. ✅ ~~Sistema de Favoritos~~ COMPLETO
+19. ✅ ~~Bottom Sheet de Resumo~~ COMPLETO
+20. Sistema de despesas recorrentes (auto-criação)
+21. Relatórios financeiros avançados (lucro, despesas por categoria)
+22. Sistema de reembolsos (admin)
+23. Notificações SMS (opcional)
+24. App mobile (opcional)
 
 ## Observações Técnicas
 - Node.js 18.17.0+ necessário
