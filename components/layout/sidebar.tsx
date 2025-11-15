@@ -66,14 +66,14 @@ const menuItems: MenuItem[] = [
     href: "/dashboard/caixa",
   },
   {
-    label: "Análise Financeira",
-    icon: TrendingUp,
-    href: "/dashboard/analise-financeira",
-  },
-  {
     label: "Contas a Pagar",
     icon: Receipt,
     href: "/dashboard/contas-a-pagar",
+  },
+  {
+    label: "Análise Financeira",
+    icon: TrendingUp,
+    href: "/dashboard/financeiro",
   },
   {
     separator: true,

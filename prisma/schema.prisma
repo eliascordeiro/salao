@@ -336,8 +336,11 @@ model Expense {
   paymentMethod String? // "CASH", "DEBIT", "CREDIT", "PIX", "BANK_TRANSFER"
   
   // Recorrência (opcional - Fase 2)
-  isRecurring Boolean   @default(false)
-  recurrence  String?   // "MONTHLY", "YEARLY", "WEEKLY"
+  isRecurring    Boolean   @default(false)
+  recurrence     String?   // "MONTHLY", "YEARLY", "WEEKLY"
+  recurringDay   Int?      // Dia do mês (1-31) para MONTHLY, dia da semana (0-6) para WEEKLY
+  lastGenerated  DateTime? // Última vez que uma despesa recorrente foi gerada
+  parentExpenseId String?  // ID da despesa original (para despesas auto-geradas)
   
   // Observações
   notes       String?

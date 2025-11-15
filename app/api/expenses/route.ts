@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       isRecurring,
       recurrence,
+      recurringDay,
       notes,
     } = body;
 
@@ -129,6 +130,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calcular recurringDay automaticamente se não fornecido
+    let calculatedRecurringDay = recurringDay;
+    if (isRecurring && recurrence === "MONTHLY" && !calculatedRecurringDay) {
+      // Usar o dia do mês da data de vencimento
+      calculatedRecurringDay = new Date(dueDate).getDate();
+    }
+
     // Criar despesa
     const expense = await prisma.expense.create({
       data: {
@@ -141,6 +149,9 @@ export async function POST(request: NextRequest) {
         paymentMethod: paymentMethod || null,
         isRecurring: isRecurring || false,
         recurrence: recurrence || null,
+        recurringDay: calculatedRecurringDay || null,
+        lastGenerated: null, // Será preenchido quando a primeira recorrência for gerada
+        parentExpenseId: null,
         notes: notes || null,
       },
     });
