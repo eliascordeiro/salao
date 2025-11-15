@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,8 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { GradientButton } from "@/components/ui/gradient-button"
 import { GridBackground } from "@/components/ui/grid-background"
 import { Scissors, AlertCircle, ArrowLeft, Sparkles } from "lucide-react"
+import { getFirstAccessibleRoute } from "@/lib/navigation-helper"
+import { Permission } from "@/lib/permissions"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,10 +36,35 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Email ou senha incorretos")
       } else {
-        router.push("/dashboard")
-        router.refresh()
+        // Fetch session to get user permissions
+        const response = await fetch("/api/auth/session")
+        const session = await response.json()
+        
+        if (session?.user) {
+          const permissions = (session.user as any).permissions || []
+          const roleType = (session.user as any).roleType
+          
+          // Get the first accessible route based on user permissions
+          const redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+          
+          console.log("🔐 Login successful:", {
+            user: session.user.name,
+            role: session.user.role,
+            roleType,
+            permissions: permissions.length,
+            redirectTo: redirectRoute
+          })
+          
+          router.push(redirectRoute)
+          router.refresh()
+        } else {
+          // Fallback if session fetch fails
+          router.push("/dashboard")
+          router.refresh()
+        }
       }
     } catch (error) {
+      console.error("Login error:", error)
       setError("Ocorreu um erro. Tente novamente.")
     } finally {
       setIsLoading(false)
