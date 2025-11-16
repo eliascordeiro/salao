@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DashboardHeader } from "@/components/dashboard/header";
 import {
   TrendingUp,
   TrendingDown,
@@ -51,6 +53,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#6366f1", "#84cc16"];
 
 export default function FinanceiroPage() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("6m");
   const [data, setData] = useState<any>(null);
@@ -100,18 +103,30 @@ export default function FinanceiroPage() {
   }));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              Análise Financeira
-            </h1>
-            <p className="text-foreground-muted">
-              Relatórios avançados de receita, despesas e lucro
-            </p>
-          </div>
+    <>
+      {/* Dashboard Header */}
+      {session?.user && (
+        <DashboardHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+        />
+      )}
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Análise Financeira
+              </h1>
+              <p className="text-foreground-muted">
+                Relatórios avançados de receita, despesas e lucro
+              </p>
+            </div>
 
           {/* Seletor de Período */}
           <div className="flex gap-2">
@@ -342,6 +357,7 @@ export default function FinanceiroPage() {
           })}
         </div>
       </GlassCard>
-    </div>
+      </div>
+    </>
   );
 }

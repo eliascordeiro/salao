@@ -49,10 +49,6 @@ export const PERMISSIONS = {
   USERS_CREATE: "users.create",
   USERS_EDIT: "users.edit",
   USERS_DELETE: "users.delete",
-  
-  // Configurações
-  SETTINGS_VIEW: "settings.view",
-  SETTINGS_EDIT: "settings.edit",
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -141,14 +137,6 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.USERS_CREATE, label: "Criar usuários" },
       { key: PERMISSIONS.USERS_EDIT, label: "Editar usuários" },
       { key: PERMISSIONS.USERS_DELETE, label: "Excluir usuários" },
-    ],
-  },
-  {
-    label: "Configurações",
-    description: "Acessar configurações do sistema",
-    permissions: [
-      { key: PERMISSIONS.SETTINGS_VIEW, label: "Visualizar configurações" },
-      { key: PERMISSIONS.SETTINGS_EDIT, label: "Editar configurações" },
     ],
   },
 ] as const;

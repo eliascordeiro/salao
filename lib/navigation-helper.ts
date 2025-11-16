@@ -55,11 +55,6 @@ export const NAVIGATION_ROUTES = [
     href: "/dashboard/assinatura",
     permission: null, // No permission required
   },
-  {
-    label: "Configurações",
-    href: "/dashboard/configuracoes",
-    permission: "settings.view",
-  },
 ] as const
 
 /**

@@ -11,7 +11,6 @@ import {
   Store, 
   Receipt,
   TrendingUp,
-  Settings,
   ChevronLeft,
   Menu,
   X,
@@ -103,12 +102,6 @@ const menuItems: MenuItem[] = [
     label: "Assinatura",
     icon: CreditCard,
     href: "/dashboard/assinatura",
-  },
-  {
-    label: "Configurações",
-    icon: Settings,
-    href: "/dashboard/configuracoes",
-    permission: "settings.view",
   },
 ]
 

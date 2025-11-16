@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           roleType: user.roleType,
           permissions: user.permissions,
+          createdAt: user.createdAt,
           image: user.image
         }
       }
@@ -68,6 +69,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
         token.roleType = (user as any).roleType
         token.permissions = (user as any).permissions || []
+        token.createdAt = (user as any).createdAt
       }
       return token
     },
@@ -77,6 +79,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
         ;(session.user as any).roleType = token.roleType
         ;(session.user as any).permissions = token.permissions || []
+        ;(session.user as any).createdAt = token.createdAt
       }
       return session
     }

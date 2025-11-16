@@ -1,12 +1,15 @@
 "use client"
 
+import { useSession } from "next-auth/react"
 import { useTheme } from "@/contexts/theme-context"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Sun, Moon, Monitor, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DashboardHeader } from "@/components/dashboard/header"
 
 export default function ConfiguracoesPage() {
+  const { data: session } = useSession()
   const { theme, setTheme, resolvedTheme } = useTheme()
 
   const themes = [
@@ -31,14 +34,26 @@ export default function ConfiguracoesPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
-        <p className="text-foreground-muted mt-2">
-          Personalize a aparência e preferências do sistema
-        </p>
-      </div>
+    <>
+      {/* Dashboard Header */}
+      {session?.user && (
+        <DashboardHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+        />
+      )}
+
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
+          <p className="text-foreground-muted mt-2">
+            Personalize a aparência e preferências do sistema
+          </p>
+        </div>
 
       {/* Tema Section */}
       <GlassCard className="p-6">
@@ -162,6 +177,7 @@ export default function ConfiguracoesPage() {
           💡 <strong>Dica:</strong> O tema será salvo automaticamente e aplicado em todas as suas sessões.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

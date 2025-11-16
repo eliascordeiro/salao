@@ -23,7 +23,7 @@ export async function GET() {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Buscar salão do usuário
+    // Buscar usuário atual
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: { 
@@ -43,11 +43,46 @@ export async function GET() {
       },
     });
 
-    if (!user || user.ownedSalons.length === 0) {
-      return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    const salon = user.ownedSalons[0];
+    // Se o usuário é gerenciado (tem ownerId), buscar o salão do proprietário
+    let salon;
+    if (user.ownerId) {
+      // Usuário gerenciado - buscar salão do owner
+      const owner = await prisma.user.findUnique({
+        where: { id: user.ownerId },
+        include: {
+          ownedSalons: {
+            include: {
+              subscription: {
+                include: {
+                  plan: true,
+                  invoices: {
+                    orderBy: { createdAt: "desc" },
+                    take: 12,
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!owner || owner.ownedSalons.length === 0) {
+        return NextResponse.json({ error: "Salão do proprietário não encontrado" }, { status: 404 });
+      }
+
+      salon = owner.ownedSalons[0];
+    } else {
+      // Proprietário - usar próprios salões
+      if (user.ownedSalons.length === 0) {
+        return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
+      }
+
+      salon = user.ownedSalons[0];
+    }
 
     // Se não tem subscription, criar uma automaticamente com trial de 30 dias
     if (!salon.subscription) {
