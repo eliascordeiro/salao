@@ -8,9 +8,10 @@ export function usePermissions() {
   
   // Get user permissions from session
   const userPermissions = (session?.user as any)?.permissions || []
+  const roleType = (session?.user as any)?.roleType
   
-  // If user is ADMIN (owner), they have all permissions
-  const isOwner = session?.user?.role === "ADMIN"
+  // Only OWNER has all permissions, not STAFF or CUSTOM
+  const isOwner = roleType === "OWNER"
   
   const checkPermission = (permission: Permission): boolean => {
     if (isOwner) return true
