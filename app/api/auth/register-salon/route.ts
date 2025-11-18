@@ -26,10 +26,13 @@ export async function POST(request: NextRequest) {
       salonName,
       salonPhone,
       salonAddress,
+      salonNumber,
       salonCity,
       salonState,
       salonZipCode,
       salonDescription,
+      latitude,
+      longitude,
     } = body;
     
     // Validações
@@ -132,21 +135,31 @@ export async function POST(request: NextRequest) {
         name: salonName,
         phone: salonPhone,
         address: salonAddress,
+        salonNumber,
         city: salonCity,
         state: salonState,
         zipCode: salonZipCode || null,
+        latitude: latitude || null,
+        longitude: longitude || null,
         ownerId: user.id,
       });
+      
+      // Montar endereço completo com número
+      const fullAddress = salonNumber 
+        ? `${salonAddress}, ${salonNumber}` 
+        : salonAddress;
       
       const salon = await tx.salon.create({
         data: {
           name: salonName,
           phone: salonPhone,
-          address: salonAddress,
+          address: fullAddress,
           city: salonCity,
           state: salonState,
           zipCode: salonZipCode || null,
           description: salonDescription || null,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
           // Valores padrão para campos obrigatórios
           openTime: "09:00",
           closeTime: "18:00",
