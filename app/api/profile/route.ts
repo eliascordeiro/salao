@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         roleType: true,
         permissions: true,
         createdAt: true,
-        isActive: true,
+        active: true,
       },
     })
 

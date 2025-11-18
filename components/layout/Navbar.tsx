@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Scissors, User, LogOut, LayoutDashboard, Heart, Calendar } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +45,9 @@ export function Navbar({ showAuth = true }: NavbarProps) {
         {/* Auth Section */}
         {showAuth && (
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {status === "loading" ? (
               <div className="h-9 w-20 bg-muted animate-pulse rounded-md" />
             ) : session ? (

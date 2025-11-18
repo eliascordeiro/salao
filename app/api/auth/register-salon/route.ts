@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
           role: "ADMIN", // Proprietários são ADMIN
           roleType: "OWNER", // Tipo específico: OWNER (proprietário)
           permissions: OWNER_PERMISSIONS, // Todas as permissões
-          isActive: true, // Ativo por padrão
+          active: true, // Ativo por padrão
         },
       });
       
