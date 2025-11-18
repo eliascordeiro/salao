@@ -59,12 +59,19 @@ type FilterTab = "upcoming" | "past" | "cancelled";
 function MyBookingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("upcoming");
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Redirecionar para login se não estiver autenticado
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login?callbackUrl=/meus-agendamentos");
+    }
+  }, [status, router]);
 
   useEffect(() => {
     // Verificar se acabou de criar um agendamento
@@ -154,9 +161,24 @@ function MyBookingsContent() {
     return booking.status === "PENDING" || booking.status === "CONFIRMED";
   };
 
+  // Loading enquanto verifica autenticação
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <GridBackground>
+          <GlassCard className="max-w-md mx-auto text-center py-16">
+            <div className="animate-pulseGlow inline-block mb-6">
+              <Sparkles className="h-16 w-16 text-primary mx-auto" />
+            </div>
+            <p className="text-xl text-foreground-muted font-medium">Verificando autenticação...</p>
+          </GlassCard>
+        </GridBackground>
+      </div>
+    );
+  }
+
   if (!session) {
-    router.push("/login");
-    return null;
+    return null; // Vai redirecionar no useEffect
   }
 
   return (
