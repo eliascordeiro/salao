@@ -7,15 +7,12 @@ import {
   getDaysLeftInTrial, 
   getTrialPercentage 
 } from "@/lib/subscription-helper";
-
-export const dynamic = 'force-dynamic';
-
-export const dynamic = 'force-dynamic';
-
 import { 
   getCurrentMonthRevenue, 
   shouldChargeSalon 
 } from "@/lib/revenue-helper";
+
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/subscription/status
