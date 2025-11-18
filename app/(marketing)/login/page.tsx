@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -14,7 +14,7 @@ import { Scissors, AlertCircle, ArrowLeft, Sparkles } from "lucide-react"
 import { getFirstAccessibleRoute } from "@/lib/navigation-helper"
 import { Permission } from "@/lib/permissions"
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl")
@@ -191,5 +191,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Carregando...</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

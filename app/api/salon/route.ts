@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 // GET: Buscar dados do salão
 export async function GET() {
   try {
@@ -20,7 +22,6 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        bookingType: true,
         description: true,
         address: true,
         phone: true,

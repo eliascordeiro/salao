@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 // GET - Buscar horários disponíveis dinamicamente para um profissional em uma data específica
 export async function GET(request: Request) {
   try {

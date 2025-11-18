@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getUserSalonId } from "@/lib/salon-helper";
 import { startOfMonth, endOfMonth, subMonths, format } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/analytics/financial
  * Retorna relatórios financeiros avançados do salão

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getUserSalon } from "@/lib/salon-helper";
 import { startOfDay, endOfDay } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/cashier/daily-bookings
  * 

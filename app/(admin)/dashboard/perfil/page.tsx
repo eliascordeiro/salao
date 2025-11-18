@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { User, Lock, Save, Eye, EyeOff, Mail, Shield, Calendar } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/header"
 
-export default function PerfilPage() {
+function PerfilContent() {
   const { data: session, update } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -370,5 +370,13 @@ export default function PerfilPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function PerfilPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Carregando perfil...</div>}>
+      <PerfilContent />
+    </Suspense>
   )
 }
