@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -76,8 +76,12 @@ interface TimeSlot {
 export default function AgendarSalaoPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const salonId = params.id as string;
+  
+  // Pegar serviceId da URL se fornecido
+  const preSelectedServiceId = searchParams.get("servico");
   
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [loading, setLoading] = useState(true);
@@ -131,6 +135,18 @@ export default function AgendarSalaoPage() {
     loadSalonData();
   }, [salonId, router]);
   
+  // Auto-selecionar serviço se fornecido na URL
+  useEffect(() => {
+    if (!preSelectedServiceId || !services.length || selectedService) return;
+    
+    const service = services.find((s) => s.id === preSelectedServiceId);
+    if (service) {
+      console.log("✅ Serviço pré-selecionado da URL:", service.name);
+      setSelectedService(service);
+      setCurrentStep(2); // Ir direto para escolha de profissional
+    }
+  }, [preSelectedServiceId, services, selectedService]);
+  
   // Restaurar agendamento pendente após login
   useEffect(() => {
     // Aguardar dados do salão serem carregados
@@ -148,47 +164,46 @@ export default function AgendarSalaoPage() {
       
       console.log("🔄 Restaurando agendamento pendente:", pendingBooking);
       
+      let shouldGoToStep = 1; // Iniciar no passo 1
+      
       // Restaurar serviço selecionado
       const service = services.find((s) => s.id === pendingBooking.serviceId);
       if (service) {
         setSelectedService(service);
+        shouldGoToStep = 2; // Tem serviço, pode ir para passo 2
         console.log("✅ Serviço restaurado:", service.name);
       }
       
       // Restaurar profissional selecionado
       const staffMember = staff.find((s) => s.id === pendingBooking.staffId);
-      if (staffMember) {
+      if (staffMember && service) {
         setSelectedStaff(staffMember);
+        shouldGoToStep = 3; // Tem serviço e profissional, pode ir para passo 3
         console.log("✅ Profissional restaurado:", staffMember.name);
       }
       
       // Restaurar data selecionada
-      if (pendingBooking.date) {
+      if (pendingBooking.date && service && staffMember) {
         const date = new Date(pendingBooking.date);
         setSelectedDate(date);
         console.log("✅ Data restaurada:", format(date, "dd/MM/yyyy", { locale: ptBR }));
+        
+        // Se tem data, já está no passo 3 (mesmo que não tenha hora ainda)
+        if (!pendingBooking.time) {
+          shouldGoToStep = 3; // Tem até data, fica no passo 3 para escolher hora
+        }
       }
       
       // Restaurar horário selecionado
-      if (pendingBooking.time) {
+      if (pendingBooking.time && pendingBooking.date && service && staffMember) {
         setSelectedTime(pendingBooking.time);
+        shouldGoToStep = 4; // Tem tudo, vai para confirmação
         console.log("✅ Horário restaurado:", pendingBooking.time);
       }
       
-      // Ir para o passo de confirmação (passo 4)
-      if (service && staffMember && pendingBooking.date && pendingBooking.time) {
-        setCurrentStep(4);
-        console.log("✅ Indo para confirmação (passo 4)");
-      } else if (service && staffMember && pendingBooking.date) {
-        setCurrentStep(3); // Escolher horário
-        console.log("✅ Indo para escolha de horário (passo 3)");
-      } else if (service && staffMember) {
-        setCurrentStep(3); // Escolher data
-        console.log("✅ Indo para escolha de data (passo 3)");
-      } else if (service) {
-        setCurrentStep(2); // Escolher profissional
-        console.log("✅ Indo para escolha de profissional (passo 2)");
-      }
+      // Ir para o passo correto
+      setCurrentStep(shouldGoToStep as Step);
+      console.log(`✅ Indo para passo ${shouldGoToStep}`);
       
       // Limpar localStorage
       localStorage.removeItem("pendingBooking");
@@ -410,7 +425,7 @@ export default function AgendarSalaoPage() {
         salonId,
         serviceId: selectedService?.id,
         staffId: selectedStaff?.id,
-        date: selectedDate,
+        date: selectedDate?.toISOString(), // Salvar como ISO string
         time: selectedTime,
       };
       
@@ -455,19 +470,27 @@ export default function AgendarSalaoPage() {
     setSubmitting(true);
     
     try {
-      // Formatar data e hora separadamente como a API espera
+      // Combinar data e hora em ISO string
       const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const [hours, minutes] = selectedTime.split(":");
+      
+      // Criar data em UTC
+      const bookingDateTime = new Date(`${dateStr}T${selectedTime}:00.000Z`);
       
       const payload = {
         salonId,
         serviceId: selectedService.id,
         staffId: selectedStaff.id,
-        date: dateStr,
-        time: selectedTime,
+        date: bookingDateTime.toISOString(), // ISO string completo
         notes: notes || undefined,
       };
       
       console.log("📤 Enviando agendamento:", payload);
+      console.log("📅 Data formatada:", {
+        original: selectedDate,
+        time: selectedTime,
+        combined: bookingDateTime.toISOString()
+      });
       
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -597,7 +620,23 @@ export default function AgendarSalaoPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push("/login?callbackUrl=" + encodeURIComponent(`/salao/${salonId}/agendar`))}
+                  onClick={() => {
+                    // Salvar progresso atual antes de redirecionar
+                    const bookingData = {
+                      salonId,
+                      serviceId: selectedService?.id,
+                      staffId: selectedStaff?.id,
+                      date: selectedDate?.toISOString(),
+                      time: selectedTime,
+                    };
+                    
+                    if (selectedService || selectedStaff || selectedDate || selectedTime) {
+                      localStorage.setItem("pendingBooking", JSON.stringify(bookingData));
+                      console.log("💾 Progresso salvo antes do login:", bookingData);
+                    }
+                    
+                    router.push("/login?callbackUrl=" + encodeURIComponent(`/salao/${salonId}/agendar`));
+                  }}
                   className="mt-2 border-blue-500/30 hover:bg-blue-500/10"
                 >
                   Fazer login agora

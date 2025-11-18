@@ -90,6 +90,7 @@ export async function GET(request: NextRequest) {
       include: {
         client: {
           select: {
+            id: true,
             name: true,
             email: true,
             phone: true,
@@ -97,6 +98,7 @@ export async function GET(request: NextRequest) {
         },
         service: {
           select: {
+            id: true,
             name: true,
             duration: true,
             price: true,
@@ -104,17 +106,36 @@ export async function GET(request: NextRequest) {
         },
         staff: {
           select: {
+            id: true,
             name: true,
             specialty: true,
           },
         },
       },
-      orderBy: {
-        date: "desc",
-      },
+      orderBy: [
+        { date: "asc" }, // Ordem cronológica crescente
+      ],
     });
 
-    return NextResponse.json(bookings);
+    // Ordenar por prioridade de status: PENDING → CONFIRMED → COMPLETED → CANCELLED → NO_SHOW
+    const statusPriority: { [key: string]: number } = {
+      PENDING: 1,
+      CONFIRMED: 2,
+      COMPLETED: 3,
+      CANCELLED: 4,
+      NO_SHOW: 5,
+    };
+
+    const sortedBookings = bookings.sort((a, b) => {
+      // Primeiro, ordenar por prioridade de status
+      const statusDiff = (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99);
+      if (statusDiff !== 0) return statusDiff;
+      
+      // Se status for igual, ordenar por data (crescente - mais antigos primeiro)
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+
+    return NextResponse.json(sortedBookings);
   } catch (error) {
     console.error("Erro ao listar agendamentos:", error);
     return NextResponse.json(
@@ -136,21 +157,45 @@ export async function POST(request: NextRequest) {
     console.log("[bookings POST] Body recebido:", body);
     console.log("[bookings POST] Session user:", session.user);
     
-    const { serviceId, staffId, salonId, date, time, notes } = body;
+    const { clientId, serviceId, staffId, salonId, date, notes } = body;
+
+    // Determinar qual clientId usar
+    // Se admin/staff está criando para outro cliente, usa o clientId do body
+    // Se cliente está criando para si mesmo, usa session.user.id
+    const finalClientId = clientId || session.user.id;
+    
+    console.log("[bookings POST] Cliente final:", finalClientId);
 
     // Validações
-    if (!serviceId || !staffId || !salonId || !date || !time) {
+    if (!finalClientId || !serviceId || !staffId || !date) {
       console.error("[bookings POST] Campos obrigatórios faltando:", {
+        clientId: !!finalClientId,
         serviceId: !!serviceId,
         staffId: !!staffId,
-        salonId: !!salonId,
         date: !!date,
-        time: !!time,
       });
       return NextResponse.json(
-        { error: "Todos os campos são obrigatórios" },
+        { error: "Todos os campos obrigatórios devem ser preenchidos" },
         { status: 400 }
       );
+    }
+
+    // Buscar o salão do profissional se não foi fornecido
+    let finalSalonId = salonId;
+    if (!finalSalonId) {
+      const staff = await prisma.staff.findUnique({
+        where: { id: staffId },
+        select: { salonId: true },
+      });
+      
+      if (!staff) {
+        return NextResponse.json(
+          { error: "Profissional não encontrado" },
+          { status: 404 }
+        );
+      }
+      
+      finalSalonId = staff.salonId;
     }
 
     // Buscar o serviço para pegar o preço
@@ -167,14 +212,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Combinar data e hora
-    console.log("[bookings POST] Combinando data/hora:", { date, time });
+    console.log("[bookings POST] Data recebida:", date);
     
-    // CORREÇÃO TIMEZONE: O horário vem no fuso local (GMT-3)
-    // Criar como data local e deixar o JavaScript converter automaticamente para UTC
-    const localDateTimeStr = `${date}T${time}:00`;
-    const correctedDate = new Date(localDateTimeStr);
+    // Se date já é ISO string completo (2024-11-16T14:30:00.000Z)
+    let correctedDate: Date;
+    if (date.includes('T') && date.includes(':')) {
+      correctedDate = new Date(date);
+    } else {
+      // Fallback para formato antigo (caso ainda seja usado)
+      return NextResponse.json(
+        { error: "Formato de data inválido. Use ISO string completo." },
+        { status: 400 }
+      );
+    }
     
-    console.log("[bookings POST] String de data/hora local:", localDateTimeStr);
     console.log("[bookings POST] Data convertida para UTC:", correctedDate.toISOString());
 
     // VALIDAÇÃO 1: Verificar se o profissional já tem agendamento neste horário
@@ -197,12 +248,14 @@ export async function POST(request: NextRequest) {
 
     // VALIDAÇÃO 2: Verificar se o CLIENTE já tem agendamento no mesmo horário
     // (mesmo que seja com outro profissional ou outro serviço)
-    const startOfDay = new Date(date + "T00:00:00");
-    const endOfDay = new Date(date + "T23:59:59");
+    const startOfDay = new Date(correctedDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(correctedDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const clientBookings = await prisma.booking.findMany({
       where: {
-        clientId: session.user.id,
+        clientId: finalClientId,
         date: {
           gte: startOfDay,
           lte: endOfDay,
@@ -266,10 +319,10 @@ export async function POST(request: NextRequest) {
 
     // Criar o agendamento
     console.log("[bookings POST] Criando booking com dados:", {
-      clientId: session.user.id,
+      clientId: finalClientId,
       serviceId,
       staffId,
-      salonId,
+      salonId: finalSalonId,
       date: correctedDate,
       totalPrice: service.price,
       status: "PENDING",
@@ -278,10 +331,10 @@ export async function POST(request: NextRequest) {
     
     const booking = await prisma.booking.create({
       data: {
-        clientId: session.user.id,
+        clientId: finalClientId,
         serviceId,
         staffId,
-        salonId,
+        salonId: finalSalonId,
         date: correctedDate,
         totalPrice: service.price,
         status: "PENDING",

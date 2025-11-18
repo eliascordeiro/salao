@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(request: Request) {
   try {
-    const { name, email, phone, password } = await request.json()
+    const { name, email, phone, password, role } = await request.json()
 
     // Validações
     if (!name || !email || !password) {
@@ -26,6 +28,17 @@ export async function POST(request: Request) {
       )
     }
 
+    // Determinar role
+    // Se role foi passado, verificar se quem está criando tem permissão
+    let userRole = "CLIENT";
+    if (role) {
+      const session = await getServerSession(authOptions);
+      // Apenas admin/staff pode definir role
+      if (session && (session.user.role === "ADMIN" || session.user.role === "STAFF")) {
+        userRole = role;
+      }
+    }
+
     // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -36,7 +49,7 @@ export async function POST(request: Request) {
         email,
         phone: phone || null,
         password: hashedPassword,
-        role: "CLIENT" // Novo usuário sempre é cliente
+        role: userRole
       }
     })
 

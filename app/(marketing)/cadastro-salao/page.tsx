@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { GridBackground } from "@/components/ui/grid-background";
-import { Briefcase, Loader2, ArrowLeft, Store, User, MapPin, Phone, Mail, Lock, CheckCircle, Calendar, Users } from "lucide-react";
+import { Briefcase, Loader2, ArrowLeft, Store, User, MapPin, Phone, Mail, Lock, CheckCircle, Calendar, Users, Search } from "lucide-react";
 import Link from "next/link";
 
 export default function CadastroSalaoPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   
   // Dados do proprietário
@@ -27,12 +28,67 @@ export default function CadastroSalaoPage() {
   const [salonName, setSalonName] = useState("");
   const [salonPhone, setSalonPhone] = useState("");
   const [salonAddress, setSalonAddress] = useState("");
+  const [salonNumber, setSalonNumber] = useState("");
   const [salonCity, setSalonCity] = useState("");
   const [salonState, setSalonState] = useState("");
   const [salonZipCode, setSalonZipCode] = useState("");
   const [salonDescription, setSalonDescription] = useState("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Buscar CEP via ViaCEP
+  async function handleCepSearch() {
+    const cep = salonZipCode.replace(/\D/g, ""); // Remove caracteres não numéricos
+    
+    if (cep.length !== 8) {
+      setErrors({ ...errors, salonZipCode: "CEP deve ter 8 dígitos" });
+      return;
+    }
+    
+    setLoadingCep(true);
+    setErrors({ ...errors, salonZipCode: "" });
+    
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        setErrors({ ...errors, salonZipCode: "CEP não encontrado" });
+        return;
+      }
+      
+      // Preencher campos automaticamente
+      setSalonAddress(data.logradouro || "");
+      setSalonCity(data.localidade || "");
+      setSalonState(data.uf || "");
+      
+      // Tentar obter coordenadas (usando Nominatim - OpenStreetMap)
+      try {
+        const addressString = `${data.logradouro}, ${data.localidade}, ${data.uf}, Brazil`;
+        const geoResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressString)}`
+        );
+        const geoData = await geoResponse.json();
+        
+        if (geoData && geoData[0]) {
+          setLatitude(parseFloat(geoData[0].lat));
+          setLongitude(parseFloat(geoData[0].lon));
+          console.log("📍 Coordenadas obtidas:", geoData[0].lat, geoData[0].lon);
+        }
+      } catch (geoError) {
+        console.warn("⚠️ Não foi possível obter coordenadas:", geoError);
+        // Não bloqueia o cadastro se não conseguir coordenadas
+      }
+      
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+      setErrors({ ...errors, salonZipCode: "Erro ao buscar CEP. Tente novamente." });
+    } finally {
+      setLoadingCep(false);
+    }
+  }
   
   // Validar passo 1 (dados do proprietário)
   function validateStep1(): boolean {
@@ -76,6 +132,10 @@ export default function CadastroSalaoPage() {
     
     if (!salonAddress.trim()) {
       newErrors.salonAddress = "Endereço é obrigatório";
+    }
+    
+    if (!salonNumber.trim()) {
+      newErrors.salonNumber = "Número é obrigatório";
     }
     
     if (!salonCity.trim()) {
@@ -124,10 +184,13 @@ export default function CadastroSalaoPage() {
           salonName,
           salonPhone,
           salonAddress,
+          salonNumber,
           salonCity,
           salonState,
           salonZipCode,
           salonDescription,
+          latitude,
+          longitude,
         }),
       });
       
@@ -135,6 +198,8 @@ export default function CadastroSalaoPage() {
       
       if (result.success) {
         // Login automático
+        console.log("✅ Conta criada com sucesso, fazendo login...");
+        
         const signInResult = await signIn("credentials", {
           email: ownerEmail,
           password: ownerPassword,
@@ -142,9 +207,16 @@ export default function CadastroSalaoPage() {
         });
         
         if (signInResult?.ok) {
+          console.log("✅ Login automático realizado, redirecionando...");
+          
+          // Aguardar um momento para sessão ser atualizada
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
           // Redirecionar para dashboard com mensagem de sucesso
           router.push("/dashboard?welcome=true");
+          router.refresh();
         } else {
+          console.error("❌ Erro no login automático:", signInResult?.error);
           // Se login automático falhar, redirecionar para página de login
           router.push("/login?registered=true");
         }
@@ -362,19 +434,66 @@ export default function CadastroSalaoPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="salonAddress">Endereço completo *</Label>
+                  <Label htmlFor="salonZipCode">CEP</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="salonZipCode"
+                      value={salonZipCode}
+                      onChange={(e) => setSalonZipCode(e.target.value)}
+                      placeholder="00000-000"
+                      maxLength={9}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCepSearch}
+                      disabled={loadingCep || salonZipCode.length < 8}
+                      className="gap-2"
+                    >
+                      {loadingCep ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Search className="h-4 w-4" />
+                      )}
+                      Buscar
+                    </Button>
+                  </div>
+                  {errors.salonZipCode && (
+                    <p className="text-sm text-destructive">{errors.salonZipCode}</p>
+                  )}
+                  {loadingCep && (
+                    <p className="text-sm text-muted-foreground">Buscando CEP...</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonAddress">Logradouro (Rua/Avenida) *</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="salonAddress"
                       value={salonAddress}
                       onChange={(e) => setSalonAddress(e.target.value)}
-                      placeholder="Rua, número, bairro"
+                      placeholder="Ex: Rua das Flores"
                       className="pl-9"
                     />
                   </div>
                   {errors.salonAddress && (
                     <p className="text-sm text-destructive">{errors.salonAddress}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="salonNumber">Número *</Label>
+                  <Input
+                    id="salonNumber"
+                    value={salonNumber}
+                    onChange={(e) => setSalonNumber(e.target.value)}
+                    placeholder="Ex: 123"
+                  />
+                  {errors.salonNumber && (
+                    <p className="text-sm text-destructive">{errors.salonNumber}</p>
                   )}
                 </div>
                 

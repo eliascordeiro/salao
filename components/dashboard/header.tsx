@@ -64,9 +64,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 title={resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
               >
                 {resolvedTheme === "dark" ? (
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-4 w-4 text-foreground" />
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <Moon className="h-4 w-4 text-foreground" />
                 )}
               </Button>
 
@@ -76,10 +76,10 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   variant="ghost" 
                   size="sm"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="hover:bg-background-alt hover:text-primary transition-colors"
+                  className="hover:bg-background-alt hover:text-primary transition-colors border border-border/30"
                   title="Meu perfil"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-4 w-4 text-primary" />
                 </Button>
 
                 {/* Dropdown Menu */}

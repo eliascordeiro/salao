@@ -115,6 +115,11 @@ export function Sidebar() {
     // Always show separators
     if (item.separator) return true
     
+    // Assinatura only for OWNERS
+    if (item.href === "/dashboard/assinatura") {
+      return isOwner
+    }
+    
     // If no permission required, show item
     if (!item.permission) return true
     

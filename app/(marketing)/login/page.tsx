@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { signIn, useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,9 @@ import { Permission } from "@/lib/permissions"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl")
+  
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -36,31 +39,38 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Email ou senha incorretos")
       } else {
-        // Fetch session to get user permissions
-        const response = await fetch("/api/auth/session")
-        const session = await response.json()
-        
-        if (session?.user) {
-          const permissions = (session.user as any).permissions || []
-          const roleType = (session.user as any).roleType
-          
-          // Get the first accessible route based on user permissions
-          const redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
-          
-          console.log("🔐 Login successful:", {
-            user: session.user.name,
-            role: session.user.role,
-            roleType,
-            permissions: permissions.length,
-            redirectTo: redirectRoute
-          })
-          
-          router.push(redirectRoute)
+        // Se tem callbackUrl, usa ele; senão, usa rota baseada em permissões
+        if (callbackUrl) {
+          console.log("🔐 Login successful, redirecting to:", callbackUrl)
+          router.push(callbackUrl)
           router.refresh()
         } else {
-          // Fallback if session fetch fails
-          router.push("/dashboard")
-          router.refresh()
+          // Fetch session to get user permissions
+          const response = await fetch("/api/auth/session")
+          const session = await response.json()
+          
+          if (session?.user) {
+            const permissions = (session.user as any).permissions || []
+            const roleType = (session.user as any).roleType
+            
+            // Get the first accessible route based on user permissions
+            const redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+            
+            console.log("🔐 Login successful:", {
+              user: session.user.name,
+              role: session.user.role,
+              roleType,
+              permissions: permissions.length,
+              redirectTo: redirectRoute
+            })
+            
+            router.push(redirectRoute)
+            router.refresh()
+          } else {
+            // Fallback if session fetch fails
+            router.push("/dashboard")
+            router.refresh()
+          }
         }
       }
     } catch (error) {

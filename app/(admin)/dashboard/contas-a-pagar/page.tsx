@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter, DollarSign, Calendar, Edit, Trash2, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import { DashboardHeader } from "@/components/dashboard/header";
 
 type Expense = {
   id: string;
@@ -38,6 +40,7 @@ const STATUS_MAP = {
 };
 
 export default function ContasAPagarPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +117,19 @@ export default function ContasAPagarPage() {
     .reduce((sum, e) => sum + e.amount, 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      {/* Dashboard Header */}
+      {session?.user && (
+        <DashboardHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+        />
+      )}
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
@@ -301,6 +316,7 @@ export default function ContasAPagarPage() {
           </div>
         )}
       </GlassCard>
-    </div>
+      </div>
+    </>
   );
 }

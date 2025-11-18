@@ -74,6 +74,11 @@ export function getFirstAccessibleRoute(
 
   // For other users, find first route they have permission for
   for (const route of NAVIGATION_ROUTES) {
+    // Skip Assinatura for non-owners
+    if (route.href === "/dashboard/assinatura" && roleType !== "OWNER") {
+      continue
+    }
+    
     // If no permission required, it's accessible
     if (!route.permission) {
       return route.href
@@ -105,6 +110,11 @@ export function hasRouteAccess(
   // Owners have access to everything
   if (roleType === "OWNER") {
     return true
+  }
+
+  // Block Assinatura route for non-owners
+  if (route === "/dashboard/assinatura" && roleType !== "OWNER") {
+    return false
   }
 
   // Find the route in navigation

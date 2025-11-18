@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DashboardHeader } from "@/components/dashboard/header";
 import {
   Dialog,
   DialogContent,
@@ -77,6 +79,7 @@ interface DailyData {
 }
 
 export default function CaixaPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,7 +190,19 @@ export default function CaixaPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <>
+        {/* Dashboard Header */}
+        {session?.user && (
+          <DashboardHeader
+            user={{
+              name: session.user.name,
+              email: session.user.email,
+              role: session.user.role,
+            }}
+          />
+        )}
+        
+        <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Frente de Caixa</h1>
           <p className="text-muted-foreground mt-1">
@@ -204,12 +219,25 @@ export default function CaixaPage() {
             Tentar Novamente
           </Button>
         </GlassCard>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* Dashboard Header */}
+      {session?.user && (
+        <DashboardHeader
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+        />
+      )}
+
+      <div className="space-y-6">
       {/* Header com Botão Voltar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -512,6 +540,7 @@ export default function CaixaPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 }

@@ -26,12 +26,20 @@ export async function getUserSalon() {
         ownedSalons: {
           where: { active: true },
           take: 1
+        },
+        owner: {
+          include: {
+            ownedSalons: {
+              where: { active: true },
+              take: 1
+            }
+          }
         }
       }
     })
 
     console.log('[getUserSalon] User encontrado:', user?.email)
-    console.log('[getUserSalon] Salões:', user?.ownedSalons?.length || 0)
+    console.log('[getUserSalon] Salões próprios:', user?.ownedSalons?.length || 0)
 
     if (!user) {
       console.log('[getUserSalon] User não encontrado')
@@ -42,6 +50,15 @@ export async function getUserSalon() {
     if (user.ownedSalons && user.ownedSalons.length > 0) {
       console.log('[getUserSalon] Retornando salão próprio:', user.ownedSalons[0].name)
       return user.ownedSalons[0]
+    }
+
+    // Se o usuário é gerenciado (tem ownerId), buscar o salão do owner
+    if (user.ownerId && user.owner) {
+      console.log('[getUserSalon] Usuário gerenciado, buscando salão do owner...')
+      if (user.owner.ownedSalons && user.owner.ownedSalons.length > 0) {
+        console.log('[getUserSalon] Retornando salão do owner:', user.owner.ownedSalons[0].name)
+        return user.owner.ownedSalons[0]
+      }
     }
 
     // Se o usuário não tem salão próprio mas é ADMIN, 
@@ -88,6 +105,13 @@ export async function canAccessSalon(salonId: string): Promise<boolean> {
       include: {
         ownedSalons: {
           where: { id: salonId, active: true }
+        },
+        owner: {
+          include: {
+            ownedSalons: {
+              where: { id: salonId, active: true }
+            }
+          }
         }
       }
     })
@@ -99,6 +123,13 @@ export async function canAccessSalon(salonId: string): Promise<boolean> {
     // Se é owner do salão, tem acesso
     if (user.ownedSalons.some(s => s.id === salonId)) {
       return true
+    }
+
+    // Se é usuário gerenciado, verificar se o salão pertence ao owner
+    if (user.ownerId && user.owner) {
+      if (user.owner.ownedSalons.some(s => s.id === salonId)) {
+        return true
+      }
     }
 
     // Se é ADMIN, tem acesso a todos os salões

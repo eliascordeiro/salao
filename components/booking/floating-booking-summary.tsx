@@ -70,20 +70,19 @@ export function FloatingBookingSummary({
         />
       )}
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheet - APENAS MOBILE */}
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
-          isExpanded ? "translate-y-0" : "translate-y-[calc(100%-80px)]",
-          "md:translate-y-0 md:sticky md:bottom-4 md:left-4 md:right-4 md:mt-8"
+          "fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out md:hidden",
+          isExpanded ? "translate-y-0" : "translate-y-[calc(100%-80px)]"
         )}
       >
         <div className="container mx-auto px-4 pb-safe">
           <GlassCard className="overflow-hidden shadow-2xl border-primary/30">
-            {/* Header - Sempre visível */}
+            {/* Header - Sempre visível (MOBILE APENAS) */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full px-4 py-4 flex items-center justify-between md:hidden"
+              className="w-full px-4 py-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
@@ -103,26 +102,11 @@ export function FloatingBookingSummary({
               )}
             </button>
 
-            {/* Desktop Header */}
-            <div className="hidden md:block px-6 py-4 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-semibold">Resumo do Agendamento</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedCount} {selectedCount === 1 ? "item selecionado" : "itens selecionados"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Content - Collapsible em mobile, sempre visível em desktop */}
+            {/* Content - Collapsible (MOBILE APENAS) */}
             <div
               className={cn(
-                "px-4 md:px-6 py-4 space-y-4 transition-all duration-300",
-                isExpanded ? "block" : "hidden md:block"
+                "px-4 py-4 space-y-4 transition-all duration-300",
+                isExpanded ? "block" : "hidden"
               )}
             >
               {/* Serviço */}
@@ -205,7 +189,7 @@ export function FloatingBookingSummary({
 
             {/* Botão Continuar */}
             {showContinueButton && onContinue && (
-              <div className="px-4 md:px-6 pb-4">
+              <div className="px-4 pb-4">
                 <Button
                   size="lg"
                   onClick={onContinue}
@@ -222,7 +206,7 @@ export function FloatingBookingSummary({
       </div>
 
       {/* Spacer para não sobrepor conteúdo (apenas mobile) */}
-      <div className="h-24 md:hidden" />
+      <div className="h-24" />
     </>
   );
 }

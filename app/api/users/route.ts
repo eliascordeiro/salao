@@ -88,8 +88,8 @@ async function sendInvitationEmail(
   }
 }
 
-// GET /api/users - List managed users
-export async function GET() {
+// GET /api/users - List users managed by current user
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -109,15 +109,31 @@ export async function GET() {
       )
     }
 
+    // Get query params
+    const { searchParams } = new URL(request.url)
+    const roleFilter = searchParams.get("role")
+
+    // Build where clause
+    const whereClause: any = {
+      ownerId: currentUser.id,
+    }
+
+    // Add role filter if specified
+    if (roleFilter === "CLIENT") {
+      whereClause.role = "CLIENT"
+    } else if (roleFilter === "STAFF") {
+      whereClause.role = "STAFF"
+    }
+
     // Get all managed users
     const users = await prisma.user.findMany({
-      where: {
-        ownerId: currentUser.id,
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        role: true,
         roleType: true,
         permissions: true,
         active: true,
@@ -128,7 +144,7 @@ export async function GET() {
       },
     })
 
-    return NextResponse.json({ users })
+    return NextResponse.json(users)
   } catch (error) {
     console.error("Erro ao listar usuários:", error)
     return NextResponse.json({ error: "Erro ao listar usuários" }, { status: 500 })

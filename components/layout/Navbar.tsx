@@ -49,13 +49,13 @@ export function Navbar({ showAuth = true }: NavbarProps) {
             ) : session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2">
-                    <User className="h-4 w-4 text-white" />
-                    <span className="hidden md:inline text-white">{session.user.name}</span>
+                  <Button variant="ghost" className="gap-2 border border-border/50 hover:bg-background-alt/80">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="hidden md:inline text-foreground">{session.user.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <div className="px-2 py-1.5 text-sm font-semibold text-white">
+                  <div className="px-2 py-1.5 text-sm font-semibold text-foreground">
                     {session.user.name}
                   </div>
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">

@@ -2,13 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Calendar, Clock, User, Phone, Mail, Filter, Search, Sparkles, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, Filter, Search, Sparkles, CheckCircle, XCircle, AlertCircle, Plus, Edit2, Save, X as XIcon, Check, Briefcase, UserCheck } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -18,17 +33,23 @@ interface Booking {
   status: string;
   notes?: string;
   totalPrice: number;
+  clientId: string;
+  serviceId: string;
+  staffId: string;
   client: {
+    id: string;
     name: string;
     email: string;
     phone?: string;
   };
   service: {
+    id: string;
     name: string;
     duration: number;
     price: number;
   };
   staff: {
+    id: string;
     name: string;
     specialty?: string;
   };
@@ -37,6 +58,43 @@ interface Booking {
 interface Staff {
   id: string;
   name: string;
+  services?: {
+    service: {
+      id: string;
+      name: string;
+    };
+  }[];
+}
+
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+}
+
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+interface BookingForm {
+  clientId: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  serviceId: string;
+  staffId: string;
+  date: string;
+  time: string;
+  notes?: string;
+}
+
+interface TimeSlot {
+  time: string;
+  available: boolean;
 }
 
 const statusConfig = {
@@ -49,10 +107,41 @@ const statusConfig = {
 
 export default function AgendamentosPage() {
   const { data: session } = useSession();
+  const [mounted, setMounted] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [clientSearchTerm, setClientSearchTerm] = useState("");
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+  const [isNewClient, setIsNewClient] = useState(false);
+  
+  // Estados para criar/editar
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Evitar hydration error
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const [formData, setFormData] = useState<BookingForm>({
+    clientId: "",
+    clientName: "",
+    clientEmail: "",
+    clientPhone: "",
+    serviceId: "",
+    staffId: "",
+    date: "",
+    time: "",
+    notes: "",
+  });
 
   const [filters, setFilters] = useState({
     status: "",
@@ -61,6 +150,39 @@ export default function AgendamentosPage() {
     endDate: "",
     search: "",
   });
+
+  // Função para formatar telefone com máscara (99) 9 9999-9999
+  const formatPhoneNumber = (value: string) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, "");
+    
+    // Aplica a máscara
+    if (numbers.length <= 2) {
+      return numbers;
+    } else if (numbers.length <= 3) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    } else if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)} ${numbers.slice(3)}`;
+    } else if (numbers.length <= 11) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)} ${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    } else {
+      // Limitar a 11 dígitos
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)} ${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  // Função para remover máscara (apenas números)
+  const unformatPhoneNumber = (value: string) => {
+    return value.replace(/\D/g, "");
+  };
+
+  // Função para normalizar texto (remove acentos e converte para minúscula)
+  const normalizeText = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  };
 
   // Carregar agendamentos
   const fetchBookings = async () => {
@@ -76,6 +198,65 @@ export default function AgendamentosPage() {
       const response = await fetch(`/api/bookings?${params.toString()}`);
       const data = await response.json();
       setBookings(data);
+      
+      // Extrair clientes únicos dos agendamentos
+      const bookingClients: Client[] = Array.from(
+        new Map(
+          data.map((booking: Booking) => [
+            booking.client.id,
+            {
+              id: booking.client.id,
+              name: booking.client.name,
+              email: booking.client.email,
+              phone: booking.client.phone,
+            }
+          ])
+        ).values()
+      ) as Client[];
+      
+      // Buscar também todos os clientes cadastrados (role=CLIENT)
+      try {
+        const clientsResponse = await fetch("/api/users?role=CLIENT");
+        if (clientsResponse.ok) {
+          const allClients = await clientsResponse.json();
+          
+          // Mesclar clientes dos agendamentos com clientes cadastrados (removendo duplicatas)
+          const clientsMap = new Map<string, Client>();
+          
+          // Adicionar clientes dos agendamentos
+          bookingClients.forEach(client => {
+            clientsMap.set(client.id, client);
+          });
+          
+          // Adicionar clientes cadastrados (se não existirem)
+          if (Array.isArray(allClients)) {
+            allClients.forEach((client: any) => {
+              if (!clientsMap.has(client.id)) {
+                clientsMap.set(client.id, {
+                  id: client.id,
+                  name: client.name,
+                  email: client.email,
+                  phone: client.phone,
+                });
+              }
+            });
+          }
+          
+          const mergedClients = Array.from(clientsMap.values());
+          setClients(mergedClients);
+          console.log('✅ Clientes carregados:', mergedClients.length, 
+            '(', bookingClients.length, 'dos agendamentos +', 
+            mergedClients.length - bookingClients.length, 'cadastrados)');
+        } else {
+          // Se falhar, usar apenas clientes dos agendamentos
+          setClients(bookingClients);
+          console.log('⚠️ Falha ao carregar clientes cadastrados, usando apenas dos agendamentos:', bookingClients.length);
+        }
+      } catch (clientError) {
+        console.error("Erro ao carregar clientes cadastrados:", clientError);
+        setClients(bookingClients);
+        console.log('⚠️ Usando apenas clientes dos agendamentos:', bookingClients.length);
+      }
     } catch (error) {
       console.error("Erro ao carregar agendamentos:", error);
     } finally {
@@ -97,6 +278,457 @@ export default function AgendamentosPage() {
 
     fetchStaff();
   }, []);
+
+  // Carregar serviços
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch("/api/services");
+        const data = await response.json();
+        // Garantir que data é um array
+        const servicesArray = Array.isArray(data) ? data : [];
+        setServices(servicesArray.filter((s: any) => s.active));
+      } catch (error) {
+        console.error("Erro ao carregar serviços:", error);
+        setServices([]); // Garantir array vazio em caso de erro
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // Clientes são extraídos dos bookings (ver fetchBookings)
+  // Não precisamos de useEffect separado pois os clientes vêm dos agendamentos
+
+  // Filtrar profissionais baseado no serviço selecionado
+  const getFilteredStaff = () => {
+    if (!formData.serviceId) {
+      // Se nenhum serviço selecionado, retornar todos
+      return staff;
+    }
+    
+    // Filtrar apenas profissionais que possuem o serviço selecionado
+    return staff.filter((s) => {
+      if (!s.services || s.services.length === 0) {
+        // Se profissional não tem serviços cadastrados, não mostrar
+        return false;
+      }
+      // Verificar se o profissional tem o serviço selecionado
+      return s.services.some((ss) => ss.service.id === formData.serviceId);
+    });
+  };
+
+  // Abrir modal de criar
+  const handleOpenCreate = () => {
+    setFormData({
+      clientId: "",
+      clientName: "",
+      clientEmail: "",
+      clientPhone: "",
+      serviceId: "",
+      staffId: "",
+      date: "",
+      time: "",
+      notes: "",
+    });
+    setClientSearchTerm("");
+    setIsNewClient(false);
+    setAvailableSlots([]);
+    setShowCreateModal(true);
+  };
+
+  // Buscar horários disponíveis
+  const fetchAvailableSlots = async () => {
+    if (!formData.serviceId || !formData.staffId || !formData.date) {
+      console.log("Faltam dados para buscar slots:", {
+        serviceId: formData.serviceId,
+        staffId: formData.staffId,
+        date: formData.date,
+      });
+      return;
+    }
+
+    try {
+      setLoadingSlots(true);
+      console.log("Buscando slots para:", {
+        serviceId: formData.serviceId,
+        staffId: formData.staffId,
+        date: formData.date,
+      });
+      
+      const response = await fetch(
+        `/api/schedule/available-slots?serviceId=${formData.serviceId}&staffId=${formData.staffId}&date=${formData.date}`
+      );
+      const data = await response.json();
+      
+      console.log("Resposta da API:", data);
+      
+      if (!response.ok) {
+        console.error("Erro na resposta:", data);
+        alert(data.error || "Erro ao buscar horários");
+        setAvailableSlots([]);
+        return;
+      }
+      
+      setAvailableSlots(data.slots || []);
+    } catch (error) {
+      console.error("Erro ao buscar horários:", error);
+      setAvailableSlots([]);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  // Buscar horários quando serviço, profissional ou data mudarem
+  useEffect(() => {
+    if (formData.serviceId && formData.staffId && formData.date) {
+      fetchAvailableSlots();
+    }
+  }, [formData.serviceId, formData.staffId, formData.date]);
+
+  // Filtrar clientes conforme busca (apenas por nome - com normalização)
+  const filteredClientSuggestions = clients.filter(
+    (client) => {
+      const searchNormalized = normalizeText(clientSearchTerm.trim());
+      const nameNormalized = normalizeText(client.name);
+      
+      const matches = nameNormalized.includes(searchNormalized);
+      
+      if (clientSearchTerm.length > 0) {
+        console.log('🔍 Filtro:', {
+          cliente: client.name,
+          clienteNormalizado: nameNormalized,
+          busca: clientSearchTerm,
+          buscaNormalizada: searchNormalized,
+          matches
+        });
+      }
+      
+      return matches;
+    }
+  );
+  
+  console.log('📋 Total clientes:', clients.length, 'Filtrados:', filteredClientSuggestions.length, 'Busca:', clientSearchTerm, 'Show:', showClientSuggestions);
+
+  // Atualizar busca de cliente
+  const handleClientSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    console.log('🔎 Busca mudou:', value);
+    setClientSearchTerm(value);
+    setShowClientSuggestions(value.length > 0);
+    console.log('👀 Show suggestions:', value.length > 0);
+    
+    // Atualizar campo Nome automaticamente enquanto digita
+    setFormData({
+      ...formData,
+      clientName: value,
+      clientId: "",
+      clientEmail: "",
+      clientPhone: "",
+    });
+    
+    // Verificar se é novo cliente (não encontrou correspondência exata com normalização)
+    const normalizedValue = normalizeText(value);
+    const hasMatch = clients.some(
+      (c) => normalizeText(c.name) === normalizedValue
+    );
+    setIsNewClient(!hasMatch && value.length > 2);
+  };
+
+  // Selecionar cliente existente
+  const handleSelectClient = (client: Client) => {
+    setFormData({
+      ...formData,
+      clientId: client.id,
+      clientName: client.name,
+      clientEmail: client.email,
+      clientPhone: client.phone ? formatPhoneNumber(client.phone) : "",
+    });
+    setClientSearchTerm(client.name);
+    setShowClientSuggestions(false);
+    setIsNewClient(false);
+  };
+
+  // Criar novo cliente junto com agendamento
+  const handleClientNameChange = (value: string) => {
+    setClientSearchTerm(value);
+    setFormData({ ...formData, clientName: value, clientId: "" });
+    setShowClientSuggestions(true);
+    
+    // Se não encontrar cliente, considerar novo
+    const hasMatch = clients.some(
+      (c) => c.name.toLowerCase() === value.toLowerCase()
+    );
+    setIsNewClient(!hasMatch && value.length > 2);
+  };
+
+  // Abrir modal de editar
+  const handleOpenEdit = (booking: Booking) => {
+    setEditingBooking(booking);
+    const bookingDate = new Date(booking.date);
+    
+    // Preencher form com dados do booking
+    setFormData({
+      clientId: booking.client.id,
+      clientName: booking.client.name,
+      clientEmail: booking.client.email,
+      clientPhone: booking.client.phone || "",
+      serviceId: booking.service.id,
+      staffId: booking.staff.id,
+      date: format(bookingDate, "yyyy-MM-dd"),
+      time: format(bookingDate, "HH:mm"),
+      notes: booking.notes || "",
+    });
+    
+    setClientSearchTerm(booking.client.name);
+    setShowEditModal(true);
+    
+    // Buscar slots após setar os dados (com pequeno delay para garantir que o estado foi atualizado)
+    setTimeout(() => {
+      if (booking.service.id && booking.staff.id && format(bookingDate, "yyyy-MM-dd")) {
+        fetchAvailableSlots();
+      }
+    }, 100);
+  };
+
+  // Criar agendamento
+  const handleCreate = async () => {
+    try {
+      setSaving(true);
+      
+      // Validações
+      if (!formData.clientName || !formData.clientEmail || !formData.serviceId || !formData.staffId || !formData.date || !formData.time) {
+        alert("Preencha todos os campos obrigatórios (nome, email, serviço, profissional, data e horário)");
+        setSaving(false);
+        return;
+      }
+
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.clientEmail)) {
+        alert("Email inválido");
+        setSaving(false);
+        return;
+      }
+
+      // Validar formato do horário (HH:MM)
+      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+      if (!timeRegex.test(formData.time)) {
+        alert("Horário inválido. Selecione um horário da grade de horários disponíveis.");
+        setSaving(false);
+        return;
+      }
+
+      let clientId = formData.clientId;
+      let isNewClient = false;
+
+      // Se não tem clientId, buscar cliente existente na lista ou criar novo
+      if (!clientId) {
+        // Buscar cliente existente na lista de clientes carregada
+        const existingClient = clients.find(
+          (c) => c.email.toLowerCase() === formData.clientEmail.toLowerCase()
+        );
+        
+        if (existingClient) {
+          clientId = existingClient.id;
+          console.log("Cliente existente encontrado na lista:", existingClient);
+          
+          // Informar usuário que o cliente já existe
+          const useExisting = window.confirm(
+            `Cliente "${existingClient.name}" (${existingClient.email}) já cadastrado!\n\n` +
+            `Deseja usar este cliente para o agendamento?\n\n` +
+            `Clique "OK" para usar o cliente existente ou "Cancelar" para criar um novo.`
+          );
+          
+          if (useExisting) {
+            // Auto-preencher dados do cliente existente
+            setFormData({
+              ...formData,
+              clientId: existingClient.id,
+              clientName: existingClient.name,
+              clientEmail: existingClient.email,
+              clientPhone: existingClient.phone ? formatPhoneNumber(existingClient.phone) : formData.clientPhone,
+            });
+          } else {
+            clientId = ""; // Forçar criação de novo cliente
+          }
+        }
+
+        // Se não encontrou ou usuário optou por criar novo, criar cliente
+        if (!clientId) {
+          isNewClient = true;
+          const clientResponse = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: formData.clientName,
+              email: formData.clientEmail,
+              phone: unformatPhoneNumber(formData.clientPhone),
+              password: Math.random().toString(36).slice(-8), // Senha temporária
+              role: "CLIENT",
+            }),
+          });
+
+          if (!clientResponse.ok) {
+            const error = await clientResponse.json();
+            throw new Error(error.error || "Erro ao criar cliente");
+          }
+
+          const newClient = await clientResponse.json();
+          clientId = newClient.user.id;
+          console.log("Novo cliente criado:", newClient);
+        }
+      }
+      
+      // Combinar data e hora
+      const dateTime = new Date(`${formData.date}T${formData.time}:00.000Z`);
+      
+      // Validar se a data é válida
+      if (isNaN(dateTime.getTime())) {
+        alert("Data ou horário inválido. Verifique os campos e tente novamente.");
+        setSaving(false);
+        return;
+      }
+      
+      console.log("Enviando agendamento:", {
+        clientId: clientId,
+        serviceId: formData.serviceId,
+        staffId: formData.staffId,
+        date: dateTime.toISOString(),
+        notes: formData.notes,
+      });
+      
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: clientId,
+          serviceId: formData.serviceId,
+          staffId: formData.staffId,
+          date: dateTime.toISOString(),
+          notes: formData.notes,
+        }),
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
+      if (!response.ok) {
+        let errorMessage = "Erro ao criar agendamento";
+        try {
+          const error = await response.json();
+          errorMessage = error.error || error.message || errorMessage;
+        } catch (e) {
+          console.error("Erro ao parsear resposta de erro:", e);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      console.log("Agendamento criado:", result);
+
+      // Enviar email de notificação para o cliente
+      try {
+        await fetch("/api/email/booking-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: result.id,
+            isNewClient: isNewClient,
+          }),
+        });
+        console.log("Email de notificação enviado");
+      } catch (emailError) {
+        console.error("Erro ao enviar email:", emailError);
+        // Não bloquear o fluxo se email falhar
+      }
+
+      setShowCreateModal(false);
+      fetchBookings();
+      alert("Agendamento criado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao criar agendamento:", error);
+      alert(error.message || "Erro ao criar agendamento");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Atualizar agendamento
+  const handleUpdate = async () => {
+    if (!editingBooking) return;
+    
+    try {
+      setSaving(true);
+      
+      if (!formData.serviceId || !formData.staffId || !formData.date || !formData.time) {
+        alert("Preencha todos os campos obrigatórios");
+        setSaving(false);
+        return;
+      }
+
+      // Validar formato do horário (HH:MM)
+      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+      if (!timeRegex.test(formData.time)) {
+        alert("Horário inválido. Selecione um horário da grade de horários disponíveis.");
+        setSaving(false);
+        return;
+      }
+      
+      // Combinar data e hora
+      const dateTime = new Date(`${formData.date}T${formData.time}:00.000Z`);
+      
+      // Validar se a data é válida
+      if (isNaN(dateTime.getTime())) {
+        alert("Data ou horário inválido. Verifique os campos e tente novamente.");
+        setSaving(false);
+        return;
+      }
+      
+      const response = await fetch(`/api/bookings/${editingBooking.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceId: formData.serviceId,
+          staffId: formData.staffId,
+          date: dateTime.toISOString(),
+          notes: formData.notes,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao atualizar agendamento");
+      }
+
+      const result = await response.json();
+      
+      // Enviar email de notificação sobre a alteração
+      try {
+        await fetch("/api/email/booking-notification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: editingBooking.id,
+            isUpdate: true,
+          }),
+        });
+        console.log("Email de alteração enviado");
+      } catch (emailError) {
+        console.error("Erro ao enviar email:", emailError);
+        // Não bloquear o fluxo se email falhar
+      }
+
+      setShowEditModal(false);
+      setEditingBooking(null);
+      fetchBookings();
+      alert("Agendamento atualizado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao atualizar agendamento:", error);
+      alert(error.message || "Erro ao atualizar agendamento");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Carregar agendamentos ao montar e quando filtros mudarem
   useEffect(() => {
@@ -157,14 +789,24 @@ export default function AgendamentosPage() {
       <GridBackground>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp">
-            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-primary" />
-              Agendamentos
-            </h1>
-            <p className="text-foreground-muted mt-2">
-              Gerencie todos os agendamentos do salão
-            </p>
+          <div className="mb-8 animate-fadeInUp flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
+                <Sparkles className="h-8 w-8 text-primary" />
+                Agendamentos
+              </h1>
+              <p className="text-foreground-muted mt-2">
+                Gerencie todos os agendamentos do salão
+              </p>
+            </div>
+            <GradientButton
+              variant="primary"
+              onClick={handleOpenCreate}
+              className="px-4 py-2 gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              Novo Agendamento
+            </GradientButton>
           </div>
 
           {/* Filtros */}
@@ -384,7 +1026,7 @@ export default function AgendamentosPage() {
                         {booking.client.phone && (
                           <div className="flex items-center gap-1 text-foreground-muted ml-5">
                             <Phone className="h-3 w-3 text-accent" />
-                            {booking.client.phone}
+                            {formatPhoneNumber(booking.client.phone)}
                           </div>
                         )}
                       </div>
@@ -412,6 +1054,18 @@ export default function AgendamentosPage() {
 
                     {/* Ações */}
                     <div className="flex flex-col gap-2 lg:w-48">
+                      {/* Botão Editar (disponível para PENDING e CONFIRMED) */}
+                      {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleOpenEdit(booking)}
+                          className="w-full py-2 gap-2 border-primary/30 hover:bg-primary/10"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                          Editar
+                        </Button>
+                      )}
+                      
                       {booking.status === "PENDING" && (
                         <>
                           <GradientButton
@@ -475,6 +1129,618 @@ export default function AgendamentosPage() {
           )}
         </main>
       </GridBackground>
+
+      {/* Modal de Criar Agendamento */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="glass-card max-w-4xl max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+              <Plus className="h-7 w-7 text-primary" />
+              Novo Agendamento
+            </DialogTitle>
+            <DialogDescription className="text-base mt-2">
+              Preencha os dados abaixo para criar um novo agendamento. Campos com * são obrigatórios.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-8 mt-6 pb-2">
+            {/* Seção 1: Dados do Cliente */}
+            <div className="space-y-5 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="flex items-center gap-3 pb-3 border-b border-primary/20">
+                <User className="h-6 w-6 text-primary" />
+                <h3 className="font-semibold text-xl">Dados do Cliente</h3>
+              </div>
+
+              {/* Cliente - Busca por Nome */}
+              <div className="space-y-3">
+                <Label htmlFor="clientSearch" className="flex items-center gap-2 text-base">
+                  <Search className="h-4 w-4" />
+                  Buscar Cliente por Nome *
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="clientSearch"
+                    value={clientSearchTerm}
+                    onChange={handleClientSearchChange}
+                    onFocus={() => {
+                      if (clientSearchTerm.length > 0 && !formData.clientId) {
+                        setShowClientSuggestions(true);
+                      }
+                    }}
+                    placeholder="Digite o nome do cliente..."
+                    className="pr-10 h-12 text-base"
+                    autoComplete="off"
+                  />
+                  {formData.clientId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          clientId: "",
+                          clientName: "",
+                          clientEmail: "",
+                          clientPhone: "",
+                        });
+                        setClientSearchTerm("");
+                        setShowClientSuggestions(false);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Limpar seleção"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                  
+                  {/* Dropdown de sugestões */}
+                  {mounted && showClientSuggestions && filteredClientSuggestions.length > 0 && !formData.clientId && (
+                    <div className="absolute z-50 w-full mt-1 glass-card border border-primary/20 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredClientSuggestions.map((client) => (
+                        <button
+                          key={client.id}
+                          type="button"
+                          onClick={() => handleSelectClient(client)}
+                          className="w-full px-4 py-3 text-left hover:bg-primary/10 transition-colors border-b border-primary/10 last:border-0"
+                        >
+                          <div className="font-medium text-foreground">{client.name}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-3 mt-1">
+                            <span>📧 {client.email}</span>
+                            {client.phone && <span>📱 {formatPhoneNumber(client.phone)}</span>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {isNewClient && (
+                  <div className="flex items-center gap-2 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                    <Plus className="h-5 w-5 text-primary" />
+                    <span className="text-sm text-primary font-medium">
+                      Novo cliente será cadastrado automaticamente
+                    </span>
+                  </div>
+                )}
+                {formData.clientId && (
+                  <div className="flex items-center gap-2 p-4 rounded-lg bg-accent/10 border border-accent/20">
+                    <Check className="h-5 w-5 text-accent" />
+                    <span className="text-sm text-accent font-medium">
+                      Cliente existente - Dados carregados com sucesso
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Nome do Cliente (desabilitado - reflete busca) */}
+                <div className="space-y-3">
+                  <Label htmlFor="clientName" className="text-base">Nome Completo *</Label>
+                  <Input
+                    id="clientName"
+                    value={formData.clientName}
+                    placeholder="Preenchido automaticamente"
+                    disabled={true}
+                    className="bg-muted/30 cursor-not-allowed h-12"
+                  />
+                </div>
+
+                {/* WhatsApp do Cliente */}
+                <div className="space-y-3">
+                  <Label htmlFor="clientPhone" className="flex items-center gap-2 text-base">
+                    <Phone className="h-4 w-4" />
+                    WhatsApp *
+                  </Label>
+                  <Input
+                    id="clientPhone"
+                    type="tel"
+                    value={formData.clientPhone}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      setFormData({ ...formData, clientPhone: formatted, clientId: "" });
+                    }}
+                    placeholder="(99) 9 9999-9999"
+                    maxLength={19}
+                    className={`h-12 ${formData.clientId ? "bg-primary/5 border-primary/30" : ""}`}
+                  />
+                </div>
+
+                {/* Email do Cliente */}
+                <div className="space-y-3">
+                  <Label htmlFor="clientEmail" className="flex items-center gap-2 text-base">
+                    <Mail className="h-4 w-4" />
+                    E-mail *
+                  </Label>
+                  <Input
+                    id="clientEmail"
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) => {
+                      setFormData({ ...formData, clientEmail: e.target.value, clientId: "" });
+                    }}
+                    placeholder="email@exemplo.com"
+                    className={`h-12 ${formData.clientId ? "bg-primary/5 border-primary/30" : ""}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Seção 2: Serviço e Profissional */}
+            <div className="space-y-5 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="flex items-center gap-3 pb-3 border-b border-primary/20">
+                <Sparkles className="h-6 w-6 text-primary" />
+                <h3 className="font-semibold text-xl">Serviço e Profissional</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Serviço */}
+                <div className="space-y-3">
+                  <Label htmlFor="service" className="text-base">Serviço *</Label>
+                  <Select
+                    value={formData.serviceId}
+                    onValueChange={(value) => {
+                      // Ao mudar serviço, limpar profissional e horário
+                      setFormData({ 
+                        ...formData, 
+                        serviceId: value,
+                        staffId: "",
+                        time: ""
+                      });
+                      setAvailableSlots([]);
+                    }}
+                  >
+                    <SelectTrigger className="h-12">
+                      <SelectValue placeholder="Selecione o serviço" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          Nenhum serviço ativo cadastrado
+                        </div>
+                      ) : (
+                        services.map((service) => (
+                          <SelectItem key={service.id} value={service.id}>
+                            <div className="flex flex-col py-1">
+                              <span className="font-medium">{service.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                R$ {service.price.toFixed(2)} • {service.duration}min
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Profissional */}
+                <div className="space-y-3">
+                  <Label htmlFor="staff" className="text-base">Profissional *</Label>
+                  <Select
+                    value={formData.staffId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, staffId: value })
+                    }
+                    disabled={!formData.serviceId}
+                  >
+                    <SelectTrigger className={`h-12 ${!formData.serviceId ? "opacity-50" : ""}`}>
+                      <SelectValue placeholder={
+                        !formData.serviceId 
+                          ? "Selecione primeiro o serviço" 
+                          : "Selecione o profissional"
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getFilteredStaff().length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          {!formData.serviceId 
+                            ? "Selecione um serviço primeiro"
+                            : "Nenhum profissional disponível para este serviço"
+                          }
+                        </div>
+                      ) : (
+                        getFilteredStaff().map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Seção 3: Data e Horário */}
+            <div className="space-y-5 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="flex items-center gap-3 pb-3 border-b border-primary/20">
+                <Calendar className="h-6 w-6 text-primary" />
+                <h3 className="font-semibold text-xl">Data e Horário</h3>
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="date" className="text-base">Data do Agendamento *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value, time: "" })
+                  }
+                  min={new Date().toISOString().split("T")[0]}
+                  className="cursor-pointer h-12"
+                />
+              </div>
+
+              {/* Horários Disponíveis */}
+              {formData.date && formData.serviceId && formData.staffId && (
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-base">
+                    <Clock className="h-4 w-4" />
+                    Horários Disponíveis *
+                  </Label>
+                  {loadingSlots ? (
+                    <div className="flex flex-col items-center justify-center py-16 glass-card rounded-lg">
+                      <Sparkles className="h-10 w-10 animate-spin text-primary mb-4" />
+                      <span className="text-sm text-muted-foreground font-medium">
+                        Carregando horários disponíveis...
+                      </span>
+                    </div>
+                  ) : availableSlots.length === 0 ? (
+                    <div className="glass-card bg-muted/50 p-8 rounded-lg text-center">
+                      <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-base text-foreground font-medium mb-2">
+                        Nenhum horário disponível
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        O profissional pode não trabalhar neste dia ou todos os horários estão ocupados.
+                        <br />
+                        Tente selecionar outra data ou profissional.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 max-h-72 overflow-y-auto p-4 glass-card rounded-lg">
+                        {availableSlots.map((slot) => (
+                          <button
+                            key={slot.time}
+                            type="button"
+                            onClick={() =>
+                              slot.available &&
+                              setFormData({ ...formData, time: slot.time })
+                            }
+                            disabled={!slot.available}
+                            className={`
+                              px-4 py-3 rounded-lg text-sm font-medium transition-all
+                              ${
+                                formData.time === slot.time
+                                  ? "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg scale-105"
+                                  : slot.available
+                                  ? "glass-card hover:bg-primary/10 hover:border-primary/30 hover:scale-105"
+                                  : "bg-muted/30 text-muted-foreground cursor-not-allowed opacity-50"
+                              }
+                            `}
+                          >
+                            {slot.time}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-3 text-center font-medium">
+                        {availableSlots.filter(s => s.available).length} horários disponíveis
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Seção 4: Observações */}
+            <div className="space-y-5 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="space-y-3">
+                <Label htmlFor="notes" className="flex items-center gap-2 text-base">
+                  <AlertCircle className="h-4 w-4" />
+                  Observações (opcional)
+                </Label>
+                <Input
+                  id="notes"
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  placeholder="Ex: Cliente prefere corte mais curto nas laterais..."
+                  className="h-12"
+                />
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex gap-4 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateModal(false)}
+                disabled={saving}
+                className="flex-1 h-12 text-base"
+              >
+                <XIcon className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+              <GradientButton
+                variant="primary"
+                onClick={handleCreate}
+                disabled={saving}
+                className="flex-1 h-12 text-base"
+              >
+                {saving ? (
+                  <>
+                    <Sparkles className="h-5 w-5 mr-2 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-5 w-5 mr-2" />
+                    Criar Agendamento
+                  </>
+                )}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Editar Agendamento */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="glass-card max-w-4xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader className="pb-6 border-b border-primary/10">
+            <DialogTitle className="text-3xl font-bold flex items-center gap-3">
+              <Edit2 className="h-8 w-8 text-primary" />
+              Editar Agendamento
+            </DialogTitle>
+            <DialogDescription className="text-base mt-3 text-muted-foreground">
+              Atualize os dados do agendamento
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-8 mt-8 pb-4">
+            {/* Cliente (somente leitura) */}
+            {editingBooking && (
+              <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+                <Label className="text-base font-medium flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Cliente
+                </Label>
+                <div className="space-y-2 pl-6">
+                  <div className="font-medium text-base">{editingBooking.client.name}</div>
+                  <div className="text-muted-foreground text-sm">{editingBooking.client.email}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Serviço */}
+            <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <Label htmlFor="edit-service" className="text-base font-medium flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                Serviço *
+              </Label>
+              <Select
+                value={formData.serviceId}
+                onValueChange={(value) => {
+                  // Ao mudar serviço, limpar profissional e horário
+                  setFormData({ 
+                    ...formData, 
+                    serviceId: value,
+                    staffId: "",
+                    time: ""
+                  });
+                  setAvailableSlots([]);
+                }}
+              >
+                <SelectTrigger className="h-14 text-base">
+                  <SelectValue placeholder="Selecione o serviço" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      Nenhum serviço ativo cadastrado
+                    </div>
+                  ) : (
+                    services.map((service) => (
+                      <SelectItem key={service.id} value={service.id} className="text-base py-3">
+                        {service.name} - R$ {service.price.toFixed(2)} ({service.duration}min)
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Profissional */}
+            <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <Label htmlFor="edit-staff" className="text-base font-medium flex items-center gap-2">
+                <UserCheck className="h-4 w-4" />
+                Profissional *
+              </Label>
+              <Select
+                value={formData.staffId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, staffId: value })
+                }
+                disabled={!formData.serviceId}
+              >
+                <SelectTrigger className="h-14 text-base">
+                  <SelectValue placeholder={
+                    !formData.serviceId 
+                      ? "Selecione primeiro o serviço" 
+                      : "Selecione o profissional"
+                  } />
+                </SelectTrigger>
+                <SelectContent>
+                  {getFilteredStaff().length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      {!formData.serviceId 
+                        ? "Selecione um serviço primeiro"
+                        : "Nenhum profissional disponível para este serviço"
+                      }
+                    </div>
+                  ) : (
+                    getFilteredStaff().map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-base py-3">
+                        {s.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Data e Hora */}
+            <div className="space-y-6 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="space-y-4">
+                <Label htmlFor="edit-date" className="text-base font-medium flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Data *
+                </Label>
+                <Input
+                  id="edit-date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value, time: "" })
+                  }
+                  min={new Date().toISOString().split("T")[0]}
+                  className="h-14 text-base"
+                />
+              </div>
+
+              {/* Horários Disponíveis */}
+              {formData.date && formData.serviceId && formData.staffId && (
+                <div className="space-y-4 pt-2">
+                  <Label className="text-base font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Horários Disponíveis *
+                  </Label>
+                  {loadingSlots ? (
+                    <div className="flex items-center justify-center py-16 glass-card rounded-xl">
+                      <Sparkles className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-3 text-base text-muted-foreground">
+                        Carregando horários...
+                      </span>
+                    </div>
+                  ) : availableSlots.length === 0 ? (
+                    <div className="glass-card bg-muted/50 p-8 rounded-xl text-center border border-dashed border-muted-foreground/30">
+                      <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                      <p className="text-base text-muted-foreground font-medium mb-2">
+                        Nenhum horário disponível
+                      </p>
+                      <p className="text-sm text-muted-foreground/80 max-w-md mx-auto">
+                        O profissional pode não trabalhar neste dia ou todos os horários estão ocupados.
+                        <br />
+                        Tente outra data ou profissional.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto p-4 glass-card rounded-xl border border-primary/10">
+                      {availableSlots.map((slot) => (
+                        <button
+                          key={slot.time}
+                          type="button"
+                          onClick={() =>
+                            slot.available &&
+                            setFormData({ ...formData, time: slot.time })
+                          }
+                          disabled={!slot.available}
+                          className={`
+                            px-5 py-4 rounded-xl text-base font-medium transition-all
+                            ${
+                              formData.time === slot.time
+                                ? "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20"
+                                : slot.available
+                                ? "glass-card hover:bg-primary/10 hover:border-primary/30 hover:shadow-md"
+                                : "bg-muted/30 text-muted-foreground cursor-not-allowed opacity-50"
+                            }
+                          `}
+                        >
+                          {slot.time}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Observações */}
+            <div className="space-y-5 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
+              <div className="space-y-3">
+                <Label htmlFor="edit-notes" className="flex items-center gap-2 text-base">
+                  <AlertCircle className="h-4 w-4" />
+                  Observações (opcional)
+                </Label>
+                <Input
+                  id="edit-notes"
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  placeholder="Observações adicionais (opcional)"
+                  className="h-12"
+                />
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex gap-4 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingBooking(null);
+                }}
+                disabled={saving}
+                className="flex-1 h-12 text-base"
+              >
+                <XIcon className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+              <GradientButton
+                variant="primary"
+                onClick={handleUpdate}
+                disabled={saving}
+                className="flex-1 h-12 text-base"
+              >
+                {saving ? (
+                  <>
+                    <Sparkles className="h-5 w-5 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-5 w-5 mr-2" />
+                    Salvar Alterações
+                  </>
+                )}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

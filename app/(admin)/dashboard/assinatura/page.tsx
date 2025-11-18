@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,14 +70,26 @@ interface SubscriptionData {
 
 export default function AssinaturaPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Verificar se é OWNER
+  const isOwner = (session?.user as any)?.roleType === "OWNER";
+
   useEffect(() => {
-    loadSubscriptionData();
-  }, []);
+    // Redirecionar se não for OWNER
+    if (session && !isOwner) {
+      router.push("/dashboard");
+      return;
+    }
+    
+    if (session && isOwner) {
+      loadSubscriptionData();
+    }
+  }, [session, isOwner, router]);
 
   async function loadSubscriptionData() {
     try {
@@ -134,6 +147,27 @@ export default function AssinaturaPage() {
     } finally {
       setPortalLoading(false);
     }
+  }
+
+  // Bloquear acesso para não-owners
+  if (!isOwner) {
+    return (
+      <>
+        <DashboardHeader user={{
+          name: session?.user?.name,
+          email: session?.user?.email,
+          role: session?.user?.role,
+        }} />
+        <div className="container mx-auto px-4 py-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Acesso negado. Apenas proprietários podem visualizar informações de assinatura.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </>
+    );
   }
 
   if (loading) {

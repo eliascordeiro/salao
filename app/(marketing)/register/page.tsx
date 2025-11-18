@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -67,9 +68,57 @@ export default function RegisterPage() {
       }
 
       setSuccess(true)
-      setTimeout(() => {
-        router.push("/login")
-      }, 2000)
+      
+      // Fazer login automático após registro bem-sucedido
+      console.log("✅ Conta criada, fazendo login automático...")
+      
+      const loginResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (loginResult?.error) {
+        console.error("❌ Erro ao fazer login automático:", loginResult.error)
+        // Se falhar o login automático, redireciona para login manual
+        setTimeout(() => {
+          router.push("/login")
+        }, 2000)
+        return
+      }
+
+      console.log("✅ Login automático realizado com sucesso")
+
+      // Verificar se há agendamento pendente no localStorage
+      const pendingBooking = localStorage.getItem("pendingBooking")
+      
+      if (pendingBooking) {
+        try {
+          const booking = JSON.parse(pendingBooking)
+          console.log("📅 Agendamento pendente encontrado:", booking)
+          
+          // Redirecionar para página de agendamento do salão
+          setTimeout(() => {
+            router.push(`/salao/${booking.salonId}/agendar`)
+            router.refresh()
+          }, 1500)
+        } catch (e) {
+          console.error("❌ Erro ao processar agendamento pendente:", e)
+          // Se houver erro, vai para rota padrão do cliente
+          setTimeout(() => {
+            router.push("/saloes")
+            router.refresh()
+          }, 1500)
+        }
+      } else {
+        // Sem agendamento pendente, vai para lista de salões
+        console.log("📋 Sem agendamento pendente, redirecionando para salões...")
+        setTimeout(() => {
+          router.push("/saloes")
+          router.refresh()
+        }, 1500)
+      }
+      
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -116,7 +165,7 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <p className="text-foreground font-semibold text-lg">Conta criada com sucesso!</p>
-                  <p className="text-foreground-muted text-sm mt-2">Redirecionando para o login...</p>
+                  <p className="text-foreground-muted text-sm mt-2">Entrando em sua conta...</p>
                 </div>
               </div>
             ) : (

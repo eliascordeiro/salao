@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card"
 import { UserPlus, Edit, Trash2, Mail, CheckCircle, XCircle } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { DashboardHeader } from "@/components/dashboard/header"
+import { GridBackground } from "@/components/ui/grid-background"
 
 interface ManagedUser {
   id: string
@@ -102,23 +104,35 @@ export default function UsuariosPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Gerenciar Usuários</h1>
-          <p className="text-muted-foreground mt-1">
-            Crie e gerencie usuários da sua equipe com permissões personalizadas
-          </p>
-        </div>
-        <Button
-          onClick={() => router.push("/dashboard/usuarios/novo")}
-          className="gap-2"
-        >
-          <UserPlus className="h-4 w-4" />
-          Novo Usuário
-        </Button>
-      </div>
+    <GridBackground>
+      <DashboardHeader 
+        user={{
+          name: session?.user?.name,
+          email: session?.user?.email,
+          role: session?.user?.role
+        }}
+      />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Título da Página */}
+          <div>
+            <h1 className="text-3xl font-bold">Gerenciar Usuários</h1>
+            <p className="text-muted-foreground mt-1">
+              Crie e gerencie usuários da sua equipe com permissões personalizadas
+            </p>
+          </div>
+
+          {/* Botão Novo Usuário */}
+          <div className="flex justify-end">
+            <Button
+              onClick={() => router.push("/dashboard/usuarios/novo")}
+              className="gap-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              Novo Usuário
+            </Button>
+          </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -264,6 +278,8 @@ export default function UsuariosPage() {
           </table>
         </div>
       </Card>
-    </div>
+        </div>
+      </main>
+    </GridBackground>
   )
 }

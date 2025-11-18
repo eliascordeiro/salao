@@ -89,12 +89,97 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { status, notes } = body;
+    const { status, notes, date, serviceId, staffId } = body;
 
     // Validar status
     const validStatuses = ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"];
     if (status && !validStatuses.includes(status)) {
       return NextResponse.json({ error: "Status inválido" }, { status: 400 });
+    }
+
+    // Validar data se fornecida
+    if (date) {
+      const bookingDate = new Date(date);
+      if (isNaN(bookingDate.getTime())) {
+        return NextResponse.json({ error: "Data inválida" }, { status: 400 });
+      }
+    }
+
+    // Validar se serviceId existe (se fornecido)
+    if (serviceId) {
+      const service = await prisma.service.findUnique({
+        where: { id: serviceId },
+      });
+      if (!service) {
+        return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
+      }
+    }
+
+    // Validar se staffId existe (se fornecido)
+    if (staffId) {
+      const staff = await prisma.staff.findUnique({
+        where: { id: staffId },
+      });
+      if (!staff) {
+        return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
+      }
+    }
+
+    // Verificar conflito de horário se data/hora, serviço ou profissional foram alterados
+    if (date && serviceId && staffId) {
+      const bookingDate = new Date(date);
+      
+      // Buscar duração do serviço
+      const service = await prisma.service.findUnique({
+        where: { id: serviceId },
+        select: { duration: true },
+      });
+
+      if (service) {
+        const endDate = new Date(bookingDate.getTime() + service.duration * 60000);
+
+        // Verificar conflitos (excluindo o próprio agendamento)
+        const conflict = await prisma.booking.findFirst({
+          where: {
+            id: { not: params.id }, // Excluir o agendamento atual
+            staffId,
+            status: { notIn: ["CANCELLED", "NO_SHOW"] },
+            OR: [
+              {
+                date: {
+                  gte: bookingDate,
+                  lt: endDate,
+                },
+              },
+              {
+                AND: [
+                  { date: { lt: bookingDate } },
+                  {
+                    service: {
+                      duration: {
+                        gt: Math.floor((bookingDate.getTime() - new Date().getTime()) / 60000),
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          include: {
+            service: { select: { name: true } },
+          },
+        });
+
+        if (conflict) {
+          return NextResponse.json(
+            {
+              error: "Conflito de horário",
+              message: `O profissional já tem um agendamento (${conflict.service.name}) neste horário.`,
+            },
+            { status: 409 }
+          );
+        }
+      }
     }
 
     // Buscar status anterior para saber se houve mudança
@@ -108,6 +193,9 @@ export async function PUT(
       data: {
         ...(status && { status }),
         ...(notes !== undefined && { notes }),
+        ...(date && { date: new Date(date) }),
+        ...(serviceId && { serviceId }),
+        ...(staffId && { staffId }),
       },
       include: {
         client: {

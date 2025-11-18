@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { OWNER_PERMISSIONS } from "@/lib/permissions";
 
 /**
  * POST /api/auth/register-salon
@@ -103,10 +104,12 @@ export async function POST(request: NextRequest) {
     // Criar usuário e salão em uma transação
     const result = await prisma.$transaction(async (tx) => {
       // 1. Criar usuário proprietário primeiro
-      console.log("👤 Criando usuário com dados:", {
+      console.log("👤 Criando usuário proprietário com todas as permissões:", {
         name: ownerName,
         email: ownerEmail,
         role: "ADMIN",
+        roleType: "OWNER",
+        permissions: OWNER_PERMISSIONS.length,
       });
       
       const user = await tx.user.create({
@@ -115,10 +118,14 @@ export async function POST(request: NextRequest) {
           email: ownerEmail,
           password: hashedPassword,
           role: "ADMIN", // Proprietários são ADMIN
+          roleType: "OWNER", // Tipo específico: OWNER (proprietário)
+          permissions: OWNER_PERMISSIONS, // Todas as permissões
+          isActive: true, // Ativo por padrão
         },
       });
       
-      console.log("✅ Usuário criado:", user.id);
+      console.log("✅ Usuário proprietário criado com ID:", user.id);
+      console.log("✅ Permissões atribuídas:", user.permissions.length);
       
       // 2. Criar salão vinculado ao proprietário
       console.log("🏪 Criando salão com dados:", {
