@@ -727,31 +727,8 @@ export default function SalaoPage() {
           )}
         </div>
         
-        {/* Floating CTA Mobile Melhorado */}
-        <div className="md:hidden fixed bottom-6 right-6 z-50">
-          <Link href={`/salao/${salon.id}/agendar`}>
-            <Button
-              size="lg"
-              className="gap-2 rounded-full shadow-2xl bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:scale-110 transition-all duration-300 animate-pulse"
-            >
-              <Calendar className="h-5 w-5" />
-              Agendar
-            </Button>
-          </Link>
-        </div>
-        
         {/* AI Chat Widget */}
         <AIChatWidget salonId={salon.id} salonName={salon.name} />
-        
-        {/* Floating CTA Mobile */}
-        <div className="md:hidden fixed bottom-4 right-4 z-50">
-          <Link href={`/salao/${salon.id}/agendar`}>
-            <Button size="lg" className="shadow-xl rounded-full">
-              <Calendar className="h-5 w-5 mr-2" />
-              Agendar
-            </Button>
-          </Link>
-        </div>
       </div>
     </GridBackground>
   );

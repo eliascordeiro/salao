@@ -10,10 +10,9 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/cashier/daily-bookings
  * 
- * Lista todos os agendamentos do dia atual agrupados por cliente
- * Apenas agendamentos com status CONFIRMED são considerados (serviços já prestados)
+ * Lista todas as sessões de caixa criadas hoje (agendamentos marcados como COMPLETED hoje)
  * 
- * @returns Array de clientes com seus agendamentos do dia
+ * @returns Array de clientes com suas sessões de caixa do dia
  */
 export async function GET(request: Request) {
   try {
@@ -33,17 +32,14 @@ export async function GET(request: Request) {
     const startDate = startOfDay(today);
     const endDate = endOfDay(today);
 
-    // Busca todos os agendamentos CONFIRMADOS ou COMPLETED do dia
-    const bookings = await prisma.booking.findMany({
+    // Busca todas as sessões de caixa criadas hoje (agendamentos marcados como COMPLETED hoje)
+    const cashierSessions = await prisma.cashierSession.findMany({
       where: {
         salonId: salon.id,
-        date: {
+        createdAt: {
           gte: startDate,
           lte: endDate,
         },
-        status: {
-          in: ["CONFIRMED", "COMPLETED"] // Serviços prestados ou já pagos
-        }
       },
       include: {
         client: {
@@ -54,6 +50,23 @@ export async function GET(request: Request) {
             phone: true,
           },
         },
+        items: true,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    // Busca todos os bookings relacionados às sessões
+    const bookingIds = cashierSessions.flatMap(session => 
+      session.items.map(item => item.bookingId)
+    );
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        id: { in: bookingIds },
+      },
+      include: {
         service: {
           select: {
             id: true,
@@ -70,59 +83,60 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: {
-        date: "asc",
-      },
     });
 
-    // Agrupa agendamentos por cliente
+    // Cria um mapa de bookings por ID
+    const bookingsMap = new Map(bookings.map(b => [b.id, b]));
+
+    // Converte as sessões de caixa para o formato esperado pelo frontend
     const clientsMap = new Map();
 
-    bookings.forEach((booking) => {
-      const clientId = booking.client.id;
+    for (const cashierSession of cashierSessions) {
+      const clientId = cashierSession.client.id;
 
       if (!clientsMap.has(clientId)) {
         clientsMap.set(clientId, {
-          client: booking.client,
+          client: cashierSession.client,
           bookings: [],
           subtotal: 0,
+          hasOpenSession: cashierSession.status === "OPEN",
+          sessionId: cashierSession.status === "OPEN" ? cashierSession.id : null,
         });
       }
 
       const clientData = clientsMap.get(clientId);
-      clientData.bookings.push({
-        id: booking.id,
-        date: booking.date,
-        service: booking.service,
-        staff: booking.staff,
-        price: booking.totalPrice,
-        status: booking.status,
-      });
-      clientData.subtotal += booking.totalPrice;
-    });
+
+      // Adiciona os items da sessão como bookings
+      for (const item of cashierSession.items) {
+        const booking = bookingsMap.get(item.bookingId);
+        if (booking) {
+          clientData.bookings.push({
+            id: booking.id,
+            date: booking.date,
+            service: booking.service,
+            staff: booking.staff,
+            price: item.price,
+            status: booking.status,
+          });
+          clientData.subtotal += item.price;
+        }
+      }
+
+      // Atualiza status da sessão (se já foi paga)
+      if (cashierSession.status !== "OPEN") {
+        clientData.hasOpenSession = false;
+        clientData.sessionId = null;
+      }
+    }
 
     // Converte Map para Array
     const clients = Array.from(clientsMap.values());
-
-    // Verifica se cada cliente já tem uma sessão de caixa aberta
-    for (const client of clients) {
-      const existingSession = await prisma.cashierSession.findFirst({
-        where: {
-          salonId: salon.id,
-          clientId: client.client.id,
-          status: "OPEN",
-        },
-      });
-
-      client.hasOpenSession = !!existingSession;
-      client.sessionId = existingSession?.id || null;
-    }
 
     return NextResponse.json({
       success: true,
       date: today.toISOString(),
       totalClients: clients.length,
-      totalBookings: bookings.length,
+      totalBookings: clients.reduce((sum, c) => sum + c.bookings.length, 0),
       clients,
     });
   } catch (error) {
