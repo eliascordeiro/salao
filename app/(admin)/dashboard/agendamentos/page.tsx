@@ -579,8 +579,8 @@ export default function AgendamentosPage() {
         }
       }
       
-      // Combinar data e hora
-      const dateTime = new Date(`${formData.date}T${formData.time}:00.000Z`);
+      // Combinar data e hora (SEM o Z para usar timezone local)
+      const dateTime = new Date(`${formData.date}T${formData.time}:00`);
       
       // Validar se a data é válida
       if (isNaN(dateTime.getTime())) {
@@ -674,8 +674,8 @@ export default function AgendamentosPage() {
         return;
       }
       
-      // Combinar data e hora
-      const dateTime = new Date(`${formData.date}T${formData.time}:00.000Z`);
+      // Combinar data e hora (SEM o Z para usar timezone local)
+      const dateTime = new Date(`${formData.date}T${formData.time}:00`);
       
       // Validar se a data é válida
       if (isNaN(dateTime.getTime())) {
