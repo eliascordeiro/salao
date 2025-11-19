@@ -185,7 +185,7 @@ export async function PUT(
     // Buscar status anterior para saber se houve mudança
     const previousBooking = await prisma.booking.findUnique({
       where: { id: params.id },
-      select: { status: true },
+      select: { status: true, salonId: true },
     });
 
     const booking = await prisma.booking.update({
@@ -208,6 +208,7 @@ export async function PUT(
           select: {
             name: true,
             duration: true,
+            price: true,
           },
         },
         staff: {
@@ -223,6 +224,47 @@ export async function PUT(
         },
       },
     });
+
+    // Se o status mudou para COMPLETED, criar entrada no caixa automaticamente
+    if (
+      status === "COMPLETED" &&
+      previousBooking &&
+      previousBooking.status !== "COMPLETED"
+    ) {
+      try {
+        // Verificar se já existe uma sessão de caixa para este agendamento
+        const existingSession = await prisma.cashierSessionItem.findFirst({
+          where: { bookingId: params.id },
+        });
+
+        if (!existingSession) {
+          // Criar sessão de caixa
+          await prisma.cashierSession.create({
+            data: {
+              salonId: booking.salonId,
+              clientId: booking.clientId,
+              subtotal: booking.service.price,
+              discount: 0,
+              total: booking.service.price,
+              status: "OPEN",
+              items: {
+                create: {
+                  bookingId: booking.id,
+                  serviceName: booking.service.name,
+                  staffName: booking.staff.name,
+                  price: booking.service.price,
+                  discount: 0,
+                },
+              },
+            },
+          });
+          console.log(`✅ Sessão de caixa criada para agendamento ${booking.id}`);
+        }
+      } catch (error) {
+        console.error("Erro ao criar sessão de caixa:", error);
+        // Não retorna erro para não bloquear a atualização do agendamento
+      }
+    }
 
     // Enviar emails baseado na mudança de status (sem aguardar)
     if (status && previousBooking && status !== previousBooking.status) {

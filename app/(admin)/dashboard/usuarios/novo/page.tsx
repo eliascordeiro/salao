@@ -76,6 +76,7 @@ export default function NovoUsuarioPage() {
       if (res.ok) {
         alert("Usuário criado com sucesso! Um email foi enviado com as credenciais de acesso.")
         router.push("/dashboard/usuarios")
+        router.refresh() // Força reload da página de destino
       } else {
         alert(data.error || "Erro ao criar usuário")
       }
@@ -166,7 +167,7 @@ export default function NovoUsuarioPage() {
                     </div>
                     <Button
                       type="button"
-                      variant={allSelected ? "default" : someSelected ? "secondary" : "outline"}
+                      variant={allSelected ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleToggleGroup(groupPermissions)}
                     >

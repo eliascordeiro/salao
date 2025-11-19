@@ -31,15 +31,33 @@ export default function UsuariosPage() {
     }
   }, [status])
 
+  // Recarrega lista quando a página ganha foco (volta de outra página)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (status === "authenticated") {
+        fetchUsers()
+      }
+    }
+
+    window.addEventListener("focus", handleFocus)
+    return () => window.removeEventListener("focus", handleFocus)
+  }, [status])
+
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/api/users")
+      setLoading(true)
+      const res = await fetch("/api/users", {
+        cache: "no-store", // Força buscar dados frescos
+      })
       if (res.ok) {
         const data = await res.json()
+        console.log("📊 Usuários carregados:", data.users?.length || 0)
         setUsers(data.users || [])
+      } else {
+        console.error("❌ Erro ao buscar usuários:", res.status, res.statusText)
       }
     } catch (error) {
-      console.error("Erro ao carregar usuários:", error)
+      console.error("❌ Erro ao carregar usuários:", error)
     } finally {
       setLoading(false)
     }

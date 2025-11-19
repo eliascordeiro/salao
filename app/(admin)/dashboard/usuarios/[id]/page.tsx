@@ -120,6 +120,7 @@ export default function EditarUsuarioPage() {
       if (res.ok) {
         alert("Usuário atualizado com sucesso!")
         router.push("/dashboard/usuarios")
+        router.refresh() // Força reload da página de destino
       } else {
         alert(data.error || "Erro ao atualizar usuário")
       }
@@ -281,7 +282,7 @@ export default function EditarUsuarioPage() {
                     </div>
                     <Button
                       type="button"
-                      variant={allSelected ? "default" : someSelected ? "secondary" : "outline"}
+                      variant={allSelected ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleToggleGroup(groupPermissions)}
                     >

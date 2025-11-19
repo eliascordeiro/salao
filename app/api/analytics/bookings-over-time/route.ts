@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { format, subDays, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getUserSalon } from "@/lib/salon-helper";
 
 // Força renderização dinâmica (usa headers para auth)
 export const dynamic = 'force-dynamic';
@@ -22,6 +23,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    // 🔒 FILTRO MULTI-TENANT
+    const userSalon = await getUserSalon();
+    if (!userSalon) {
+      return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
+    }
+
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get("days") || "30");
 
@@ -31,6 +38,7 @@ export async function GET(request: NextRequest) {
     // Buscar todos os agendamentos do período
     const bookings = await prisma.booking.findMany({
       where: {
+        salonId: userSalon.id, // 🔒 FILTRO CRÍTICO
         createdAt: {
           gte: startDate,
           lte: endDate,

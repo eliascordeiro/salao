@@ -16,7 +16,8 @@ import {
   X,
   Wallet,
   LucideIcon,
-  UserCog
+  UserCog,
+  LifeBuoy
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect } from "react"

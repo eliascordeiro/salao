@@ -153,6 +153,7 @@ export async function POST(request: NextRequest) {
         data: {
           name: salonName,
           phone: salonPhone,
+          email: ownerEmail, // ✅ ADICIONADO: Email do salão (usa email do proprietário)
           address: fullAddress,
           city: salonCity,
           state: salonState,

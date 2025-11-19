@@ -116,13 +116,25 @@ export default function MeuSalaoPage() {
       const data = await response.json();
       setSalon(data);
       
-      // Parse do endereço existente
-      const addressParts = parseAddress(data.address || "");
+      // Usar campos separados se existirem, senão tentar parsear o endereço
+      const addressParts = data.street ? {
+        cep: data.zipCode || "",
+        street: data.street || "",
+        number: data.number || "",
+        complement: data.complement || "",
+        neighborhood: data.neighborhood || "",
+        city: data.city || "",
+        state: data.state || "",
+      } : parseAddress(data.address || "");
+      
+      // Formatar CEP com hífen
+      const formattedCep = addressParts.cep ? 
+        addressParts.cep.replace(/\D/g, "").replace(/^(\d{5})(\d{3})$/, "$1-$2") : "";
       
       setFormData({
         name: data.name || "",
         description: data.description || "",
-        cep: addressParts.cep || "",
+        cep: formattedCep,
         street: addressParts.street || "",
         number: addressParts.number || "",
         complement: addressParts.complement || "",
@@ -619,7 +631,6 @@ export default function MeuSalaoPage() {
                       <Label htmlFor="cep">CEP</Label>
                       <div className="relative">
                         <Input
-                          key={`cep-${formData.cep}`}
                           id="cep"
                           type="text"
                           value={formData.cep}

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay, subDays, subMonths } from "date-fns";
+import { getUserSalon } from "@/lib/salon-helper";
 
 // Força renderização dinâmica (usa headers para auth)
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,13 @@ export async function GET(request: NextRequest) {
     // Apenas ADMIN pode acessar analytics
     if (session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    }
+
+    // 🔒 FILTRO MULTI-TENANT: Obter salão do usuário
+    const userSalon = await getUserSalon();
+    
+    if (!userSalon) {
+      return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -65,6 +73,7 @@ export async function GET(request: NextRequest) {
     // Buscar agendamentos do período atual
     const currentBookings = await prisma.booking.findMany({
       where: {
+        salonId: userSalon.id, // 🔒 FILTRO CRÍTICO
         createdAt: {
           gte: startDate,
           lte: now,
@@ -81,6 +90,7 @@ export async function GET(request: NextRequest) {
     // Buscar agendamentos do período anterior (para comparação)
     const previousBookings = await prisma.booking.findMany({
       where: {
+        salonId: userSalon.id, // 🔒 FILTRO CRÍTICO
         createdAt: {
           gte: previousStartDate,
           lt: startDate,

@@ -29,6 +29,8 @@ model User {
   cashierSessions CashierSession[]
   owner           User?            @relation("UserOwner", fields: [ownerId], references: [id])
   managedUsers    User[]           @relation("UserOwner")
+  supportTickets  SupportTicket[]
+  ticketMessages  TicketMessage[]
   
   @@index([ownerId])
   @@index([roleType])
@@ -63,6 +65,11 @@ model Salon {
   state        String?
   verified     Boolean   @default(false)
   zipCode      String?
+  // Campos de endereço separados
+  street       String?   // Rua/Logradouro
+  number       String?   // Número
+  complement   String?   // Complemento (apto, sala, etc)
+  neighborhood String?   // Bairro
   bookings     Booking[]
   reviews      Review[]
   owner        User      @relation(fields: [ownerId], references: [id])
@@ -364,4 +371,66 @@ model Expense {
   @@index([salonId])
   @@index([status])
   @@index([dueDate])
+}
+
+// ==========================================
+// SISTEMA DE SUPORTE
+// ==========================================
+
+model SupportTicket {
+  id          String           @id @default(cuid())
+  ticketNumber Int             @unique @default(autoincrement())
+  
+  // Informações do solicitante
+  userId      String?         // Opcional - pode ser usuário não logado
+  name        String
+  email       String
+  phone       String?
+  
+  // Dados do ticket
+  subject     String
+  category    String          // "TECNICO", "FATURAMENTO", "DUVIDA", "SUGESTAO", "RECLAMACAO"
+  description String
+  status      String          @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
+  priority    String          @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
+  
+  // Metadata
+  assignedTo  String?         // ID do admin que está atendendo
+  resolvedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Relações
+  user        User?           @relation(fields: [userId], references: [id])
+  messages    TicketMessage[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model TicketMessage {
+  id        String        @id @default(cuid())
+  ticketId  String
+  
+  // Remetente
+  userId    String?       // Se for admin ou usuário logado
+  name      String        // Nome de quem enviou
+  isStaff   Boolean       @default(false) // Se é resposta da equipe
+  
+  // Conteúdo
+  message   String
+  
+  // Anexos (opcional para futuro)
+  attachments String[]    @default([])
+  
+  createdAt DateTime      @default(now())
+  
+  // Relação
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User?         @relation(fields: [userId], references: [id])
+  
+  @@index([ticketId])
+  @@index([createdAt])
 }

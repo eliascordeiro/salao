@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 /**
  * GET /api/public/salons/[id]/reviews
@@ -165,6 +167,132 @@ export async function GET(
         success: false,
         error: "Erro ao buscar avaliações",
       },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST /api/public/salons/[id]/reviews
+ * Criar uma nova avaliação (requer autenticação)
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Autenticação necessária" },
+        { status: 401 }
+      );
+    }
+
+    const { id: salonId } = params;
+    const body = await request.json();
+    const { bookingId, rating, comment } = body;
+
+    // Validações
+    if (!bookingId || !rating) {
+      return NextResponse.json(
+        { error: "bookingId e rating são obrigatórios" },
+        { status: 400 }
+      );
+    }
+
+    if (rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { error: "Rating deve ser entre 1 e 5" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se booking existe e pertence ao usuário
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { salon: true },
+    });
+
+    if (!booking) {
+      return NextResponse.json(
+        { error: "Agendamento não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (booking.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Você não tem permissão para avaliar este agendamento" },
+        { status: 403 }
+      );
+    }
+
+    if (booking.salonId !== salonId) {
+      return NextResponse.json(
+        { error: "Agendamento não pertence a este salão" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se já existe avaliação para este booking
+    const existingReview = await prisma.review.findUnique({
+      where: { bookingId },
+    });
+
+    if (existingReview) {
+      return NextResponse.json(
+        { error: "Você já avaliou este agendamento" },
+        { status: 400 }
+      );
+    }
+
+    // Criar avaliação
+    const review = await prisma.review.create({
+      data: {
+        bookingId,
+        userId: session.user.id,
+        salonId,
+        rating,
+        comment: comment || "",
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Atualizar rating e reviewsCount do salão
+    const allReviews = await prisma.review.findMany({
+      where: { salonId },
+      select: { rating: true },
+    });
+
+    const totalReviews = allReviews.length;
+    const averageRating =
+      allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    await prisma.salon.update({
+      where: { id: salonId },
+      data: {
+        rating: Math.round(averageRating * 10) / 10, // arredondar para 1 casa decimal
+        reviewsCount: totalReviews,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: review,
+      message: "Avaliação criada com sucesso",
+    }, { status: 201 });
+  } catch (error) {
+    console.error("❌ Erro ao criar avaliação:", error);
+    return NextResponse.json(
+      { error: "Erro ao criar avaliação" },
       { status: 500 }
     );
   }

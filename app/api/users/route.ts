@@ -144,7 +144,7 @@ export async function GET(request: Request) {
       },
     })
 
-    return NextResponse.json(users)
+    return NextResponse.json({ users })
   } catch (error) {
     console.error("Erro ao listar usuários:", error)
     return NextResponse.json({ error: "Erro ao listar usuários" }, { status: 500 })

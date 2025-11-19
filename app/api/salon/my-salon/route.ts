@@ -56,22 +56,24 @@ export async function PUT(request: Request) {
       closeTime,
       workDays,
       bookingType,
-      active
+      active,
+      // Novos campos de endereço separados
+      cep,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      state,
     } = data
 
-    // Extrair cidade e estado do endereço
-    // Formato esperado: "Rua, 123 - Bairro - Cidade/UF"
-    let city = null;
-    let state = null;
-    
-    if (address && typeof address === 'string') {
-      const parts = address.split(' - ');
-      if (parts.length >= 3) {
-        const cityState = parts[parts.length - 1].trim();
-        const [cityPart, statePart] = cityState.split('/');
-        city = cityPart?.trim() || null;
-        state = statePart?.trim() || null;
-      }
+    // Montar endereço completo se os campos separados foram fornecidos
+    let fullAddress = address;
+    if (street) {
+      fullAddress = street;
+      if (number) fullAddress += `, ${number}`;
+      if (neighborhood) fullAddress += ` - ${neighborhood}`;
+      if (city && state) fullAddress += ` - ${city}/${state}`;
     }
 
     // Validações básicas
@@ -95,14 +97,20 @@ export async function PUT(request: Request) {
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(description !== undefined && { description: description?.trim() || null }),
-        ...(address !== undefined && { address: address?.trim() || '' }),
-        ...(city && { city }),
-        ...(state && { state }),
+        ...(fullAddress && { address: fullAddress.trim() }),
         ...(phone !== undefined && { phone: phone?.trim() || '' }),
         ...(email !== undefined && { email: email?.trim() || null }),
         ...(openTime !== undefined && { openTime: openTime?.trim() || '09:00' }),
         ...(closeTime !== undefined && { closeTime: closeTime?.trim() || '19:00' }),
         ...(workDays !== undefined && { workDays: workDays?.trim() || '1,2,3,4,5' }),
+        // Novos campos de endereço
+        ...(cep !== undefined && { zipCode: cep?.replace(/\D/g, '') || null }),
+        ...(street !== undefined && { street: street?.trim() || null }),
+        ...(number !== undefined && { number: number?.trim() || null }),
+        ...(complement !== undefined && { complement: complement?.trim() || null }),
+        ...(neighborhood !== undefined && { neighborhood: neighborhood?.trim() || null }),
+        ...(city !== undefined && { city: city?.trim() || null }),
+        ...(state !== undefined && { state: state?.trim().toUpperCase() || null }),
         // bookingType removido do schema
         ...(active !== undefined && { active }),
         updatedAt: new Date()

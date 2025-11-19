@@ -13,6 +13,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { SalonMap } from "@/components/maps/salon-map";
 import { DirectionsButton } from "@/components/maps/directions-button";
+import { AIChatWidget } from "@/components/chat/ai-chat-widget";
 import {
   MapPin,
   Phone,
@@ -738,6 +739,9 @@ export default function SalaoPage() {
             </Button>
           </Link>
         </div>
+        
+        {/* AI Chat Widget */}
+        <AIChatWidget salonId={salon.id} salonName={salon.name} />
         
         {/* Floating CTA Mobile */}
         <div className="md:hidden fixed bottom-4 right-4 z-50">

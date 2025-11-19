@@ -42,6 +42,18 @@ export default function MarketingLayout({
               <h4 className="font-semibold mb-4">Suporte</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/contato" className="hover:text-primary">Fale Conosco</a></li>
+                <li><a href="/ajuda" className="hover:text-primary">Central de Ajuda</a></li>
+                <li>
+                  <a 
+                    href="https://wa.me/5511999999999?text=Olá!%20Preciso%20de%20ajuda" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-primary flex items-center gap-2"
+                  >
+                    <span className="text-green-500">💬</span>
+                    WhatsApp Suporte
+                  </a>
+                </li>
                 <li><a href="/termos" className="hover:text-primary">Termos de Uso</a></li>
                 <li><a href="/privacidade" className="hover:text-primary">Privacidade</a></li>
               </ul>

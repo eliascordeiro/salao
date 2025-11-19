@@ -29,6 +29,8 @@
 - [x] Sistema de despesas recorrentes (auto-criação)
 - [x] Relatórios financeiros avançados (lucro, despesas por categoria)
 - [x] Sistema de permissões multi-usuário
+- [x] Chat com IA (Groq + Llama 3.3 70B)
+- [x] Sistema de Suporte (tickets + FAQ + multi-canal)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -42,6 +44,8 @@
 - Lucide React (ícones)
 - Recharts (gráficos e visualizações)
 - date-fns (manipulação de datas)
+- Groq SDK (IA conversacional)
+- Radix UI (componentes acessíveis)
 
 ## Estrutura do Banco de Dados
 - User (clientes e admins)
@@ -54,6 +58,8 @@
 - Transaction (transações)
 - Availability (bloqueios de horários)
 - Expense (despesas/contas a pagar)
+- SupportTicket (tickets de suporte)
+- TicketMessage (mensagens dos tickets)
 
 ## Funcionalidades Implementadas
 ✅ Landing page responsiva
@@ -242,6 +248,43 @@
   - Session estendida com permissions e roleType
   - Validação de usuário ativo no login
   - Self-referential User model (owner → managedUsers)
+  - Permissões incluem: dashboard, salão, agendamentos, profissionais, serviços, caixa, despesas, financeiro, usuários, configurações
+✅ Sistema de Email Centralizado:
+  - API /api/email/send para envio via SMTP
+  - Suporte a múltiplos provedores (Gmail, SendGrid, Mailtrap, AWS SES)
+  - Página /dashboard/configuracoes/email para configuração e teste
+  - Validação automática de configuração SMTP
+  - Templates HTML responsivos
+  - Integração com sistema de usuários (convites automáticos)
+  - Variáveis: SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM
+  - Logs detalhados de envio
+  - Interface de teste com feedback visual
+  - Documentação completa (docs/SISTEMA_EMAIL.md)
+✅ Chat com IA (Assistente Virtual):
+  - Integração com Groq AI (Llama 3.3 70B)
+  - Widget flutuante em páginas de salão
+  - Contexto dinâmico com dados do salão (serviços, profissionais, horários)
+  - Respostas naturais em português
+  - Sistema de mensagens com histórico
+  - Gratuito (14.400 requests/dia)
+  - API: /api/chat
+  - Componente: AIChatWidget
+  - Documentação: docs/SISTEMA_CHAT_IA.md
+✅ Sistema de Suporte Completo:
+  - Sistema de tickets com categorização (5 categorias)
+  - Status tracking (Aberto, Em Andamento, Resolvido, Fechado)
+  - Prioridades (Baixa, Média, Alta, Urgente)
+  - Painel administrativo (/dashboard/suporte)
+  - Página de contato (/contato) com múltiplos canais
+  - Central de ajuda (/ajuda) com 50+ FAQs
+  - Sistema de mensagens (conversação)
+  - Filtros avançados e busca
+  - Integração WhatsApp, Email, Telefone
+  - Models: SupportTicket, TicketMessage
+  - APIs REST completas (CRUD + messages)
+  - Interface de resposta rápida
+  - Estatísticas de atendimento
+  - Documentação: docs/SISTEMA_SUPORTE.md
   - Permissões incluem: dashboard, salão, agendamentos, profissionais, serviços, caixa, despesas, financeiro, usuários, configurações
 ✅ Sistema de Email Centralizado:
   - API /api/email/send para envio via SMTP

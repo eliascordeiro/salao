@@ -6,6 +6,21 @@ import {
   sendBookingCreatedEmail,
   formatBookingDataForEmail,
 } from "@/lib/email";
+import { PERMISSIONS } from "@/lib/permissions";
+import { getUserSalon } from "@/lib/salon-helper";
+
+// Helper para verificar se usuário tem permissão
+async function hasPermission(session: any, permission: string): Promise<boolean> {
+  // ADMIN sempre tem todas as permissões
+  if (session.user.role === "ADMIN") return true;
+  
+  // Verificar nas permissões do usuário
+  if (session.user.permissions && Array.isArray(session.user.permissions)) {
+    return session.user.permissions.includes(permission);
+  }
+  
+  return false;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,9 +69,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(bookings);
     }
 
-    // Apenas ADMIN pode listar todos os agendamentos
-    if (session.user.role !== "ADMIN") {
+    // Verificar se usuário tem permissão para visualizar agendamentos
+    const canView = await hasPermission(session, PERMISSIONS.BOOKINGS_VIEW);
+    
+    if (!canView) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    }
+
+    // 🔒 FILTRO MULTI-TENANT: Obter salão do usuário
+    const userSalon = await getUserSalon();
+    
+    if (!userSalon) {
+      return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
     const status = searchParams.get("status");
@@ -65,7 +89,9 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
 
     // Construir filtros dinamicamente
-    const where: any = {};
+    const where: any = {
+      salonId: userSalon.id, // 🔒 FILTRO CRÍTICO: Apenas agendamentos do salão
+    };
 
     if (status) {
       where.status = status;
