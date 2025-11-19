@@ -53,28 +53,22 @@ export async function GET(request: NextRequest) {
       startDate = subMonths(endDate, months);
     }
 
-    // 1. RECEITA (Pagamentos confirmados)
-    const payments = await prisma.payment.findMany({
+    // 1. RECEITA (Sessões de caixa pagas no período)
+    const cashierSessions = await prisma.cashierSession.findMany({
       where: {
-        booking: {
-          salonId: userSalonId,
-        },
-        status: "SUCCEEDED",
-        createdAt: {
+        salonId: userSalonId,
+        status: "CLOSED", // Apenas sessões pagas
+        paidAt: {
           gte: startDate,
           lte: endDate,
         },
       },
       include: {
-        booking: {
-          include: {
-            service: true,
-          },
-        },
+        items: true,
       },
     });
 
-    const totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalRevenue = cashierSessions.reduce((sum, session) => sum + session.total, 0);
 
     // 2. DESPESAS (Pagas no período)
     const expenses = await prisma.expense.findMany({
@@ -116,21 +110,19 @@ export async function GET(request: NextRequest) {
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
 
-      // Receita do mês
-      const monthPayments = await prisma.payment.findMany({
+      // Receita do mês (sessões de caixa pagas)
+      const monthSessions = await prisma.cashierSession.findMany({
         where: {
-          booking: {
-            salonId: userSalonId,
-          },
-          status: "SUCCEEDED",
-          createdAt: {
+          salonId: userSalonId,
+          status: "CLOSED",
+          paidAt: {
             gte: monthStart,
             lte: monthEnd,
           },
         },
       });
 
-      const monthRevenue = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+      const monthRevenue = monthSessions.reduce((sum, s) => sum + s.total, 0);
 
       // Despesas do mês
       const monthExpenses = await prisma.expense.findMany({
@@ -207,7 +199,7 @@ export async function GET(request: NextRequest) {
         expensesByCategory: topExpenseCategories,
         monthlyEvolution: monthlyData,
         breakdown: {
-          revenueCount: payments.length,
+          revenueCount: cashierSessions.length,
           expensesCount: expenses.length,
         },
       },
