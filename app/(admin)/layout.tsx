@@ -3,9 +3,12 @@
 import { Sidebar } from "@/components/layout/sidebar"
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context"
 import { cn } from "@/lib/utils"
+import { AdminAIChatWidget } from "@/components/chat/admin-ai-chat-widget"
+import { useSession } from "next-auth/react"
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
+  const { data: session } = useSession()
 
   return (
     <div className="flex min-h-screen">
@@ -24,6 +27,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      {/* Assistente Virtual Admin */}
+      <AdminAIChatWidget 
+        userName={session?.user?.name}
+        userRole={session?.user?.role}
+      />
     </div>
   )
 }

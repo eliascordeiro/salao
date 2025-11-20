@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import {
   Loader2,
   ArrowUpRight,
   ArrowDownRight,
+  AlertCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -54,12 +56,15 @@ const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444"
 
 export default function FinanceiroPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("6m");
   const [data, setData] = useState<any>(null);
+  const [pendingRevenue, setPendingRevenue] = useState<any>(null);
 
   useEffect(() => {
     loadFinancialData();
+    loadPendingRevenue();
   }, [period]);
 
   async function loadFinancialData() {
@@ -75,6 +80,19 @@ export default function FinanceiroPage() {
       console.error("Erro ao carregar dados financeiros:", error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadPendingRevenue() {
+    try {
+      const response = await fetch("/api/cashier/pending-revenue");
+      const result = await response.json();
+
+      if (result.success) {
+        setPendingRevenue(result.data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar receita pendente:", error);
     }
   }
 
@@ -144,6 +162,46 @@ export default function FinanceiroPage() {
           </div>
         </div>
       </div>
+
+      {/* Alerta de Receita Pendente */}
+      {pendingRevenue && pendingRevenue.sessionCount > 0 && (
+        <GlassCard className="p-6 mb-8 border-l-4 border-yellow-500">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="h-6 w-6 text-yellow-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-foreground mb-1">
+                Receita Pendente
+              </h3>
+              <p className="text-sm text-foreground-muted mb-3">
+                Você tem agendamentos completados aguardando pagamento no caixa
+              </p>
+              <div className="flex items-end gap-6 mb-4">
+                <div>
+                  <p className="text-sm text-foreground-muted">Valor Total</p>
+                  <p className="text-3xl font-bold text-yellow-500">
+                    R$ {pendingRevenue.totalPending.toFixed(2)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-foreground-muted">Sessões Abertas</p>
+                  <p className="text-2xl font-semibold text-foreground">
+                    {pendingRevenue.sessionCount}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => router.push("/dashboard/caixa")}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                Ir para o Caixa
+              </Button>
+            </div>
+          </div>
+        </GlassCard>
+      )}
 
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

@@ -7,11 +7,12 @@ import { getUserSalon } from "@/lib/salon-helper";
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/cashier/daily-bookings
+ * GET /api/cashier/history
  * 
- * Lista todas as sessões de caixa criadas hoje (agendamentos marcados como COMPLETED hoje)
+ * Lista todas as sessões de caixa FECHADAS (pagas) na data especificada
  * 
- * @returns Array de clientes com suas sessões de caixa do dia
+ * @param date - Data no formato YYYY-MM-DD (opcional, padrão: hoje)
+ * @returns Array de clientes com suas sessões pagas do dia
  */
 export async function GET(request: Request) {
   try {
@@ -20,7 +21,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Busca o salão do usuário logado
     const salon = await getUserSalon();
     if (!salon) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
@@ -50,20 +50,19 @@ export async function GET(request: Request) {
     
     const targetDate = startDate;
 
-    console.log('📅 API daily-bookings - Parâmetros:', {
+    console.log('📅 API history - Parâmetros:', {
       dateParam,
       targetDate: targetDate.toISOString(),
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     });
 
-    // Busca todas as sessões de caixa criadas hoje (agendamentos marcados como COMPLETED hoje)
-    // IMPORTANTE: Filtra apenas sessões OPEN (aguardando pagamento)
+    // Busca todas as sessões FECHADAS (pagas hoje)
     const cashierSessions = await prisma.cashierSession.findMany({
       where: {
         salonId: salon.id,
-        status: "OPEN", // Apenas sessões abertas
-        createdAt: {
+        status: "CLOSED",
+        paidAt: {
           gte: startDate,
           lte: endDate,
         },
@@ -80,7 +79,7 @@ export async function GET(request: Request) {
         items: true,
       },
       orderBy: {
-        createdAt: "asc",
+        paidAt: "desc",
       },
     });
 
@@ -112,33 +111,18 @@ export async function GET(request: Request) {
       },
     });
 
-    // Cria um mapa de bookings por ID
     const bookingsMap = new Map(bookings.map(b => [b.id, b]));
 
-    // Converte as sessões de caixa para o formato esperado pelo frontend
-    const clientsMap = new Map();
+    // Converte cada sessão CLOSED em um item separado (não agrupa por cliente)
+    const sessions = cashierSessions.map(cashierSession => {
+      const sessionBookings = [];
+      let subtotal = 0;
 
-    for (const cashierSession of cashierSessions) {
-      const clientId = cashierSession.client.id;
-
-      if (!clientsMap.has(clientId)) {
-        clientsMap.set(clientId, {
-          client: cashierSession.client,
-          bookings: [],
-          bookingIds: new Set(), // Track já adicionados
-          subtotal: 0,
-          hasOpenSession: true, // Sempre true porque filtramos apenas OPEN
-          sessionId: cashierSession.id, // ID da sessão para atualizar
-        });
-      }
-
-      const clientData = clientsMap.get(clientId);
-
-      // Adiciona os items da sessão como bookings (sem duplicar)
+      // Adiciona os bookings da sessão
       for (const item of cashierSession.items) {
         const booking = bookingsMap.get(item.bookingId);
-        if (booking && !clientData.bookingIds.has(booking.id)) {
-          clientData.bookings.push({
+        if (booking) {
+          sessionBookings.push({
             id: booking.id,
             date: booking.date,
             service: booking.service,
@@ -146,29 +130,35 @@ export async function GET(request: Request) {
             price: item.price,
             status: booking.status,
           });
-          clientData.bookingIds.add(booking.id); // Marca como adicionado
-          clientData.subtotal += item.price;
+          subtotal += item.price;
         }
       }
-    }
 
-    // Remove o Set temporário antes de retornar
-    const clients = Array.from(clientsMap.values()).map(client => {
-      const { bookingIds, ...rest } = client;
-      return rest;
+      return {
+        sessionId: cashierSession.id,
+        client: cashierSession.client,
+        bookings: sessionBookings,
+        subtotal,
+        discount: cashierSession.discount,
+        total: cashierSession.total,
+        paymentMethod: cashierSession.paymentMethod,
+        paidAt: cashierSession.paidAt,
+      };
     });
 
     return NextResponse.json({
       success: true,
       date: targetDate.toISOString(),
-      totalClients: clients.length,
-      totalBookings: clients.reduce((sum, c) => sum + c.bookings.length, 0),
-      clients,
+      totalClients: new Set(sessions.map(s => s.client.id)).size,
+      totalSessions: sessions.length,
+      totalBookings: sessions.reduce((sum, s) => sum + s.bookings.length, 0),
+      totalRevenue: sessions.reduce((sum, s) => sum + s.total, 0),
+      clients: sessions, // Mantém nome "clients" por compatibilidade com frontend
     });
   } catch (error) {
-    console.error("Erro ao buscar agendamentos do dia:", error);
+    console.error("Erro ao buscar histórico:", error);
     return NextResponse.json(
-      { error: "Erro ao buscar agendamentos do dia" },
+      { error: "Erro ao buscar histórico" },
       { status: 500 }
     );
   }

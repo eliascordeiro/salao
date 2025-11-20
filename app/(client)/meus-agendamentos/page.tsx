@@ -21,6 +21,7 @@ import {
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { Button } from "@/components/ui/button";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { GridBackground } from "@/components/ui/grid-background";
 import { AddToCalendarButton } from "@/components/ui/add-to-calendar-button";
@@ -65,6 +66,7 @@ function MyBookingsContent() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>("upcoming");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showOwnerAlert, setShowOwnerAlert] = useState(false);
 
   // Redirecionar para login se não estiver autenticado
   useEffect(() => {
@@ -78,8 +80,14 @@ function MyBookingsContent() {
     if (searchParams?.get("success") === "true") {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 5000);
+      
+      // Verificar se é dono do salão agendando no próprio salão
+      if (session?.user.role === "ADMIN") {
+        setShowOwnerAlert(true);
+        setTimeout(() => setShowOwnerAlert(false), 8000);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, session]);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -201,6 +209,39 @@ function MyBookingsContent() {
                   <p className="text-foreground-muted text-sm">
                     Aguarde a confirmação do seu agendamento. Você receberá um email em breve.
                   </p>
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
+          {/* Owner Alert - Quando dono do salão agenda no próprio salão */}
+          {showOwnerAlert && (
+            <GlassCard className="mb-8 animate-fadeIn border-2 border-amber-500/30 bg-amber-500/5">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-amber-500/20 rounded-full">
+                  <AlertCircle className="h-6 w-6 text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    Agendamento como Cliente
+                  </h3>
+                  <p className="text-foreground-muted text-sm leading-relaxed mb-3">
+                    Você agendou um serviço no seu próprio salão. Este agendamento aparece aqui na 
+                    área do cliente e também no <strong>Dashboard Admin</strong> na gestão de agendamentos.
+                  </p>
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <Link href="/dashboard/agendamentos">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="gap-2 border-amber-500/30 hover:bg-amber-500/10"
+                      >
+                        <Calendar className="h-3.5 w-3.5" />
+                        Ver no Dashboard Admin
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </GlassCard>

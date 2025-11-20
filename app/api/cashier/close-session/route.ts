@@ -11,6 +11,7 @@ import { getUserSalon } from "@/lib/salon-helper";
  * Calcula o total de todos os serviços prestados no dia
  * 
  * Body: {
+ *   sessionId?: string,       // Se fornecido, atualiza sessão OPEN existente
  *   clientId: string,
  *   bookingIds: string[],
  *   discount?: number,
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('📦 Body recebido:', body);
     
-    const { clientId, bookingIds, discount = 0, paymentMethod } = body;
+    const { sessionId, clientId, bookingIds, discount = 0, paymentMethod } = body;
 
     // Validações
     if (!clientId || !bookingIds || !Array.isArray(bookingIds) || bookingIds.length === 0) {
@@ -58,13 +59,149 @@ export async function POST(request: Request) {
       );
     }
 
+    // Se sessionId foi fornecido, processa apenas os itens selecionados
+    if (sessionId) {
+      console.log('♻️ Processando sessão existente:', sessionId);
+      console.log('📋 Bookings selecionados para pagamento:', bookingIds);
+      
+      const existingSession = await prisma.cashierSession.findUnique({
+        where: { id: sessionId, salonId: salon.id },
+        include: {
+          items: true,
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      });
+
+      if (!existingSession) {
+        return NextResponse.json(
+          { error: "Sessão não encontrada" },
+          { status: 404 }
+        );
+      }
+
+      if (existingSession.status !== "OPEN") {
+        return NextResponse.json(
+          { error: "Sessão já foi fechada ou cancelada" },
+          { status: 400 }
+        );
+      }
+
+      // Separa itens selecionados dos não selecionados
+      const selectedItems = existingSession.items.filter(item => 
+        bookingIds.includes(item.bookingId)
+      );
+      const unselectedItems = existingSession.items.filter(item => 
+        !bookingIds.includes(item.bookingId)
+      );
+
+      console.log('✅ Itens selecionados:', selectedItems.length);
+      console.log('⏸️ Itens não selecionados (ficam pendentes):', unselectedItems.length);
+
+      if (selectedItems.length === 0) {
+        return NextResponse.json(
+          { error: "Nenhum item selecionado para pagamento" },
+          { status: 400 }
+        );
+      }
+
+      // Calcula subtotal apenas dos itens selecionados
+      const subtotalSelected = selectedItems.reduce((sum, item) => sum + item.price, 0);
+      const total = Math.max(0, subtotalSelected - discount);
+
+      // Cria nova sessão CLOSED com apenas os itens pagos
+      const closedSession = await prisma.cashierSession.create({
+        data: {
+          salonId: salon.id,
+          clientId,
+          subtotal: subtotalSelected,
+          discount,
+          total,
+          status: "CLOSED",
+          paymentMethod,
+          paidAt: new Date(),
+          closedAt: new Date(),
+          items: {
+            create: selectedItems.map(item => ({
+              bookingId: item.bookingId,
+              serviceName: item.serviceName,
+              staffName: item.staffName,
+              price: item.price,
+              discount: 0,
+            })),
+          },
+        },
+        include: {
+          items: true,
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      });
+
+      console.log('✅ Nova sessão CLOSED criada:', closedSession.id);
+
+      // Se ainda há itens não selecionados, mantém sessão OPEN com eles
+      if (unselectedItems.length > 0) {
+        console.log('♻️ Mantendo itens não pagos na sessão OPEN');
+        
+        // Remove os itens pagos da sessão original
+        await prisma.cashierSessionItem.deleteMany({
+          where: {
+            id: { in: selectedItems.map(item => item.id) },
+          },
+        });
+
+        // Recalcula subtotal e total da sessão OPEN
+        const newSubtotal = unselectedItems.reduce((sum, item) => sum + item.price, 0);
+        
+        await prisma.cashierSession.update({
+          where: { id: sessionId },
+          data: {
+            subtotal: newSubtotal,
+            total: newSubtotal,
+            discount: 0,
+          },
+        });
+
+        console.log('✅ Sessão OPEN atualizada com itens restantes');
+      } else {
+        // Todos os itens foram pagos, pode deletar a sessão original
+        console.log('🗑️ Todos os itens pagos, removendo sessão OPEN original');
+        await prisma.cashierSession.delete({
+          where: { id: sessionId },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Conta fechada com sucesso",
+        session: closedSession,
+        remainingItems: unselectedItems.length,
+      });
+    }
+
+    // Se não tem sessionId, cria nova sessão (fluxo antigo - backwards compatibility)
+    console.log('🆕 Criando nova sessão de caixa');
+
     // Busca todos os agendamentos especificados
     const bookings = await prisma.booking.findMany({
       where: {
         id: { in: bookingIds },
         salonId: salon.id,
         clientId,
-        status: "CONFIRMED",
+        status: { in: ["CONFIRMED", "COMPLETED"] }, // Aceita ambos os status
       },
       include: {
         service: true,
@@ -74,7 +211,7 @@ export async function POST(request: Request) {
 
     if (bookings.length === 0) {
       return NextResponse.json(
-        { error: "Nenhum agendamento confirmado encontrado" },
+        { error: "Nenhum agendamento encontrado" },
         { status: 404 }
       );
     }
@@ -83,7 +220,7 @@ export async function POST(request: Request) {
     const subtotal = bookings.reduce((sum, booking) => sum + booking.totalPrice, 0);
     const total = Math.max(0, subtotal - discount);
 
-    // Cria ou atualiza sessão de caixa
+    // Cria nova sessão de caixa
     const cashierSession = await prisma.cashierSession.create({
       data: {
         salonId: salon.id,
@@ -101,7 +238,7 @@ export async function POST(request: Request) {
             serviceName: booking.service.name,
             staffName: booking.staff.name,
             price: booking.totalPrice,
-            discount: 0, // Desconto por item pode ser implementado depois
+            discount: 0,
           })),
         },
       },
@@ -118,15 +255,18 @@ export async function POST(request: Request) {
       },
     });
 
-    // Atualiza status dos bookings para COMPLETED
+    // Atualiza status dos bookings para COMPLETED (se ainda não estiverem)
     await prisma.booking.updateMany({
       where: {
         id: { in: bookingIds },
+        status: "CONFIRMED",
       },
       data: {
         status: "COMPLETED",
       },
     });
+
+    console.log('✅ Nova sessão criada e fechada:', cashierSession.id);
 
     return NextResponse.json({
       success: true,

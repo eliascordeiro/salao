@@ -33,8 +33,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const clientOnly = searchParams.get("clientOnly");
 
-    // Se for cliente buscando apenas seus agendamentos
-    if (clientOnly === "true" && session.user.role === "CLIENT") {
+    // Se estiver buscando agendamentos como cliente (página "Meus Agendamentos")
+    // Funciona tanto para role CLIENT quanto ADMIN que quer ver seus próprios agendamentos
+    if (clientOnly === "true") {
       const bookings = await prisma.booking.findMany({
         where: {
           clientId: session.user.id,

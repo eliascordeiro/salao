@@ -238,27 +238,61 @@ export async function PUT(
         });
 
         if (!existingSession) {
-          // Criar sessão de caixa
-          await prisma.cashierSession.create({
-            data: {
+          // Buscar sessão OPEN existente do cliente ou criar uma nova
+          let cashierSession = await prisma.cashierSession.findFirst({
+            where: {
               salonId: booking.salonId,
               clientId: booking.clientId,
-              subtotal: booking.service.price,
-              discount: 0,
-              total: booking.service.price,
               status: "OPEN",
-              items: {
-                create: {
-                  bookingId: booking.id,
-                  serviceName: booking.service.name,
-                  staffName: booking.staff.name,
-                  price: booking.service.price,
-                  discount: 0,
-                },
-              },
             },
           });
-          console.log(`✅ Sessão de caixa criada para agendamento ${booking.id}`);
+
+          if (cashierSession) {
+            // Adiciona item à sessão existente
+            await prisma.cashierSessionItem.create({
+              data: {
+                sessionId: cashierSession.id,
+                bookingId: booking.id,
+                serviceName: booking.service.name,
+                staffName: booking.staff.name,
+                price: booking.service.price,
+                discount: 0,
+              },
+            });
+
+            // Atualiza totais da sessão
+            await prisma.cashierSession.update({
+              where: { id: cashierSession.id },
+              data: {
+                subtotal: { increment: booking.service.price },
+                total: { increment: booking.service.price },
+              },
+            });
+
+            console.log(`✅ Item adicionado à sessão existente ${cashierSession.id}`);
+          } else {
+            // Criar nova sessão de caixa
+            await prisma.cashierSession.create({
+              data: {
+                salonId: booking.salonId,
+                clientId: booking.clientId,
+                subtotal: booking.service.price,
+                discount: 0,
+                total: booking.service.price,
+                status: "OPEN",
+                items: {
+                  create: {
+                    bookingId: booking.id,
+                    serviceName: booking.service.name,
+                    staffName: booking.staff.name,
+                    price: booking.service.price,
+                    discount: 0,
+                  },
+                },
+              },
+            });
+            console.log(`✅ Nova sessão de caixa criada para agendamento ${booking.id}`);
+          }
         }
       } catch (error) {
         console.error("Erro ao criar sessão de caixa:", error);

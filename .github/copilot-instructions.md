@@ -31,6 +31,8 @@
 - [x] Sistema de permissões multi-usuário
 - [x] Chat com IA (Groq + Llama 3.3 70B)
 - [x] Sistema de Suporte (tickets + FAQ + multi-canal)
+- [x] Sistema de seleção de serviços no caixa (checkboxes para pagamento parcial)
+- [x] Assistente Virtual Admin (IA contextual no painel administrativo)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -297,6 +299,32 @@
   - Logs detalhados de envio
   - Interface de teste com feedback visual
   - Documentação completa (docs/SISTEMA_EMAIL.md)
+✅ Sistema de Seleção de Serviços no Caixa:
+  - Checkboxes ao lado de cada serviço no modal de pagamento
+  - Todos os serviços selecionados por padrão (default "sim")
+  - Toggle individual de serviços
+  - Botões "Todos" e "Nenhum" para seleção rápida
+  - Cálculo dinâmico de subtotal baseado em seleção
+  - Contador de serviços selecionados (X de Y)
+  - Feedback visual: borda colorida + ícone check
+  - Validação: impede confirmação sem serviços selecionados
+  - Desconto limitado ao subtotal dos serviços selecionados
+  - Suporte a pagamentos parciais (pagar alguns agora, outros depois)
+  - Componente Checkbox (Radix UI + Lucide)
+  - Performance otimizada com Set<string>
+  - Documentação: docs/SISTEMA_SELECAO_SERVICOS_CAIXA.md
+  - ✅ Backend implementado: API suporta pagamentos parciais completos
+✅ Assistente Virtual Admin (IA contextual):
+  - Componente AdminAIChatWidget (components/chat/admin-ai-chat-widget.tsx)
+  - API /api/chat/admin com contexto da página atual
+  - Detecção automática de página via usePathname()
+  - Sugestões contextuais ao navegar (8 páginas: caixa, agendamentos, profissionais, etc)
+  - Perguntas rápidas para tarefas comuns
+  - Gradiente azul/índigo (diferenciado do cliente: rosa/roxo)
+  - Groq AI (Llama 3.3 70B) com prompts admin-específicos
+  - Disponível globalmente em todo painel admin
+  - System prompt com 10 módulos do sistema
+  - Documentação completa: docs/ASSISTENTE_VIRTUAL_ADMIN.md
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123

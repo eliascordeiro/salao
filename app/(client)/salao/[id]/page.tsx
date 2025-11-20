@@ -266,20 +266,6 @@ export default function SalaoPage() {
             </div>
           )}
           
-          {/* CTA Button com Animação */}
-          <div className="absolute bottom-6 right-6 z-10">
-            <Link href={`/salao/${salon.id}/agendar`}>
-              <Button
-                size="lg"
-                className="gap-2 bg-gradient-to-r from-primary via-purple-500 to-pink-500 hover:shadow-2xl hover:scale-105 transition-all duration-300 text-white font-semibold"
-              >
-                <Calendar className="h-5 w-5" />
-                Agendar Agora
-                <Sparkles className="h-4 w-4 animate-pulse" />
-              </Button>
-            </Link>
-          </div>
-          
           {/* Selo de Destaque */}
           {salon.featured && (
             <div className="absolute top-4 right-4">
