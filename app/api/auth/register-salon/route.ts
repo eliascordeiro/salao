@@ -149,12 +149,28 @@ export async function POST(request: NextRequest) {
         ? `${salonAddress}, ${salonNumber}` 
         : salonAddress;
       
+      // Tentar extrair rua e bairro do endereço completo
+      // Formato esperado do frontend: "Rua X - Bairro Y" ou apenas "Rua X"
+      let street = salonAddress;
+      let neighborhood = null;
+      
+      if (salonAddress.includes(' - ')) {
+        const parts = salonAddress.split(' - ');
+        street = parts[0].trim();
+        neighborhood = parts[1]?.trim() || null;
+      }
+      
       const salon = await tx.salon.create({
         data: {
           name: salonName,
           phone: salonPhone,
           email: ownerEmail, // ✅ ADICIONADO: Email do salão (usa email do proprietário)
           address: fullAddress,
+          // ✅ Campos de endereço separados (para edição posterior)
+          street: street || null,
+          number: salonNumber || null,
+          complement: null, // Não vem no cadastro inicial
+          neighborhood: neighborhood,
           city: salonCity,
           state: salonState,
           zipCode: salonZipCode || null,
