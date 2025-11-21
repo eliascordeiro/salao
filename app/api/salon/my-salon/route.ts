@@ -65,6 +65,9 @@ export async function PUT(request: Request) {
       neighborhood,
       city,
       state,
+      // Coordenadas GPS
+      latitude,
+      longitude,
     } = data
 
     // Montar endereço completo se os campos separados foram fornecidos
@@ -111,6 +114,9 @@ export async function PUT(request: Request) {
         ...(neighborhood !== undefined && { neighborhood: neighborhood?.trim() || null }),
         ...(city !== undefined && { city: city?.trim() || null }),
         ...(state !== undefined && { state: state?.trim().toUpperCase() || null }),
+        // Coordenadas GPS
+        ...(latitude !== undefined && { latitude: latitude ? parseFloat(latitude) : null }),
+        ...(longitude !== undefined && { longitude: longitude ? parseFloat(longitude) : null }),
         // bookingType removido do schema
         ...(active !== undefined && { active }),
         updatedAt: new Date()

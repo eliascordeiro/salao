@@ -40,6 +40,8 @@ interface Salon {
   bookingType: string;
   active: boolean;
   coverPhoto: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface ViaCepResponse {
@@ -92,6 +94,8 @@ export default function MeuSalaoPage() {
     workDays: "1,2,3,4,5",
     bookingType: "BOTH",
     active: true,
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   useEffect(() => {
@@ -149,6 +153,8 @@ export default function MeuSalaoPage() {
         workDays: data.workDays || "1,2,3,4,5",
         bookingType: data.bookingType || "BOTH",
         active: data.active ?? true,
+        latitude: data.latitude || null,
+        longitude: data.longitude || null,
       });
     } catch (error) {
       console.error("Erro ao carregar salão:", error);
@@ -222,6 +228,37 @@ export default function MeuSalaoPage() {
         city: data.localidade,
         state: data.uf,
       }));
+      
+      // Buscar coordenadas GPS via Nominatim
+      try {
+        const addressString = `${data.logradouro}, ${data.localidade}, ${data.uf}, Brasil`;
+        const geoResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressString)}&limit=1`,
+          {
+            headers: {
+              'User-Agent': 'SalaoApp/1.0'
+            }
+          }
+        );
+        const geoData = await geoResponse.json();
+        
+        if (geoData && geoData[0]) {
+          const lat = parseFloat(geoData[0].lat);
+          const lon = parseFloat(geoData[0].lon);
+          
+          setFormData(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lon,
+          }));
+          
+          console.log("📍 Coordenadas obtidas:", lat, lon);
+        } else {
+          console.warn("⚠️ Coordenadas não encontradas para este endereço");
+        }
+      } catch (geoError) {
+        console.error("Erro ao buscar coordenadas:", geoError);
+      }
       
       setSuccess("CEP encontrado! Preencha o número.");
       setTimeout(() => setSuccess(""), 3000);
