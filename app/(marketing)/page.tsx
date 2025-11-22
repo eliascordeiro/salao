@@ -55,10 +55,10 @@ export default function LandingPage() {
             
             <div className="flex flex-col gap-3 sm:gap-4 justify-center px-4 sm:px-0 max-w-md mx-auto">
               <Link href="/saloes" className="w-full">
-                <Button size="lg" className="gap-2 text-base sm:text-lg px-6 sm:px-8 w-full group shadow-lg shadow-primary/25">
-                  <Search className="h-5 w-5 sm:h-6 sm:w-6" />
-                  Encontrar Salões Próximos
-                  <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
+                <Button size="lg" className="gap-2 text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-5 sm:py-6 w-full group shadow-lg shadow-primary/25 h-auto">
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 flex-shrink-0" />
+                  <span className="whitespace-nowrap">Encontrar Salões</span>
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                 </Button>
               </Link>
               
