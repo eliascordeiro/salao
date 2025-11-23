@@ -33,6 +33,7 @@
 - [x] Sistema de Suporte (tickets + FAQ + multi-canal)
 - [x] Sistema de seleção de serviços no caixa (checkboxes para pagamento parcial)
 - [x] Assistente Virtual Admin (IA contextual no painel administrativo)
+- [x] Sistema de Assinaturas com Mercado Pago (PIX + Cartão)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -40,8 +41,9 @@
 - Tailwind CSS
 - Prisma ORM (v5.0.0)
 - NextAuth.js
-- Stripe (v17.4.0) - Pagamentos
+- Stripe (v17.4.0) - Pagamentos dos agendamentos
 - @stripe/stripe-js - Cliente Stripe
+- Mercado Pago SDK (v2.0.11) - Assinaturas mensais
 - shadcn/ui
 - Lucide React (ícones)
 - Recharts (gráficos e visualizações)
@@ -56,12 +58,15 @@
 - Service (serviços)
 - Booking (agendamentos)
 - ServiceStaff (relação N:N)
-- Payment (pagamentos)
+- Payment (pagamentos dos agendamentos via Stripe)
 - Transaction (transações)
 - Availability (bloqueios de horários)
 - Expense (despesas/contas a pagar)
 - SupportTicket (tickets de suporte)
 - TicketMessage (mensagens dos tickets)
+- Plan (planos de assinatura - Essencial/Profissional)
+- Subscription (assinaturas mensais via Mercado Pago)
+- SubscriptionPayment (histórico de pagamentos das assinaturas)
 
 ## Funcionalidades Implementadas
 ✅ Landing page responsiva
@@ -325,11 +330,28 @@
   - Disponível globalmente em todo painel admin
   - System prompt com 10 módulos do sistema
   - Documentação completa: docs/ASSISTENTE_VIRTUAL_ADMIN.md
+✅ Sistema de Assinaturas com Mercado Pago (70% completo):
+  - Planos: Essencial (R$49/mês) e Profissional (R$149/mês)
+  - Pagamento via PIX (0% taxa) e Cartão de Crédito (4.99% + R$0.40)
+  - Trial gratuito de 14 dias em todos os planos
+  - Models: Plan, Subscription, SubscriptionPayment
+  - APIs: /api/plans, /api/subscriptions/create-preference, /api/subscriptions/webhook, /api/subscriptions/status
+  - Páginas: /planos (pública), /checkout (seleção PIX/Cartão)
+  - Páginas de retorno: /dashboard/assinatura/sucesso, /dashboard/assinatura/erro, /dashboard/assinatura/pendente
+  - Checkout hospedado no Mercado Pago (seguro e PCI compliant)
+  - Webhook para confirmação automática de pagamentos
+  - Credenciais TEST configuradas no .env
+  - Documentação completa: docs/SISTEMA_ASSINATURAS_MERCADOPAGO.md
+  - Guia de testes: docs/GUIA_TESTES_ASSINATURAS.md
+  - ⏳ Falta implementar: Feature flags para bloquear recursos premium + Dashboard admin de assinatura
 
 ## Credenciais de Teste
 - Admin: admin@agendasalao.com.br / admin123
 - Cliente: pedro@exemplo.com / cliente123
-- Cartão de teste Stripe: 4242 4242 4242 4242
+- Cartão de teste Stripe (agendamentos): 4242 4242 4242 4242
+- Cartão de teste Mercado Pago (assinaturas):
+  - Aprovado: 5031 4332 1540 6351 (CVV: 123, Exp: 11/25)
+  - Rejeitado: 5031 4332 1540 5814 (CVV: 123, Exp: 11/25)
 
 ## Próximos Passos
 1. ✅ ~~Sistema de autenticação~~ COMPLETO
@@ -339,7 +361,7 @@
 5. ✅ ~~Interface de agendamento do cliente~~ COMPLETO
 6. ✅ ~~Sistema de notificações por email~~ COMPLETO
 7. ✅ ~~Relatórios e dashboard avançado~~ COMPLETO
-8. ✅ ~~Sistema de pagamentos online~~ COMPLETO
+8. ✅ ~~Sistema de pagamentos online (Stripe)~~ COMPLETO
 9. ✅ ~~Sistema de horários dos profissionais~~ COMPLETO
 10. ✅ ~~Sistema multi-tenant~~ COMPLETO
 11. ✅ ~~Associação profissional ↔ serviços~~ COMPLETO
@@ -354,14 +376,18 @@
 20. ✅ ~~Sistema de despesas recorrentes~~ COMPLETO
 21. ✅ ~~Relatórios financeiros avançados~~ COMPLETO
 22. ✅ ~~Sistema de permissões multi-usuário~~ COMPLETO
-23. Sistema de reembolsos (admin)
-24. Notificações SMS (opcional)
-25. App mobile (opcional)
+23. ✅ ~~Sistema de assinaturas (Mercado Pago)~~ 70% COMPLETO
+24. Feature flags para bloquear recursos premium
+25. Dashboard de gerenciamento de assinatura (admin)
+26. Sistema de reembolsos (admin)
+27. Notificações SMS (opcional)
+28. App mobile (opcional)
 
 ## Observações Técnicas
 - Node.js 18.17.0+ necessário
 - NextAuth.js 4.24.5 configurado
-- Stripe 17.4.0 configurado
-- SQLite configurado e funcional
+- Stripe 17.4.0 configurado (pagamentos de agendamentos)
+- Mercado Pago SDK 2.0.11 configurado (assinaturas mensais)
+- PostgreSQL configurado e funcional
 - Middleware protegendo rotas /dashboard
 - Componentes UI: Button, Card, Input, Label
