@@ -205,80 +205,6 @@ model Block {
 }
 
 // ============================================
-// SUBSCRIPTION MODELS (Stripe Billing)
-// ============================================
-
-model Plan {
-  id            String         @id @default(cuid())
-  name          String         @unique // "Free", "Premium"
-  description   String?
-  price         Float          // 0.00 para Free, 39.00 para Premium
-  stripePriceId String?        @unique // ID do Price no Stripe Dashboard
-  features      Json           // Array de features: ["Agendamentos ilimitados", "Email support"]
-  isActive      Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  subscriptions Subscription[]
-}
-
-model Subscription {
-  id                   String    @id @default(cuid())
-  salonId              String    @unique // Um salão tem uma assinatura
-  salon                Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  planId               String
-  plan                 Plan      @relation(fields: [planId], references: [id])
-  status               String    @default("trialing") // "trialing", "active", "past_due", "canceled", "paused"
-  
-  // Stripe IDs
-  stripeCustomerId     String    @unique // Customer ID no Stripe
-  stripeSubscriptionId String?   @unique // Subscription ID no Stripe
-  
-  // Trial (30 dias grátis)
-  trialStartedAt       DateTime? // Quando iniciou o trial
-  trialEndsAt          DateTime? // Quando termina o trial (30 dias depois)
-  
-  // Billing Cycle
-  currentPeriodStart   DateTime  // Início do período atual de cobrança
-  currentPeriodEnd     DateTime  // Fim do período atual de cobrança
-  cancelAtPeriodEnd    Boolean   @default(false) // Se true, cancela ao fim do período
-  canceledAt           DateTime? // Quando foi cancelado
-  
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  invoices             Invoice[]
-
-  @@index([salonId])
-  @@index([status])
-  @@index([stripeCustomerId])
-}
-
-model Invoice {
-  id               String       @id @default(cuid())
-  subscriptionId   String
-  subscription     Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  amount           Float        // Valor da invoice (pode ser 0 se não cobrado)
-  status           String       @default("draft") // "draft", "open", "paid", "void", "uncollectible"
-  stripeInvoiceId  String?      @unique // Invoice ID no Stripe
-  
-  // Métricas do mês
-  monthlyRevenue   Float        @default(0) // Receita do salão naquele mês (soma de bookings)
-  wasCharged       Boolean      @default(true) // false se receita < R$ 1.000 (não foi cobrado)
-  
-  // Datas
-  paidAt           DateTime? // Quando foi pago
-  dueDate          DateTime  // Data de vencimento
-  periodStart      DateTime  // Início do período de cobrança
-  periodEnd        DateTime  // Fim do período de cobrança
-  
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  @@index([subscriptionId])
-  @@index([status])
-  @@index([dueDate])
-}
-
-// ============================================
 // CASHIER / FRENTE DE CAIXA (Fechamento de Conta)
 // ============================================
 
@@ -432,5 +358,111 @@ model TicketMessage {
   user      User?         @relation(fields: [userId], references: [id])
   
   @@index([ticketId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// SISTEMA DE ASSINATURAS (Mercado Pago)
+// ==========================================
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         // "Essencial", "Profissional"
+  slug          String         @unique // "essencial", "profissional"
+  description   String
+  price         Float          // Preço mensal em reais
+  
+  // Limites e Features
+  maxStaff      Int?           // null = ilimitado
+  maxUsers      Int            @default(1) // Usuários administrativos
+  features      String[]       // ["payments", "whatsapp", "reports", "expenses"]
+  
+  // Status
+  active        Boolean        @default(true)
+  
+  // Metadata
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // Relações
+  subscriptions Subscription[]
+  
+  @@index([slug])
+  @@index([active])
+}
+
+model Subscription {
+  id                    String    @id @default(cuid())
+  
+  // Salão
+  salonId               String    @unique // Um salão = uma assinatura
+  
+  // Plano
+  planId                String
+  
+  // Mercado Pago
+  mpSubscriptionId      String?   @unique // ID da assinatura no MP (se cartão recorrente)
+  mpPreferenceId        String?   // ID da preferência de pagamento
+  mpPaymentId           String?   // ID do último pagamento
+  paymentMethod         String    // "pix", "credit_card"
+  
+  // Status
+  status                String    @default("PENDING") // "PENDING", "ACTIVE", "CANCELED", "EXPIRED", "SUSPENDED"
+  
+  // Datas
+  startDate             DateTime?
+  endDate               DateTime?
+  nextBillingDate       DateTime?
+  canceledAt            DateTime?
+  
+  // Histórico de pagamentos
+  lastPaymentDate       DateTime?
+  lastPaymentAmount     Float?
+  lastPaymentStatus     String?   // "approved", "pending", "rejected"
+  
+  // Trial (14 dias grátis)
+  trialEndsAt           DateTime?
+  
+  // Metadata
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // Relações
+  salon                 Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  plan                  Plan      @relation(fields: [planId], references: [id])
+  payments              SubscriptionPayment[]
+  
+  @@index([salonId])
+  @@index([planId])
+  @@index([status])
+  @@index([nextBillingDate])
+}
+
+model SubscriptionPayment {
+  id              String       @id @default(cuid())
+  subscriptionId  String
+  
+  // Mercado Pago
+  mpPaymentId     String       @unique // ID do pagamento no MP
+  mpStatus        String       // "approved", "pending", "rejected", "refunded"
+  mpStatusDetail  String?
+  
+  // Valores
+  amount          Float
+  currency        String       @default("BRL")
+  
+  // Método
+  paymentMethod   String       // "pix", "credit_card", "debit_card"
+  
+  // Datas
+  paidAt          DateTime?
+  createdAt       DateTime     @default(now())
+  
+  // Relação
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  
+  @@index([subscriptionId])
+  @@index([mpPaymentId])
+  @@index([mpStatus])
   @@index([createdAt])
 }
