@@ -50,8 +50,8 @@ wait_for_db() {
 
 # Aguardar banco estar pronto
 if wait_for_db; then
-  echo "🔄 Running migrations..."
-  npx prisma migrate deploy
+  echo "🔄 Applying schema changes..."
+  npx prisma db push --accept-data-loss
   
   echo "🌱 Seeding database (if needed)..."
   npm run db:seed || echo "⚠️  Seed failed or already populated"
