@@ -28,9 +28,17 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  // Buscar subscription e trial info
-  const subscription = await getSalonSubscription(userSalonId)
-  const trialInfo = subscription ? formatTrialInfo(subscription) : null
+  // Buscar subscription e trial info (com tratamento de erro)
+  let subscription = null;
+  let trialInfo = null;
+  
+  try {
+    subscription = await getSalonSubscription(userSalonId);
+    trialInfo = subscription ? formatTrialInfo(subscription) : null;
+  } catch (error) {
+    console.error("Erro ao buscar subscription:", error);
+    // Continuar sem subscription
+  }
 
   // Datas para comparação
   const today = new Date()
@@ -168,14 +176,14 @@ export default async function DashboardPage() {
           </div>
 
           {/* Trial Status */}
-          {trialInfo && trialInfo.isActive && (
+          {trialInfo && trialInfo.isActive && trialInfo.endsAt && (
             <div className="mb-8 animate-fadeInUp" style={{ animationDelay: "100ms" }}>
               <TrialStatus
                 daysLeft={trialInfo.daysLeft}
                 percentage={trialInfo.percentage}
                 isEnding={trialInfo.isEnding}
                 isExpired={trialInfo.isExpired}
-                endsAt={trialInfo.endsAt!}
+                endsAt={trialInfo.endsAt}
               />
             </div>
           )}
