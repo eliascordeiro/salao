@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
     });
 
     if (!salon) {
-      return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
+      console.log("⚠️ Usuário não tem salão:", session.user.id);
+      // Retornar null ao invés de erro - usuário pode não ter salão cadastrado
+      return NextResponse.json({ subscription: null }, { status: 200 });
     }
 
     // Buscar assinatura do salão
@@ -37,6 +39,7 @@ export async function GET(request: NextRequest) {
 
     // Se não houver assinatura, retornar null (não é erro, apenas não tem)
     if (!subscription) {
+      console.log("⚠️ Salão não tem subscription:", salon.id);
       return NextResponse.json({ subscription: null }, { status: 200 });
     }
 
@@ -58,8 +61,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("❌ Erro ao buscar status da assinatura:", error);
+    // Retornar detalhes do erro apenas em desenvolvimento
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? (error as Error).message 
+      : "Erro ao buscar status da assinatura";
+    
     return NextResponse.json(
-      { error: "Erro ao buscar status da assinatura" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
