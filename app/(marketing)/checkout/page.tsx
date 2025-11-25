@@ -20,14 +20,22 @@ interface Plan {
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const planSlug = searchParams.get("plan");
+  const [planSlug, setPlanSlug] = useState<string | null>(null);
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card">("pix");
   const [processing, setProcessing] = useState(false);
 
+  // Pegar planSlug apenas no cliente
   useEffect(() => {
+    const slug = searchParams.get("plan");
+    setPlanSlug(slug);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (planSlug === null) return; // Aguardar planSlug ser definido
+    
     if (!planSlug) {
       router.push("/planos");
       return;

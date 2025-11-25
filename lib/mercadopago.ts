@@ -40,30 +40,34 @@ export async function createSubscriptionPreference({
           quantity: 1,
           unit_price: planPrice,
           currency_id: 'BRL',
+          category_id: 'services', // Categoria obrigatória
         },
       ],
       payer: {
-        name: salonName,
+        name: 'Test User',
+        surname: 'Test',
+        email: 'test_user_123456@testuser.com', // Email de teste do MP
+        phone: {
+          area_code: '11',
+          number: '987654321',
+        },
+        identification: {
+          type: 'CPF',
+          number: '19119119100', // CPF válido de teste
+        },
+        address: {
+          zip_code: '01310100',
+          street_name: 'Rua Teste',
+          street_number: 123,
+        },
       },
-      payment_methods: {
-        excluded_payment_types: paymentMethod === 'pix' 
-          ? [
-              { id: 'credit_card' },
-              { id: 'debit_card' },
-              { id: 'ticket' },
-            ]
-          : [
-              { id: 'pix' },
-              { id: 'ticket' },
-            ],
-        installments: paymentMethod === 'credit_card' ? 1 : undefined, // Apenas à vista
-      },
+      external_reference: salonId, // Referência externa
+      statement_descriptor: planName.substring(0, 13), // Limita a 13 caracteres
       back_urls: {
         success: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
         failure: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/erro`,
         pending: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/pendente`,
       },
-      auto_return: 'approved' as const,
       notification_url: `${process.env.NEXTAUTH_URL}/api/subscriptions/webhook`,
       metadata: {
         salon_id: salonId,
