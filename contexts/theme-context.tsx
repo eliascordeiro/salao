@@ -14,21 +14,21 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system")
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
-    // Inicializar com preferência do sistema
-    if (typeof window !== "undefined") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-    }
-    return "dark"
-  })
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark")
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    // Carregar tema salvo
-    const savedTheme = localStorage.getItem("theme") as Theme | null
+    // Carregar tema salvo SOMENTE no cliente
+    const savedTheme = (typeof window !== 'undefined' ? localStorage.getItem("theme") : null) as Theme | null
     if (savedTheme) {
       setThemeState(savedTheme)
+    }
+    
+    // Atualizar resolvedTheme inicial
+    if (typeof window !== 'undefined') {
+      const initial = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      setResolvedTheme(initial)
     }
   }, [])
 

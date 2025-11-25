@@ -6,11 +6,17 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
   
-  // Get token for auth checks
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  // Get token for auth checks (com tratamento de erro)
+  let token = null;
+  try {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+  } catch (error) {
+    console.error("Error getting token in middleware:", error);
+    // Se falhar ao obter token, continuar como não autenticado
+  }
   
   // ====================
   // DASHBOARD DOMAIN (Admin Portal)
@@ -73,8 +79,9 @@ export async function middleware(request: NextRequest) {
   // ====================
   // MARKETING DOMAIN (www/root)
   // www.agendasalao.com ou agendasalao.com
+  // OU Railway/Vercel domains sem prefixo
   // ====================
-  if (hostname.includes("www.") || hostname === "agendasalao.com" || hostname.includes("localhost")) {
+  if (hostname.includes("www.") || hostname === "agendasalao.com" || hostname.includes("localhost") || hostname.includes("railway.app") || hostname.includes("vercel.app")) {
     // Rotas públicas permitidas
     const publicRoutes = [
       "/",
@@ -85,6 +92,10 @@ export async function middleware(request: NextRequest) {
       "/cadastro-salao",
       "/termos",
       "/privacidade",
+      "/planos",
+      "/checkout",
+      "/ajuda",
+      "/favoritos",
     ];
     
     const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
