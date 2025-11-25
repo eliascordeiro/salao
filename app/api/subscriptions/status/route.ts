@@ -35,23 +35,26 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Se não houver assinatura, retornar null (não é erro, apenas não tem)
     if (!subscription) {
-      return NextResponse.json({ error: "Assinatura não encontrada" }, { status: 404 });
+      return NextResponse.json({ subscription: null }, { status: 200 });
     }
 
     // Retornar dados da assinatura
     return NextResponse.json({
-      id: subscription.id,
-      status: subscription.status,
-      planName: subscription.plan.name,
-      planPrice: subscription.plan.price,
-      startDate: subscription.startDate,
-      trialEndsAt: subscription.trialEndsAt,
-      nextBillingDate: subscription.nextBillingDate,
-      paymentMethod: subscription.paymentMethod,
-      lastPaymentDate: subscription.lastPaymentDate,
-      lastPaymentAmount: subscription.lastPaymentAmount,
-      lastPaymentStatus: subscription.lastPaymentStatus,
+      subscription: {
+        id: subscription.id,
+        status: subscription.status,
+        planName: subscription.plan.name,
+        planPrice: subscription.plan.price,
+        startDate: subscription.startDate,
+        trialEndsAt: subscription.trialEndsAt,
+        nextBillingDate: subscription.nextBillingDate,
+        paymentMethod: subscription.paymentMethod,
+        lastPaymentDate: subscription.lastPaymentDate,
+        lastPaymentAmount: subscription.lastPaymentAmount,
+        lastPaymentStatus: subscription.lastPaymentStatus,
+      }
     });
   } catch (error) {
     console.error("❌ Erro ao buscar status da assinatura:", error);

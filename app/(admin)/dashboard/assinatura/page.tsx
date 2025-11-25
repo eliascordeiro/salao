@@ -65,14 +65,17 @@ export default function AssinaturaPage() {
     try {
       const res = await fetch("/api/subscriptions/status");
       if (!res.ok) {
-        if (res.status === 404) {
-          setError("not_found");
-          return;
-        }
         throw new Error("Erro ao carregar dados");
       }
       const result = await res.json();
-      setSubscription(result);
+      
+      // API agora retorna { subscription: {...} } ou { subscription: null }
+      if (!result.subscription) {
+        setError("not_found");
+        return;
+      }
+      
+      setSubscription(result.subscription);
     } catch (err) {
       console.error("Erro ao carregar assinatura:", err);
       setError("error");
