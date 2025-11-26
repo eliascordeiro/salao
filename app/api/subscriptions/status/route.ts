@@ -61,13 +61,15 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("❌ Erro ao buscar status da assinatura:", error);
-    // Retornar detalhes do erro apenas em desenvolvimento
-    const errorMessage = process.env.NODE_ENV === 'development' 
-      ? (error as Error).message 
-      : "Erro ao buscar status da assinatura";
+    console.error("❌ Stack trace:", (error as Error).stack);
+    console.error("❌ Error name:", (error as Error).name);
+    console.error("❌ Error message:", (error as Error).message);
+    
+    // Retornar detalhes do erro (sempre em produção para debug)
+    const errorMessage = (error as Error).message;
     
     return NextResponse.json(
-      { error: errorMessage },
+      { error: errorMessage, details: (error as Error).stack },
       { status: 500 }
     );
   }
