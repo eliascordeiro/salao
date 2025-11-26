@@ -63,21 +63,34 @@ export default function AssinaturaPage() {
 
   async function loadSubscriptionData() {
     try {
+      console.log("📡 Fetching subscription status...");
       const res = await fetch("/api/subscriptions/status");
-      if (!res.ok) {
-        throw new Error("Erro ao carregar dados");
-      }
+      console.log("📡 Response status:", res.status);
+      console.log("📡 Response ok:", res.ok);
+      
       const result = await res.json();
+      console.log("📡 Response data:", result);
+      
+      if (!res.ok) {
+        console.error("❌ Response not OK:", res.status, result);
+        throw new Error(result.error || "Erro ao carregar dados");
+      }
       
       // API agora retorna { subscription: {...} } ou { subscription: null }
       if (!result.subscription) {
+        console.log("⚠️ No subscription found");
         setError("not_found");
         return;
       }
       
+      console.log("✅ Subscription loaded:", result.subscription);
       setSubscription(result.subscription);
     } catch (err) {
-      console.error("Erro ao carregar assinatura:", err);
+      console.error("❌ Erro ao carregar assinatura:", err);
+      console.error("❌ Error details:", {
+        message: (err as Error).message,
+        stack: (err as Error).stack,
+      });
       setError("error");
     } finally {
       setLoading(false);
