@@ -53,6 +53,9 @@ if wait_for_db; then
   echo "🔄 Applying schema changes..."
   npx prisma db push --accept-data-loss
   
+  echo "🔄 Regenerating Prisma Client..."
+  npx prisma generate
+  
   echo "🌱 Seeding database (if needed)..."
   npm run db:seed || echo "⚠️  Seed failed or already populated"
   
