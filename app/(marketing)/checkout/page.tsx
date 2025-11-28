@@ -29,6 +29,21 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card">("pix");
   const [processing, setProcessing] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  // Verificar se já tem assinatura ativa
+  useEffect(() => {
+    fetch("/api/subscriptions/status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.subscription && (data.subscription.status === "active" || data.subscription.status === "trialing")) {
+          setHasActiveSubscription(true);
+        }
+      })
+      .catch(() => {
+        // Ignorar erro (usuário pode não estar logado)
+      });
+  }, []);
 
   // Pegar planSlug apenas no cliente
   useEffect(() => {
@@ -120,6 +135,29 @@ function CheckoutContent() {
           <ArrowLeft className="h-4 w-4" />
           Voltar para planos
         </Link>
+
+        {/* Alerta de assinatura ativa */}
+        {hasActiveSubscription && (
+          <Card className="p-6 mb-6 border-amber-500/50 bg-amber-500/10">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 text-amber-500">⚠️</div>
+              <div>
+                <h3 className="font-semibold mb-2">Você já possui uma assinatura ativa</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Para fazer upgrade ou alterar seu plano, entre em contato com o suporte ou cancele sua assinatura atual primeiro.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/assinatura")}>
+                    Ver Minha Assinatura
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => router.push("/contato")}>
+                    Falar com Suporte
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Resumo do Plano */}
@@ -265,13 +303,15 @@ function CheckoutContent() {
                 size="lg"
                 className="w-full"
                 onClick={handleCheckout}
-                disabled={processing}
+                disabled={processing || hasActiveSubscription}
               >
                 {processing ? (
                   <>
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                     Processando...
                   </>
+                ) : hasActiveSubscription ? (
+                  "Você já possui uma assinatura ativa"
                 ) : (
                   <>
                     {paymentMethod === "pix" ? (
