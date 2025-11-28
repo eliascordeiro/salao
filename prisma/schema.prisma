@@ -368,8 +368,8 @@ model TicketMessage {
 model Plan {
   id            String         @id @default(cuid())
   name          String         // "Essencial", "Profissional"
-  slug          String         @unique // "essencial", "profissional"
-  description   String
+  slug          String?        @unique // "essencial", "profissional" (opcional para compatibilidade com dados antigos)
+  description   String?        // Opcional para compatibilidade com dados antigos
   price         Float          // Preço mensal em reais
   
   // Limites e Features
@@ -404,7 +404,7 @@ model Subscription {
   mpSubscriptionId      String?   @unique // ID da assinatura no MP (se cartão recorrente)
   mpPreferenceId        String?   // ID da preferência de pagamento
   mpPaymentId           String?   // ID do último pagamento
-  paymentMethod         String    // "pix", "credit_card"
+  paymentMethod         String    @default("pix") // "pix", "credit_card" (padrão pix para compatibilidade)
   
   // Status
   status                String    @default("PENDING") // "PENDING", "ACTIVE", "CANCELED", "EXPIRED", "SUSPENDED"
