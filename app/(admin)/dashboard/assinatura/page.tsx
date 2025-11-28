@@ -105,10 +105,17 @@ export default function AssinaturaPage() {
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
       ACTIVE: { label: "Ativa", variant: "default" },
+      active: { label: "Ativa", variant: "default" },
       PENDING: { label: "Pendente", variant: "secondary" },
+      pending: { label: "Pendente", variant: "secondary" },
       CANCELED: { label: "Cancelada", variant: "destructive" },
+      canceled: { label: "Cancelada", variant: "destructive" },
       EXPIRED: { label: "Expirada", variant: "destructive" },
+      expired: { label: "Expirada", variant: "destructive" },
       SUSPENDED: { label: "Suspensa", variant: "destructive" },
+      suspended: { label: "Suspensa", variant: "destructive" },
+      trialing: { label: "Período de Teste", variant: "default" },
+      TRIALING: { label: "Período de Teste", variant: "default" },
     };
     return statusMap[status] || { label: status, variant: "secondary" };
   };
