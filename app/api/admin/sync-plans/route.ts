@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Força rendering dinâmico
+export const dynamic = 'force-dynamic';
+
 // API administrativa para criar/atualizar planos
 export async function POST(request: NextRequest) {
   try {
