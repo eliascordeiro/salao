@@ -33,6 +33,8 @@ function CheckoutContent() {
 
   // Verificar se já tem assinatura ativa
   useEffect(() => {
+    // TEMPORARIAMENTE DESABILITADO PARA TESTES
+    /*
     fetch("/api/subscriptions/status")
       .then((res) => res.json())
       .then((data) => {
@@ -43,6 +45,7 @@ function CheckoutContent() {
       .catch(() => {
         // Ignorar erro (usuário pode não estar logado)
       });
+    */
   }, []);
 
   // Pegar planSlug apenas no cliente
