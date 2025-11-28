@@ -68,7 +68,55 @@ async function main() {
 
   console.log('✅ Salão criado!');
 
-  // 3. Criar profissionais
+  // 3. Criar planos de assinatura
+  console.log('💳 Criando planos de assinatura...');
+  
+  const planEssencial = await prisma.plan.create({
+    data: {
+      name: 'Essencial',
+      slug: 'essencial',
+      description: 'Perfeito para salões pequenos que estão começando',
+      price: 49.00,
+      maxStaff: 2,
+      maxUsers: 1,
+      features: [
+        'Até 2 profissionais',
+        'Agendamentos ilimitados',
+        'Catálogo de serviços',
+        'Calendário e horários',
+        'Notificações por email',
+        '14 dias grátis'
+      ],
+      active: true,
+    },
+  });
+
+  const planProfissional = await prisma.plan.create({
+    data: {
+      name: 'Profissional',
+      slug: 'profissional',
+      description: 'Para salões que querem crescer e ter todos os recursos',
+      price: 149.00,
+      maxStaff: null, // ilimitado
+      maxUsers: 5,
+      features: [
+        'Profissionais ilimitados',
+        'Pagamentos online (Stripe)',
+        'WhatsApp Business',
+        'Relatórios financeiros',
+        'Controle de despesas',
+        'Multi-usuários (5 admins)',
+        'Chat com IA',
+        'Suporte prioritário',
+        '14 dias grátis'
+      ],
+      active: true,
+    },
+  });
+
+  console.log('✅ Planos criados!');
+
+  // 4. Criar profissionais
   console.log('💇 Criando profissionais...');
   
   const staff1 = await prisma.staff.create({
@@ -218,6 +266,7 @@ async function main() {
   console.log('📋 Dados criados:');
   console.log(`   • 3 usuários (1 admin, 2 clientes)`);
   console.log(`   • 1 salão`);
+  console.log(`   • 2 planos de assinatura`);
   console.log(`   • 3 profissionais`);
   console.log(`   • 6 serviços`);
   console.log(`   • 10 associações serviço-profissional\n`);
