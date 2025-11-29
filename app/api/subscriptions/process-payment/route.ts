@@ -58,6 +58,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Em ambiente TEST, usar sempre email de teste do Mercado Pago
+    const isTestMode = process.env.MERCADOPAGO_ACCESS_TOKEN?.startsWith('TEST-');
+    const payerEmail = isTestMode ? 'test_user_123456@testuser.com' : email;
+
+    console.log("💳 Criando pagamento no Mercado Pago:", {
+      amount,
+      payment_method_id,
+      issuer_id,
+      installments,
+      payerEmail,
+      isTestMode,
+      identification,
+    });
+
     // Processar pagamento no Mercado Pago
     const payment = await paymentClient.create({
       body: {
@@ -67,7 +81,7 @@ export async function POST(request: NextRequest) {
         transaction_amount: amount,
         installments,
         payer: {
-          email,
+          email: payerEmail,
           identification: identification || undefined,
         },
         description: `Assinatura ${plan.name} - ${salon.name}`,
