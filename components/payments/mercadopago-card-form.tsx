@@ -249,8 +249,10 @@ export function MercadoPagoCardForm({
           </div>
         </div>
 
-        {/* Banco Emissor (hidden, preenchido automaticamente) */}
-        <input type="hidden" id="form-checkout__issuer" />
+        {/* Banco Emissor (hidden, mas precisa ser SELECT) */}
+        <select id="form-checkout__issuer" className="hidden">
+          <option value="">Carregando...</option>
+        </select>
 
         {/* Parcelas */}
         <div>
