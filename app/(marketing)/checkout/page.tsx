@@ -81,9 +81,11 @@ function CheckoutContent() {
   const handleCheckout = async () => {
     if (!plan) return;
 
+    console.log("🚀 Iniciando checkout...", { planSlug: plan.slug, paymentMethod });
     setProcessing(true);
 
     try {
+      console.log("📡 Enviando requisição para /api/subscriptions/create-preference...");
       const response = await fetch("/api/subscriptions/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,24 +95,38 @@ function CheckoutContent() {
         }),
       });
 
+      console.log("📨 Resposta recebida:", response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error("❌ Erro na API:", error);
         alert(error.error || "Erro ao processar pagamento");
         setProcessing(false);
         return;
       }
 
       const data = await response.json();
+      console.log("✅ Dados recebidos:", data);
 
       // Redirecionar para checkout do Mercado Pago
-      const checkoutUrl = process.env.NODE_ENV === "production"
+      const isProduction = window.location.hostname !== "localhost";
+      const checkoutUrl = isProduction
         ? data.initPoint
         : data.sandboxInitPoint;
 
+      console.log("🔗 Redirecionando para:", checkoutUrl);
+      
+      if (!checkoutUrl) {
+        console.error("❌ URL de checkout não encontrada!", data);
+        alert("Erro: URL de checkout não disponível");
+        setProcessing(false);
+        return;
+      }
+
       window.location.href = checkoutUrl;
     } catch (error) {
-      console.error("Erro:", error);
-      alert("Erro ao processar pagamento");
+      console.error("💥 Erro fatal:", error);
+      alert(`Erro ao processar pagamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       setProcessing(false);
     }
   };
