@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CreditCard, QrCode, Check, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { MercadoPagoCardForm } from "@/components/payments/mercadopago-card-form";
 
 // Força rendering dinâmico
 export const dynamic = 'force-dynamic';
@@ -27,9 +28,10 @@ function CheckoutContent() {
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card">("pix");
+  const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card">("credit_card");
   const [processing, setProcessing] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
 
   // Verificar se já tem assinatura ativa
   useEffect(() => {
@@ -81,7 +83,14 @@ function CheckoutContent() {
   const handleCheckout = async () => {
     if (!plan) return;
 
-    console.log("🚀 Iniciando checkout...", { planSlug: plan.slug, paymentMethod });
+    if (paymentMethod === "credit_card") {
+      // Mostrar formulário de cartão integrado
+      setShowCardForm(true);
+      return;
+    }
+
+    // PIX: redirecionar para Mercado Pago
+    console.log("🚀 Iniciando checkout PIX...", { planSlug: plan.slug, paymentMethod });
     setProcessing(true);
 
     try {
@@ -129,6 +138,17 @@ function CheckoutContent() {
       alert(`Erro ao processar pagamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       setProcessing(false);
     }
+  };
+
+  const handlePaymentSuccess = (paymentId: string) => {
+    console.log("✅ Pagamento aprovado:", paymentId);
+    router.push("/dashboard/assinatura/sucesso");
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error("❌ Erro no pagamento:", error);
+    alert(error);
+    setShowCardForm(false);
   };
 
   if (loading) {
@@ -234,132 +254,161 @@ function CheckoutContent() {
           </Card>
 
           {/* Forma de Pagamento */}
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Forma de Pagamento</h2>
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h2 className="text-2xl font-bold mb-4">Forma de Pagamento</h2>
 
-            <div className="space-y-4">
-              {/* PIX */}
-              <button
-                onClick={() => setPaymentMethod("pix")}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                  paymentMethod === "pix"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${
-                    paymentMethod === "pix" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}>
-                    <QrCode className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">PIX</div>
-                    <div className="text-sm text-muted-foreground">
-                      Aprovação instantânea
+              {!showCardForm ? (
+                <div className="space-y-4">
+                  {/* PIX */}
+                  <button
+                    onClick={() => {
+                      setPaymentMethod("pix");
+                      setShowCardForm(false);
+                    }}
+                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                      paymentMethod === "pix"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${
+                        paymentMethod === "pix" ? "bg-primary text-primary-foreground" : "bg-muted"
+                      }`}>
+                        <QrCode className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold">PIX</div>
+                        <div className="text-sm text-muted-foreground">
+                          Aprovação instantânea
+                        </div>
+                      </div>
+                      {paymentMethod === "pix" && (
+                        <Badge>Sem taxa adicional</Badge>
+                      )}
                     </div>
-                  </div>
-                  {paymentMethod === "pix" && (
-                    <Badge>Sem taxa adicional</Badge>
-                  )}
-                </div>
-              </button>
+                  </button>
 
-              {/* Cartão de Crédito */}
-              <button
-                onClick={() => setPaymentMethod("credit_card")}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                  paymentMethod === "credit_card"
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${
-                    paymentMethod === "credit_card" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}>
-                    <CreditCard className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold">Cartão de Crédito</div>
-                    <div className="text-sm text-muted-foreground">
-                      Renovação automática
+                  {/* Cartão de Crédito */}
+                  <button
+                    onClick={() => {
+                      setPaymentMethod("credit_card");
+                      setShowCardForm(false);
+                    }}
+                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                      paymentMethod === "credit_card"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${
+                        paymentMethod === "credit_card" ? "bg-primary text-primary-foreground" : "bg-muted"
+                      }`}>
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold">Cartão de Crédito</div>
+                        <div className="text-sm text-muted-foreground">
+                          Renovação automática
+                        </div>
+                      </div>
+                      {paymentMethod === "credit_card" && (
+                        <Badge variant="secondary">Recomendado</Badge>
+                      )}
                     </div>
-                  </div>
-                  {paymentMethod === "credit_card" && (
-                    <Badge variant="secondary">Recomendado</Badge>
-                  )}
-                </div>
-              </button>
+                  </button>
 
-              {/* Info */}
-              <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
-                {paymentMethod === "pix" ? (
-                  <>
-                    <p className="font-semibold">Como funciona:</p>
-                    <ul className="space-y-1 text-muted-foreground">
-                      <li>• Gere o QR Code do PIX</li>
-                      <li>• Pague pelo app do seu banco</li>
-                      <li>• Confirmação em até 1 minuto</li>
-                      <li>• Cobrança mensal via PIX</li>
-                    </ul>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-semibold">Como funciona:</p>
-                    <ul className="space-y-1 text-muted-foreground">
-                      <li>• Informe os dados do cartão</li>
-                      <li>• Renovação automática todo mês</li>
-                      <li>• Cancele quando quiser</li>
-                      <li>• Processamento seguro via Mercado Pago</li>
-                    </ul>
-                  </>
-                )}
-              </div>
-
-              {/* Botão Confirmar */}
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={handleCheckout}
-                disabled={processing || hasActiveSubscription}
-              >
-                {processing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : hasActiveSubscription ? (
-                  "Você já possui uma assinatura ativa"
-                ) : (
-                  <>
+                  {/* Info */}
+                  <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
                     {paymentMethod === "pix" ? (
                       <>
-                        <QrCode className="h-5 w-5 mr-2" />
-                        Gerar QR Code PIX
+                        <p className="font-semibold">Como funciona:</p>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Gere o QR Code do PIX</li>
+                          <li>• Pague pelo app do seu banco</li>
+                          <li>• Confirmação em até 1 minuto</li>
+                          <li>• Cobrança mensal via PIX</li>
+                        </ul>
                       </>
                     ) : (
                       <>
-                        <CreditCard className="h-5 w-5 mr-2" />
-                        Ir para pagamento
+                        <p className="font-semibold">Como funciona:</p>
+                        <ul className="space-y-1 text-muted-foreground">
+                          <li>• Preencha os dados do cartão</li>
+                          <li>• Renovação automática todo mês</li>
+                          <li>• Cancele quando quiser</li>
+                          <li>• Processamento seguro 100%</li>
+                        </ul>
                       </>
                     )}
-                  </>
-                )}
-              </Button>
+                  </div>
 
-              <p className="text-xs text-center text-muted-foreground">
-                Ao continuar, você concorda com nossos{" "}
-                <Link href="/termos" className="underline">
-                  Termos de Uso
-                </Link>{" "}
-                e{" "}
-                <Link href="/privacidade" className="underline">
-                  Política de Privacidade
-                </Link>
-              </p>
-            </div>
-          </Card>
+                  {/* Botão Confirmar */}
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={handleCheckout}
+                    disabled={processing || hasActiveSubscription}
+                  >
+                    {processing ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Processando...
+                      </>
+                    ) : hasActiveSubscription ? (
+                      "Você já possui uma assinatura ativa"
+                    ) : (
+                      <>
+                        {paymentMethod === "pix" ? (
+                          <>
+                            <QrCode className="h-5 w-5 mr-2" />
+                            Gerar QR Code PIX
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="h-5 w-5 mr-2" />
+                            Continuar para pagamento
+                          </>
+                        )}
+                      </>
+                    )}
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    Ao continuar, você concorda com nossos{" "}
+                    <Link href="/termos" className="underline">
+                      Termos de Uso
+                    </Link>{" "}
+                    e{" "}
+                    <Link href="/privacidade" className="underline">
+                      Política de Privacidade
+                    </Link>
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCardForm(false)}
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar
+                  </Button>
+                  <MercadoPagoCardForm
+                    publicKey={process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || ""}
+                    amount={plan.price}
+                    planSlug={plan.slug}
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                  />
+                </div>
+              )}
+            </Card>
+          </div>
         </div>
 
         {/* Garantias */}
