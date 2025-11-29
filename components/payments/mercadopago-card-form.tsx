@@ -30,20 +30,6 @@ export function MercadoPagoCardForm({
   const [processing, setProcessing] = useState(false);
   const [mp, setMp] = useState<any>(null);
 
-  // Máscara de CPF
-  const maskCPF = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
-  };
-
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value = maskCPF(e.target.value);
-  };
-
   useEffect(() => {
     // Carregar SDK do Mercado Pago
     const script = document.createElement("script");
@@ -131,6 +117,19 @@ export function MercadoPagoCardForm({
             identificationType,
           } = cardForm.getCardFormData();
 
+          // Remover máscara do CPF (apenas números)
+          const cleanIdentificationNumber = identificationNumber.replace(/\D/g, '');
+
+          console.log("📤 Dados do pagamento:", {
+            payment_method_id,
+            issuer_id,
+            email,
+            amount,
+            installments,
+            identificationType,
+            identificationNumber: cleanIdentificationNumber,
+          });
+
           try {
             // Enviar para nossa API processar o pagamento
             const response = await fetch("/api/subscriptions/process-payment", {
@@ -145,7 +144,7 @@ export function MercadoPagoCardForm({
                 installments: Number(installments),
                 identification: {
                   type: identificationType,
-                  number: identificationNumber,
+                  number: cleanIdentificationNumber, // CPF sem máscara
                 },
                 planSlug,
               }),
@@ -262,13 +261,16 @@ export function MercadoPagoCardForm({
               type="text"
               id="form-checkout__identificationNumber"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="000.000.000-00"
-              onChange={handleCPFChange}
-              maxLength={14}
-              defaultValue="191.191.191-00"
+              placeholder="Apenas números: 19119119100"
+              maxLength={11}
+              defaultValue="19119119100"
+              onInput={(e: any) => {
+                // Permitir apenas números
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Use: 191.191.191-00 (teste)
+              Use: 19119119100 (apenas números)
             </p>
           </div>
         </div>
