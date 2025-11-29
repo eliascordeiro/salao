@@ -30,6 +30,20 @@ export function MercadoPagoCardForm({
   const [processing, setProcessing] = useState(false);
   const [mp, setMp] = useState<any>(null);
 
+  // Máscara de CPF
+  const maskCPF = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .replace(/(-\d{2})\d+?$/, '$1');
+  };
+
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = maskCPF(e.target.value);
+  };
+
   useEffect(() => {
     // Carregar SDK do Mercado Pago
     const script = document.createElement("script");
@@ -220,7 +234,11 @@ export function MercadoPagoCardForm({
             id="form-checkout__cardholderEmail"
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="seu@email.com"
+            defaultValue="test_user_123456@testuser.com"
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            Use: test_user_123456@testuser.com (teste)
+          </p>
         </div>
 
         {/* CPF/CNPJ */}
@@ -238,14 +256,20 @@ export function MercadoPagoCardForm({
           </div>
           <div>
             <label htmlFor="form-checkout__identificationNumber" className="block text-sm font-medium mb-2">
-              Número do documento
+              CPF
             </label>
             <input
               type="text"
               id="form-checkout__identificationNumber"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="000.000.000-00"
+              onChange={handleCPFChange}
+              maxLength={14}
+              defaultValue="191.191.191-00"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Use: 191.191.191-00 (teste)
+            </p>
           </div>
         </div>
 
