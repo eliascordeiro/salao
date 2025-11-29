@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
+    console.log("🔐 Sessão:", { userId: session?.user?.id, role: session?.user?.role });
+    
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Não autorizado" },
@@ -25,6 +27,17 @@ export async function POST(request: NextRequest) {
       identification,
       planSlug,
     } = await request.json();
+
+    console.log("📥 Dados recebidos:", {
+      token: token?.substring(0, 20) + "...",
+      payment_method_id,
+      issuer_id,
+      email,
+      amount,
+      installments,
+      identification,
+      planSlug,
+    });
 
     // Validar campos obrigatórios
     if (!token || !payment_method_id || !email || !amount || !planSlug) {
@@ -70,6 +83,7 @@ export async function POST(request: NextRequest) {
       payerEmail,
       isTestMode,
       identification,
+      token: token?.substring(0, 20) + "...",
     });
 
     // Processar pagamento no Mercado Pago
@@ -94,7 +108,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("💳 Pagamento processado:", payment);
+    console.log("✅ Pagamento criado:", {
+      id: payment.id,
+      status: payment.status,
+      status_detail: payment.status_detail,
+    });
 
     // Criar ou atualizar assinatura no banco
     const subscription = await prisma.subscription.upsert({
@@ -143,6 +161,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("❌ Erro ao processar pagamento:", error);
+    console.error("❌ Detalhes do erro:", {
+      message: error.message,
+      cause: error.cause,
+      stack: error.stack?.split('\n').slice(0, 3),
+    });
+    
     return NextResponse.json(
       { 
         error: error.message || "Erro ao processar pagamento",
