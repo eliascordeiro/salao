@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -7,6 +8,17 @@ import bcrypt from "bcryptjs"
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -63,7 +75,42 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // Para OAuth (Google, Facebook, etc)
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! }
+        })
+
+        // Se usuário já existe, vincular conta OAuth
+        if (existingUser) {
+          // Atualizar imagem se vier do Google
+          if (user.image && !existingUser.image) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { image: user.image }
+            })
+          }
+          return true
+        }
+
+        // Novo usuário via Google - criar como CLIENT
+        // O adapter do Prisma já cria o usuário, só precisamos garantir role
+        if (user.id) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              role: "CLIENT",
+              roleType: null,
+              active: true,
+              password: "" // OAuth não precisa de senha
+            }
+          })
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
         token.role = user.role
