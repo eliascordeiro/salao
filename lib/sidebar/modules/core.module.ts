@@ -1,0 +1,76 @@
+import { 
+  LayoutDashboard, 
+  Store, 
+  Calendar, 
+  Users, 
+  Scissors, 
+  Wallet,
+} from "lucide-react"
+import { MenuModule } from "../types"
+
+/**
+ * Módulo CORE - Funcionalidades principais do sistema
+ */
+export const coreModule: MenuModule = {
+  id: "core",
+  name: "Core",
+  version: "1.0.0",
+  description: "Funcionalidades principais do sistema de agendamento",
+  enabled: true,
+  items: [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/dashboard",
+      permission: "dashboard.view",
+      order: 1,
+      group: "main",
+    },
+    {
+      id: "salon",
+      label: "Meu Salão",
+      icon: Store,
+      href: "/dashboard/meu-salao",
+      permission: "salon.view",
+      order: 2,
+      group: "main",
+    },
+    {
+      id: "bookings",
+      label: "Agendamentos",
+      icon: Calendar,
+      href: "/dashboard/agendamentos",
+      permission: "bookings.view",
+      order: 3,
+      group: "main",
+    },
+    {
+      id: "staff",
+      label: "Profissionais",
+      icon: Users,
+      href: "/dashboard/profissionais",
+      permission: "staff.view",
+      order: 4,
+      group: "main",
+    },
+    {
+      id: "services",
+      label: "Serviços",
+      icon: Scissors,
+      href: "/dashboard/servicos",
+      permission: "services.view",
+      order: 5,
+      group: "main",
+    },
+    {
+      id: "cashier",
+      label: "Caixa",
+      icon: Wallet,
+      href: "/dashboard/caixa",
+      permission: "cashier.view",
+      order: 6,
+      group: "main",
+    },
+  ],
+}

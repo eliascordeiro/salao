@@ -3,121 +3,33 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
-  LayoutDashboard, 
-  Calendar, 
-  Scissors, 
-  Users, 
-  CreditCard, 
-  Store, 
-  Receipt,
-  TrendingUp,
   ChevronLeft,
   Menu,
   X,
-  Wallet,
-  LucideIcon,
-  UserCog,
-  LifeBuoy
+  Scissors,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect } from "react"
 import { useSidebar } from "@/contexts/sidebar-context"
 import { usePermissions } from "@/hooks/use-permissions"
-import { Permission } from "@/lib/permissions"
-
-type MenuItem = {
-  label: string
-  icon: LucideIcon
-  href: string
-  permission?: Permission | Permission[] // Permission(s) required to see this item
-  requireAll?: boolean // If true and multiple permissions, requires all (AND). Default: false (OR)
-  separator?: never
-} | {
-  separator: true
-  label?: never
-  icon?: never
-  href?: never
-  permission?: never
-  requireAll?: never
-}
-
-const menuItems: MenuItem[] = [
-  {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    href: "/dashboard",
-    permission: "dashboard.view",
-  },
-  {
-    label: "Meu Salão",
-    icon: Store,
-    href: "/dashboard/meu-salao",
-    permission: "salon.view",
-  },
-  {
-    label: "Agendamentos",
-    icon: Calendar,
-    href: "/dashboard/agendamentos",
-    permission: "bookings.view",
-  },
-  {
-    label: "Profissionais",
-    icon: Users,
-    href: "/dashboard/profissionais",
-    permission: "staff.view",
-  },
-  {
-    label: "Serviços",
-    icon: Scissors,
-    href: "/dashboard/servicos",
-    permission: "services.view",
-  },
-  {
-    label: "Caixa",
-    icon: Wallet,
-    href: "/dashboard/caixa",
-    permission: "cashier.view",
-  },
-  {
-    label: "Contas a Pagar",
-    icon: Receipt,
-    href: "/dashboard/contas-a-pagar",
-    permission: "expenses.view",
-  },
-  {
-    label: "Análise Financeira",
-    icon: TrendingUp,
-    href: "/dashboard/financeiro",
-    permission: "financial.view",
-  },
-  {
-    separator: true,
-  },
-  {
-    label: "Usuários",
-    icon: UserCog,
-    href: "/dashboard/usuarios",
-    permission: "users.view",
-  },
-  {
-    label: "Assinatura",
-    icon: CreditCard,
-    href: "/dashboard/assinatura",
-  },
-]
+import { getMenuItems } from "@/lib/sidebar"
+import type { MenuItem } from "@/lib/sidebar"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
   const { hasPermission, hasAllPermissions, hasAnyPermission, isOwner } = usePermissions()
 
+  // Obtém itens de menu do sistema dinâmico
+  const menuItems = getMenuItems()
+
   // Filter menu items based on permissions
-  const visibleMenuItems = menuItems.filter((item) => {
+  const visibleMenuItems = menuItems.filter((item: MenuItem) => {
     // Always show separators
     if (item.separator) return true
     
-    // Assinatura only for OWNERS
-    if (item.href === "/dashboard/assinatura") {
+    // Owner-only items
+    if (item.ownerOnly) {
       return isOwner
     }
     
