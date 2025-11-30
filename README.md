@@ -493,3 +493,4 @@ MIT License - Sinta-se livre para usar este projeto!
 ---
 
 ⭐ Se este projeto foi útil, considere dar uma estrela!
+# Force rebuild with new DATABASE_URL
