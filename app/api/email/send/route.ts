@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import nodemailer from "nodemailer"
+import { sendEmailViaResend } from "@/lib/email/resend"
 
 // Configuração do transportador SMTP
 const transporter = nodemailer.createTransport({
@@ -10,10 +11,22 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  // Adicionar timeouts maiores para ambientes cloud
+  connectionTimeout: 10000, // 10 segundos
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+  // Log de debug
+  debug: process.env.NODE_ENV === "development",
+  logger: process.env.NODE_ENV === "development",
 })
 
 // Verificar se o email está configurado
 function isEmailConfigured() {
+  // Resend tem prioridade
+  if (process.env.RESEND_API_KEY) {
+    return true
+  }
+  // Fallback para SMTP
   return !!(
     process.env.SMTP_HOST &&
     process.env.SMTP_PORT &&
@@ -56,6 +69,21 @@ export async function POST(request: Request) {
       )
     }
 
+    // Tentar Resend primeiro (se configurado)
+    if (process.env.RESEND_API_KEY) {
+      console.log("📧 Usando Resend para enviar email...")
+      const result = await sendEmailViaResend({
+        to,
+        subject,
+        html,
+        from: from || process.env.SMTP_FROM,
+      })
+      return NextResponse.json(result)
+    }
+
+    // Fallback para SMTP (Nodemailer)
+    console.log("📧 Usando SMTP para enviar email...")
+
     // Send email
     const info = await transporter.sendMail({
       from: from || process.env.SMTP_FROM || process.env.SMTP_USER,
@@ -79,10 +107,18 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error("❌ Erro ao enviar email:", error)
+    console.error("SMTP Config:", {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.SMTP_USER,
+      secure: process.env.SMTP_SECURE,
+    })
     return NextResponse.json(
       {
         error: "Failed to send email",
         message: error.message || "Unknown error",
+        code: error.code,
+        command: error.command,
       },
       { status: 500 }
     )
