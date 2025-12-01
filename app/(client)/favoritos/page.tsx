@@ -67,17 +67,21 @@ export default function FavoritosPage() {
       try {
         setLoading(true);
         
+        console.log(`🔍 Carregando ${favorites.length} salões favoritos:`, favorites);
+        
         // Buscar dados de cada salão favorito
         const salonPromises = favorites.map(async (salonId) => {
           try {
             const response = await fetch(`/api/public/salons/${salonId}`);
             if (response.ok) {
               const data = await response.json();
+              console.log(`✅ Salão ${salonId} carregado:`, data.salon?.name);
               return data.salon;
             }
+            console.log(`❌ Salão ${salonId} não encontrado`);
             return null;
           } catch (error) {
-            console.error(`Erro ao carregar salão ${salonId}:`, error);
+            console.error(`❌ Erro ao carregar salão ${salonId}:`, error);
             return null;
           }
         });
@@ -85,6 +89,7 @@ export default function FavoritosPage() {
         const results = await Promise.all(salonPromises);
         const validSalons = results.filter((salon): salon is Salon => salon !== null);
         
+        console.log(`✅ ${validSalons.length} salões válidos carregados`);
         setSalons(validSalons);
       } catch (error) {
         console.error("Erro ao carregar favoritos:", error);
@@ -154,17 +159,20 @@ export default function FavoritosPage() {
         {/* Content */}
         {loading ? (
           <SalonListSkeleton />
-        ) : favorites.length === 0 ? (
+        ) : salons.length === 0 ? (
           // Estado vazio
           <div className="flex flex-col items-center justify-center py-20">
             <div className="h-24 w-24 rounded-full bg-gradient-to-br from-red-500/10 to-pink-500/10 flex items-center justify-center mb-6">
               <Heart className="h-12 w-12 text-red-500/50" />
             </div>
             <h2 className="text-2xl font-bold mb-3 text-center">
-              Nenhum favorito ainda
+              Nenhum favorito encontrado
             </h2>
             <p className="text-muted-foreground text-center max-w-md mb-8">
-              Explore nossos salões e toque no ❤️ para adicionar aos favoritos. Você poderá acessá-los rapidamente aqui.
+              {favorites.length > 0 
+                ? "Os salões favoritos não puderam ser carregados. Eles podem ter sido removidos."
+                : "Explore nossos salões e toque no ❤️ para adicionar aos favoritos. Você poderá acessá-los rapidamente aqui."
+              }
             </p>
             <Button asChild size="lg" className="gap-2">
               <Link href="/saloes">
