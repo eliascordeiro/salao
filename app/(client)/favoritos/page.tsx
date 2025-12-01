@@ -1,13 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useFavorites } from "@/hooks/use-favorites";
-import { SalonCard } from "@/components/salons/SalonCard";
 import { Button } from "@/components/ui/button";
-import { GridBackground } from "@/components/ui/grid-background";
 import { SalonListSkeleton } from "@/components/ui/salon-skeleton";
 import { Heart, Trash2, RefreshCw } from "lucide-react";
 import Link from "next/link";
+
+// Importar componentes que podem ter problemas SSR de forma dinâmica
+const SalonCard = dynamic(
+  () => import("@/components/salons/SalonCard").then((mod) => mod.SalonCard),
+  { ssr: false, loading: () => <SalonListSkeleton /> }
+);
+
+const GridBackground = dynamic(
+  () => import("@/components/ui/grid-background").then((mod) => mod.GridBackground),
+  { ssr: false }
+);
 
 interface Salon {
   id: string;
@@ -35,9 +45,19 @@ export default function FavoritosPage() {
   const { favorites, isLoaded, clearFavorites } = useFavorites();
   const [salons, setSalons] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Garantir que está montado no cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Carregar dados dos salões favoritos
   useEffect(() => {
+    // Não executar no servidor ou antes de montar
+    if (!mounted || typeof window === "undefined") {
+      return;
+    }
     async function loadFavoriteSalons() {
       if (!isLoaded || favorites.length === 0) {
         setLoading(false);
@@ -74,14 +94,24 @@ export default function FavoritosPage() {
     }
 
     loadFavoriteSalons();
-  }, [favorites, isLoaded]);
+  }, [favorites, isLoaded, mounted]);
 
   const handleClearAll = () => {
+    if (typeof window === "undefined") return;
     if (confirm("Tem certeza que deseja remover todos os favoritos?")) {
       clearFavorites();
       setSalons([]);
     }
   };
+
+  // Não renderizar até montar no cliente
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <SalonListSkeleton />
+      </div>
+    );
+  }
 
   return (
     <GridBackground>
