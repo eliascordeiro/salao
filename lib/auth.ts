@@ -76,36 +76,46 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Para OAuth (Google, Facebook, etc)
+      // Permitir login com Google
       if (account?.provider === "google") {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! }
-        })
-
-        // Se usuário já existe, vincular conta OAuth
-        if (existingUser) {
-          // Atualizar imagem se vier do Google
-          if (user.image && !existingUser.image) {
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: { image: user.image }
-            })
-          }
-          return true
-        }
-
-        // Novo usuário via Google - criar como CLIENT
-        // O adapter do Prisma já cria o usuário, só precisamos garantir role
-        if (user.id) {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              role: "CLIENT",
-              roleType: null,
-              active: true,
-              password: "" // OAuth não precisa de senha
-            }
+        try {
+          // Verificar se usuário já existe
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! }
           })
+
+          if (existingUser) {
+            // Usuário já existe, atualizar imagem se necessário
+            if (user.image && !existingUser.image) {
+              await prisma.user.update({
+                where: { email: user.email! },
+                data: { image: user.image }
+              })
+            }
+          } else {
+            // Novo usuário - PrismaAdapter já criou, apenas configurar role
+            // Aguardar um momento para o adapter criar
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const newUser = await prisma.user.findUnique({
+              where: { email: user.email! }
+            })
+            
+            if (newUser) {
+              await prisma.user.update({
+                where: { email: user.email! },
+                data: {
+                  role: "CLIENT",
+                  roleType: null,
+                  active: true,
+                  password: ""
+                }
+              })
+            }
+          }
+        } catch (error) {
+          console.error("Erro no signIn callback:", error)
+          // Continuar mesmo com erro para não bloquear o login
         }
       }
       return true
