@@ -179,7 +179,6 @@ export default function FavoritosPage() {
             {salons.filter(salon => salon && salon.id).map((salon) => (
               <SalonCard key={salon.id} salon={salon} />
             ))}
-            ))}
           </div>
         )}
 
