@@ -88,8 +88,18 @@ export const authOptions: NextAuthOptions = {
             // Usuário já existe
             console.log("✅ Usuário Google existente:", user.email)
             
-            // Atualizar imagem se necessário
-            if (user.image && !existingUser.image) {
+            // Se usuário estava inativo, reativar automaticamente via Google OAuth
+            if (!existingUser.active) {
+              console.log("🔄 Reativando usuário inativo via Google OAuth:", user.email)
+              await prisma.user.update({
+                where: { email: user.email! },
+                data: { 
+                  active: true,
+                  image: user.image || existingUser.image
+                }
+              })
+            } else if (user.image && !existingUser.image) {
+              // Atualizar apenas imagem se usuário já está ativo
               await prisma.user.update({
                 where: { email: user.email! },
                 data: { image: user.image }
