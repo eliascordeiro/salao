@@ -10,6 +10,12 @@ export function useFavorites() {
 
   // Carregar favoritos do localStorage na montagem
   useEffect(() => {
+    // Garantir que estamos no cliente
+    if (typeof window === "undefined") {
+      setIsLoaded(true);
+      return;
+    }
+
     try {
       const stored = localStorage.getItem(FAVORITES_KEY);
       if (stored) {
@@ -26,6 +32,9 @@ export function useFavorites() {
 
   // Salvar favoritos no localStorage quando mudar
   useEffect(() => {
+    // Garantir que estamos no cliente
+    if (typeof window === "undefined") return;
+
     if (isLoaded) {
       try {
         localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
