@@ -124,7 +124,7 @@ export default function FavoritosPage() {
                 <Heart className="h-6 w-6 text-white fill-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold">
                   Meus Favoritos
                 </h1>
                 <p className="text-muted-foreground">
