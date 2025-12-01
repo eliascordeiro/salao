@@ -89,7 +89,7 @@ export function Navbar({ showAuth = true }: NavbarProps) {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href="/perfil" className="cursor-pointer">
+                        <Link href="/dashboard/perfil" className="cursor-pointer">
                           <User className="h-4 w-4 mr-2" />
                           Meu Perfil
                         </Link>
