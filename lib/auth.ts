@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
             // Se usuário estava inativo, reativar automaticamente via Google OAuth
             if (!existingUser.active) {
               console.log("🔄 Reativando usuário inativo via Google OAuth:", user.email)
-              await prisma.user.update({
+              existingUser = await prisma.user.update({
                 where: { email: user.email! },
                 data: { 
                   active: true,
@@ -100,14 +100,18 @@ export const authOptions: NextAuthOptions = {
               })
             } else if (user.image && !existingUser.image) {
               // Atualizar apenas imagem se usuário já está ativo
-              await prisma.user.update({
+              existingUser = await prisma.user.update({
                 where: { email: user.email! },
                 data: { image: user.image }
               })
             }
             
-            // Atualizar user.id para JWT
+            // Atualizar user com TODOS os dados do banco (preserva role, roleType, permissions)
             user.id = existingUser.id
+            user.role = existingUser.role
+            ;(user as any).roleType = existingUser.roleType
+            ;(user as any).permissions = existingUser.permissions
+            ;(user as any).createdAt = existingUser.createdAt
           } else {
             // Criar novo usuário
             console.log("✅ Criando novo usuário Google:", user.email)
