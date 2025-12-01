@@ -176,8 +176,9 @@ export default function FavoritosPage() {
         ) : (
           // Grid de salões favoritos
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {salons.map((salon) => (
+            {salons.filter(salon => salon && salon.id).map((salon) => (
               <SalonCard key={salon.id} salon={salon} />
+            ))}
             ))}
           </div>
         )}
