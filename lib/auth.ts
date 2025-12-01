@@ -1,12 +1,12 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Remover adapter quando usando JWT strategy
+  // adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -76,46 +76,53 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Permitir login com Google
+      // Login com Google OAuth
       if (account?.provider === "google") {
         try {
           // Verificar se usuário já existe
-          const existingUser = await prisma.user.findUnique({
+          let existingUser = await prisma.user.findUnique({
             where: { email: user.email! }
           })
 
           if (existingUser) {
-            // Usuário já existe, atualizar imagem se necessário
+            // Usuário já existe
+            console.log("✅ Usuário Google existente:", user.email)
+            
+            // Atualizar imagem se necessário
             if (user.image && !existingUser.image) {
               await prisma.user.update({
                 where: { email: user.email! },
                 data: { image: user.image }
               })
             }
-          } else {
-            // Novo usuário - PrismaAdapter já criou, apenas configurar role
-            // Aguardar um momento para o adapter criar
-            await new Promise(resolve => setTimeout(resolve, 100))
             
-            const newUser = await prisma.user.findUnique({
-              where: { email: user.email! }
+            // Atualizar user.id para JWT
+            user.id = existingUser.id
+          } else {
+            // Criar novo usuário
+            console.log("✅ Criando novo usuário Google:", user.email)
+            
+            const newUser = await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || "",
+                image: user.image,
+                role: "CLIENT",
+                roleType: null,
+                active: true,
+                password: "", // OAuth não precisa senha
+                permissions: []
+              }
             })
             
-            if (newUser) {
-              await prisma.user.update({
-                where: { email: user.email! },
-                data: {
-                  role: "CLIENT",
-                  roleType: null,
-                  active: true,
-                  password: ""
-                }
-              })
-            }
+            console.log("✅ Usuário criado:", newUser.id)
+            
+            // Atualizar user.id para JWT
+            user.id = newUser.id
           }
         } catch (error) {
-          console.error("Erro no signIn callback:", error)
-          // Continuar mesmo com erro para não bloquear o login
+          console.error("❌ Erro no signIn Google callback:", error)
+          return false // Bloquear login se houver erro
         }
       }
       return true
