@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import nodemailer from "nodemailer";
+import { sendEmailViaResend } from "@/lib/email/resend";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -54,17 +54,6 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-
-    // Configurar transporter do nodemailer
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const bookingDate = new Date(booking.date);
     const formattedDate = format(bookingDate, "dd/MM/yyyy", { locale: ptBR });
@@ -239,12 +228,12 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Enviar email
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    // Enviar email via Resend
+    await sendEmailViaResend({
       to: booking.client.email,
       subject,
       html,
+      from: process.env.SMTP_FROM,
     });
 
     return NextResponse.json({ 

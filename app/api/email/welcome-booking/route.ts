@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { sendEmailViaResend } from "@/lib/email/resend";
 
 export async function POST(request: NextRequest) {
   try {
     const { clientEmail, clientName, bookingId } = await request.json();
-
-    // Configurar transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
 
     const appUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
@@ -117,12 +106,12 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Enviar email
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    // Enviar email via Resend
+    await sendEmailViaResend({
       to: clientEmail,
-      subject: "🎉 Bem-vindo ao AgendaSalão!",
+      subject: "🎉 Bem-vindo ao AgendaHora Salão!",
       html: htmlContent,
+      from: process.env.SMTP_FROM,
     });
 
     return NextResponse.json({ 
