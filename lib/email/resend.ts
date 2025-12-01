@@ -17,11 +17,11 @@ export async function sendEmailViaResend({
 }: SendEmailParams) {
   try {
     // Resend requer domínio verificado. Use onboarding@resend.dev se não tiver domínio próprio
-    const senderEmail = from || process.env.SMTP_FROM || 'AgendaSalão <onboarding@resend.dev>'
+    const senderEmail = from || process.env.SMTP_FROM || 'AgendaHora Salão <onboarding@resend.dev>'
     
     // Se o email for @gmail.com ou outro não verificado, usar padrão do Resend
     const finalFrom = senderEmail.includes('@gmail.com') 
-      ? 'AgendaSalão <onboarding@resend.dev>'
+      ? 'AgendaHora Salão <onboarding@resend.dev>'
       : senderEmail
 
     console.log(`📧 Enviando email de: ${finalFrom} para: ${to}`)
