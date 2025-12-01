@@ -74,9 +74,10 @@ export default function FavoritosPage() {
           try {
             const response = await fetch(`/api/public/salons/${salonId}`);
             if (response.ok) {
-              const data = await response.json();
-              console.log(`✅ Salão ${salonId} carregado:`, data.salon?.name);
-              return data.salon;
+              const result = await response.json();
+              const salon = result.data; // API retorna { success: true, data: {...salon} }
+              console.log(`✅ Salão ${salonId} carregado:`, salon?.name);
+              return salon;
             }
             console.log(`❌ Salão ${salonId} não encontrado`);
             return null;
