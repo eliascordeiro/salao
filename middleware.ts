@@ -96,6 +96,7 @@ export async function middleware(request: NextRequest) {
       "/checkout",
       "/ajuda",
       "/favoritos",
+      "/perfil",
     ];
     
     const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
