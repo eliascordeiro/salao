@@ -83,14 +83,12 @@ export async function POST(request: NextRequest) {
 
     // Processar pagamento no Mercado Pago
     // Campos obrigatórios segundo a documentação oficial
+    // Testando com payload mínimo primeiro
     const paymentBody: any = {
       token,
       payment_method_id,
       transaction_amount: Number(amount),
       installments: Number(installments) || 1,
-      description: `Assinatura ${plan.name} - ${salon.name}`,
-      statement_descriptor: plan.name.substring(0, 13),
-      external_reference: salon.id,
     };
 
     // Adicionar issuer_id se fornecido (converter para número)
@@ -108,7 +106,7 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    console.log("📦 Payload final:", JSON.stringify(paymentBody, null, 2));
+    console.log("📦 Payload final (mínimo):", JSON.stringify(paymentBody, null, 2));
 
     const payment = await paymentClient.create({
       body: paymentBody,
