@@ -82,16 +82,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Processar pagamento no Mercado Pago
+    // Quando usamos token, os dados já estão incluídos nele
     const payment = await paymentClient.create({
       body: {
         token,
-        issuer_id,
         payment_method_id,
         transaction_amount: amount,
-        installments,
-        payer: identification ? {
-          identification,
-        } : undefined,
+        installments: Number(installments) || 1,
         description: `Assinatura ${plan.name} - ${salon.name}`,
         statement_descriptor: plan.name.substring(0, 13),
         external_reference: salon.id,
