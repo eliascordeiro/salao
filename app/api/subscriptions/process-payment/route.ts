@@ -82,21 +82,36 @@ export async function POST(request: NextRequest) {
     });
 
     // Processar pagamento no Mercado Pago
-    // Quando usamos token, os dados já estão incluídos nele
-    const payment = await paymentClient.create({
-      body: {
-        token,
-        payment_method_id,
-        transaction_amount: amount,
-        installments: Number(installments) || 1,
-        description: `Assinatura ${plan.name} - ${salon.name}`,
-        statement_descriptor: plan.name.substring(0, 13),
-        external_reference: salon.id,
-        metadata: {
-          salon_id: salon.id,
-          plan_slug: planSlug,
+    // Campos obrigatórios segundo a documentação oficial
+    const paymentBody: any = {
+      token,
+      payment_method_id,
+      transaction_amount: Number(amount),
+      installments: Number(installments) || 1,
+      description: `Assinatura ${plan.name} - ${salon.name}`,
+      statement_descriptor: plan.name.substring(0, 13),
+      external_reference: salon.id,
+    };
+
+    // Adicionar issuer_id se fornecido
+    if (issuer_id) {
+      paymentBody.issuer_id = issuer_id;
+    }
+
+    // Adicionar payer com identification se fornecido
+    if (identification?.type && identification?.number) {
+      paymentBody.payer = {
+        identification: {
+          type: identification.type,
+          number: identification.number,
         },
-      },
+      };
+    }
+
+    console.log("📦 Payload final:", JSON.stringify(paymentBody, null, 2));
+
+    const payment = await paymentClient.create({
+      body: paymentBody,
     });
 
     console.log("✅ Pagamento criado:", {
