@@ -132,7 +132,7 @@ export function MercadoPagoCardForm({
               body: JSON.stringify({
                 token,
                 payment_method_id,
-                issuer_id,
+                issuer_id: issuer_id ? Number(issuer_id) : undefined,
                 amount: Number(amount),
                 installments: Number(installments),
                 identification: {

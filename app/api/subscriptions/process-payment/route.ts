@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
       external_reference: salon.id,
     };
 
-    // Adicionar issuer_id se fornecido
+    // Adicionar issuer_id se fornecido (converter para número)
     if (issuer_id) {
-      paymentBody.issuer_id = issuer_id;
+      paymentBody.issuer_id = Number(issuer_id);
     }
 
     // Adicionar payer com identification se fornecido
