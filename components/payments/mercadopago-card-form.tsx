@@ -90,10 +90,6 @@ export function MercadoPagoCardForm({
           id: "form-checkout__identificationNumber",
           placeholder: "Número do documento",
         },
-        cardholderEmail: {
-          id: "form-checkout__cardholderEmail",
-          placeholder: "E-mail",
-        },
       },
       callbacks: {
         onFormMounted: (error: any) => {
@@ -109,7 +105,6 @@ export function MercadoPagoCardForm({
           const {
             paymentMethodId: payment_method_id,
             issuerId: issuer_id,
-            cardholderEmail: email,
             amount,
             token,
             installments,
@@ -123,7 +118,6 @@ export function MercadoPagoCardForm({
           console.log("📤 Dados do pagamento:", {
             payment_method_id,
             issuer_id,
-            email,
             amount,
             installments,
             identificationType,
@@ -139,7 +133,6 @@ export function MercadoPagoCardForm({
                 token,
                 payment_method_id,
                 issuer_id,
-                email,
                 amount: Number(amount),
                 installments: Number(installments),
                 identification: {
@@ -221,23 +214,6 @@ export function MercadoPagoCardForm({
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Nome completo"
           />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label htmlFor="form-checkout__cardholderEmail" className="block text-sm font-medium mb-2">
-            E-mail
-          </label>
-          <input
-            type="email"
-            id="form-checkout__cardholderEmail"
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="seu@email.com"
-            defaultValue="test_user_123456@testuser.com"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Use: test_user_123456@testuser.com (teste)
-          </p>
         </div>
 
         {/* CPF/CNPJ */}

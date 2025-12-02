@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
       token,
       payment_method_id,
       issuer_id,
-      email,
       amount,
       installments,
       identification,
@@ -32,7 +31,6 @@ export async function POST(request: NextRequest) {
       token: token?.substring(0, 20) + "...",
       payment_method_id,
       issuer_id,
-      email,
       amount,
       installments,
       identification,
@@ -40,7 +38,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Validar campos obrigatórios
-    if (!token || !payment_method_id || !email || !amount || !planSlug) {
+    if (!token || !payment_method_id || !amount || !planSlug) {
       return NextResponse.json(
         { error: "Dados incompletos" },
         { status: 400 }
@@ -71,17 +69,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Em ambiente TEST, usar sempre email de teste do Mercado Pago
-    const isTestMode = process.env.MERCADOPAGO_ACCESS_TOKEN?.startsWith('TEST-');
-    const payerEmail = isTestMode ? 'test_user_123456@testuser.com' : email;
+    // Usar email do usuário logado (não precisa enviar ao Mercado Pago)
+    const payerEmail = session.user.email || 'noreply@agendahora.com';
 
     console.log("💳 Criando pagamento no Mercado Pago:", {
       amount,
       payment_method_id,
       issuer_id,
       installments,
-      payerEmail,
-      isTestMode,
       identification,
       token: token?.substring(0, 20) + "...",
     });
@@ -94,10 +89,9 @@ export async function POST(request: NextRequest) {
         payment_method_id,
         transaction_amount: amount,
         installments,
-        payer: {
-          email: payerEmail,
-          identification: identification || undefined,
-        },
+        payer: identification ? {
+          identification,
+        } : undefined,
         description: `Assinatura ${plan.name} - ${salon.name}`,
         statement_descriptor: plan.name.substring(0, 13),
         external_reference: salon.id,
@@ -142,7 +136,7 @@ export async function POST(request: NextRequest) {
         subscriptionId: subscription.id,
         mpPaymentId: payment.id?.toString() || '',
         amount,
-        status: payment.status || 'pending',
+        mpStatus: payment.status || 'pending',
         paymentMethod: 'credit_card',
         paidAt: payment.status === 'approved' ? new Date() : null,
       },
