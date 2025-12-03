@@ -187,16 +187,18 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("❌ Erro ao processar pagamento:", error);
-    console.error("❌ Detalhes do erro:", {
+    console.error("❌ Detalhes completos do erro:", JSON.stringify({
       message: error.message,
       cause: error.cause,
-      stack: error.stack?.split('\n').slice(0, 3),
-    });
+      stack: error.stack?.split('\n').slice(0, 5),
+      name: error.name,
+      response: error.response,
+    }, null, 2));
     
     return NextResponse.json(
       { 
         error: error.message || "Erro ao processar pagamento",
-        details: error.cause?.message || undefined,
+        details: error.cause || error.response || undefined,
       },
       { status: 500 }
     );
