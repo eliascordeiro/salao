@@ -91,7 +91,7 @@ export default function SuccessPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Valor</span>
                   <span className="font-semibold">
-                    R$ {subscription.planPrice.toFixed(2)}/mês
+                    R$ {(subscription.planPrice || 0).toFixed(2)}/mês
                   </span>
                 </div>
 
