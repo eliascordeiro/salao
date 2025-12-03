@@ -135,34 +135,27 @@ export function MercadoPagoCardForm({
           }
 
           try {
-            // Enviar para nossa API processar o pagamento
-            const response = await fetch("/api/subscriptions/process-payment", {
+            // Enviar para nossa API criar assinatura recorrente
+            const response = await fetch("/api/subscriptions/create-recurring", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                token,
-                payment_method_id,
-                issuer_id: issuer_id ? Number(issuer_id) : undefined,
-                amount: Number(amount),
-                installments: Number(installments),
-                identification: {
-                  type: identificationType,
-                  number: cleanIdentificationNumber, // CPF sem máscara
-                },
                 planSlug,
+                paymentMethodId: payment_method_id,
+                cardToken: token,
               }),
             });
 
             if (!response.ok) {
               const error = await response.json();
-              throw new Error(error.error || "Erro ao processar pagamento");
+              throw new Error(error.error || "Erro ao criar assinatura recorrente");
             }
 
             const data = await response.json();
-            onSuccess(data.paymentId);
+            onSuccess(data.mpSubscriptionId || data.subscriptionId);
           } catch (error: any) {
-            console.error("Erro no pagamento:", error);
-            onError(error.message || "Erro ao processar pagamento");
+            console.error("Erro na assinatura:", error);
+            onError(error.message || "Erro ao criar assinatura");
           } finally {
             setProcessing(false);
           }
@@ -188,6 +181,27 @@ export function MercadoPagoCardForm({
 
   return (
     <Card className="p-6">
+      {/* Aviso de Assinatura Recorrente */}
+      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div className="flex items-start gap-3">
+          <div className="text-blue-600 dark:text-blue-400 mt-0.5">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+              ✅ Assinatura Recorrente Automática
+            </h4>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Você terá <strong>14 dias grátis</strong> para testar. Após o período de teste, 
+              será cobrado automaticamente <strong>R$ {amount.toFixed(2)}/mês</strong> no seu cartão. 
+              Você pode cancelar a qualquer momento.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form id="form-checkout" className="space-y-4">
         {/* Número do Cartão */}
         <div>

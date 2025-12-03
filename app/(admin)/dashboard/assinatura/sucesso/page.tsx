@@ -135,11 +135,13 @@ export default function SuccessPage() {
                 <Calendar className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                    Período de teste ativado
+                    🔄 Cobrança Recorrente Ativada
                   </p>
                   <p className="text-muted-foreground">
-                    Você tem 14 dias para testar todas as funcionalidades do plano{" "}
-                    {subscription.planName}. A primeira cobrança será realizada apenas após o término do período de teste.
+                    Você tem <strong>14 dias grátis</strong> para testar todas as funcionalidades do plano{" "}
+                    <strong>{subscription.planName}</strong>. Após o período de teste, 
+                    será cobrado automaticamente <strong>R$ {subscription.planPrice.toFixed(2)}/mês</strong> no 
+                    cartão cadastrado. Você pode cancelar a qualquer momento.
                   </p>
                 </div>
               </div>
@@ -156,7 +158,7 @@ export default function SuccessPage() {
             </Button>
 
             <Button size="lg" variant="outline" className="w-full" asChild>
-              <Link href="/dashboard/assinatura">
+              <Link href="/dashboard/assinatura/gerenciar">
                 <CreditCard className="h-5 w-5 mr-2" />
                 Gerenciar Assinatura
               </Link>
