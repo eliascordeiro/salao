@@ -43,13 +43,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ subscription: null }, { status: 200 });
     }
 
+    console.log("📊 Subscription encontrada:", {
+      id: subscription.id,
+      planId: subscription.planId,
+      planName: subscription.plan?.name,
+      planPrice: subscription.plan?.price,
+    });
+
     // Retornar dados da assinatura
     return NextResponse.json({
       subscription: {
         id: subscription.id,
         status: subscription.status,
-        planName: subscription.plan.name,
-        planPrice: subscription.plan.price,
+        planName: subscription.plan?.name || "Sem nome",
+        planPrice: subscription.plan?.price || 0,
         startDate: subscription.startDate,
         trialEndsAt: subscription.trialEndsAt,
         nextBillingDate: subscription.nextBillingDate,
