@@ -138,7 +138,6 @@ export async function POST(request: NextRequest) {
       },
       back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
       payer_email: session.user.email,
-      card_id: cardData.id,
       status: "authorized",
     };
 
@@ -166,6 +165,31 @@ export async function POST(request: NextRequest) {
     }
 
     const preapproval = responseData;
+    console.log("✅ Preapproval criado:", preapproval.id);
+
+    // PASSO 4: Associar método de pagamento (cartão) ao preapproval
+    console.log("🔗 Associando método de pagamento...");
+    const updateBody = {
+      card_id: parseInt(cardData.id),
+    };
+
+    const updateResponse = await fetch(`https://api.mercadopago.com/preapproval/${preapproval.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(updateBody),
+    });
+
+    const updateData = await updateResponse.json();
+
+    if (!updateResponse.ok) {
+      console.error("⚠️ Erro ao associar cartão (continuando mesmo assim):", updateData);
+      // Não falha se não conseguir associar, pois a assinatura já foi criada
+    } else {
+      console.log("✅ Método de pagamento associado!");
+    }
 
     // Salvar assinatura no banco
     const subscription = await prisma.subscription.upsert({
