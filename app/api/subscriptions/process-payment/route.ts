@@ -136,6 +136,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Criar ou atualizar assinatura no banco
+    console.log("📝 Upsert subscription com planId:", plan.id);
+    
     const subscription = await prisma.subscription.upsert({
       where: { salonId: salon.id },
       update: {
@@ -155,6 +157,12 @@ export async function POST(request: NextRequest) {
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
+    });
+
+    console.log("✅ Subscription salva:", {
+      id: subscription.id,
+      planId: subscription.planId,
+      status: subscription.status,
     });
 
     // Registrar pagamento
