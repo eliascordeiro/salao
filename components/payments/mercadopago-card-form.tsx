@@ -122,7 +122,17 @@ export function MercadoPagoCardForm({
             installments,
             identificationType,
             identificationNumber: cleanIdentificationNumber,
+            token: token ? `${token.substring(0, 10)}...` : 'TOKEN_VAZIO',
+            tokenLength: token?.length,
           });
+
+          // Validar se o token foi gerado
+          if (!token || token.length < 10) {
+            console.error("❌ Token inválido ou não gerado pelo Mercado Pago");
+            onError("Erro ao processar dados do cartão. Tente novamente.");
+            setProcessing(false);
+            return;
+          }
 
           try {
             // Enviar para nossa API processar o pagamento
