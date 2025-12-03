@@ -30,10 +30,12 @@ export default function SuccessPage() {
       fetch("/api/subscriptions/status")
         .then((res) => res.json())
         .then((data) => {
-          setSubscription(data);
+          console.log("📥 Resposta da API:", data);
+          setSubscription(data.subscription); // A API retorna { subscription: {...} }
           setLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("❌ Erro ao carregar status:", error);
           setLoading(false);
         });
     }, 3000);
