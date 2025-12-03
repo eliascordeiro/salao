@@ -222,8 +222,12 @@ export function MercadoPagoCardForm({
             type="text"
             id="form-checkout__cardholderName"
             className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Nome completo"
+            placeholder="Para teste: APRO"
+            defaultValue="APRO"
           />
+          <p className="text-xs text-green-600 mt-1">
+            ✅ Use: <strong>APRO</strong> (para pagamento aprovado em teste)
+          </p>
         </div>
 
         {/* CPF/CNPJ */}
@@ -247,16 +251,16 @@ export function MercadoPagoCardForm({
               type="text"
               id="form-checkout__identificationNumber"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Apenas números: 19119119100"
+              placeholder="Apenas números: 12345678909"
               maxLength={11}
-              defaultValue="19119119100"
+              defaultValue="12345678909"
               onInput={(e: any) => {
                 // Permitir apenas números
                 e.target.value = e.target.value.replace(/\D/g, '');
               }}
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Use: 19119119100 (apenas números)
+            <p className="text-xs text-green-600 mt-1">
+              ✅ Use: <strong>12345678909</strong> (CPF para pagamento aprovado)
             </p>
           </div>
         </div>
