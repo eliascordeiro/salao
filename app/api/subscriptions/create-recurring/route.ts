@@ -73,7 +73,57 @@ export async function POST(request: NextRequest) {
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
 
-    // Criar assinatura recorrente no Mercado Pago
+    // PASSO 1: Criar Customer no Mercado Pago
+    console.log("👤 Criando customer no MP...");
+    const customerBody = {
+      email: session.user.email,
+      first_name: session.user.name?.split(' ')[0] || 'Cliente',
+      last_name: session.user.name?.split(' ').slice(1).join(' ') || 'Salão',
+    };
+
+    const customerResponse = await fetch('https://api.mercadopago.com/v1/customers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(customerBody),
+    });
+
+    const customerData = await customerResponse.json();
+
+    if (!customerResponse.ok) {
+      console.error("❌ Erro ao criar customer:", customerData);
+      throw new Error(customerData.message || 'Erro ao criar customer');
+    }
+
+    console.log("✅ Customer criado:", customerData.id);
+
+    // PASSO 2: Salvar cartão do customer
+    console.log("💳 Salvando cartão...");
+    const cardBody = {
+      token: cardToken,
+    };
+
+    const cardResponse = await fetch(`https://api.mercadopago.com/v1/customers/${customerData.id}/cards`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(cardBody),
+    });
+
+    const cardData = await cardResponse.json();
+
+    if (!cardResponse.ok) {
+      console.error("❌ Erro ao salvar cartão:", cardData);
+      throw new Error(cardData.message || 'Erro ao salvar cartão');
+    }
+
+    console.log("✅ Cartão salvo:", cardData.id);
+
+    // PASSO 3: Criar assinatura recorrente
     const preapprovalBody = {
       reason: `Assinatura ${plan.name} - ${salon.name}`,
       auto_recurring: {
@@ -88,7 +138,7 @@ export async function POST(request: NextRequest) {
       },
       back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
       payer_email: session.user.email,
-      card_token_id: cardToken,
+      card_id: cardData.id,
       status: "authorized",
     };
 
