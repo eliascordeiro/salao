@@ -82,8 +82,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Processar pagamento no Mercado Pago
-    // Campos obrigatórios segundo a documentação oficial
-    // Testando com payload mínimo primeiro
+    // Testando apenas os campos OBRIGATÓRIOS mínimos
     const paymentBody: any = {
       token,
       payment_method_id,
@@ -91,22 +90,7 @@ export async function POST(request: NextRequest) {
       installments: Number(installments) || 1,
     };
 
-    // Adicionar issuer_id se fornecido (converter para número)
-    if (issuer_id) {
-      paymentBody.issuer_id = Number(issuer_id);
-    }
-
-    // Adicionar payer com identification se fornecido
-    if (identification?.type && identification?.number) {
-      paymentBody.payer = {
-        identification: {
-          type: identification.type,
-          number: identification.number,
-        },
-      };
-    }
-
-    console.log("📦 Payload final (mínimo):", JSON.stringify(paymentBody, null, 2));
+    console.log("📦 Payload ULTRA mínimo (sem issuer_id e payer):", JSON.stringify(paymentBody, null, 2));
 
     // Testar com API REST direta ao invés do SDK
     const response = await fetch('https://api.mercadopago.com/v1/payments', {
