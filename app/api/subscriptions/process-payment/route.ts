@@ -108,9 +108,31 @@ export async function POST(request: NextRequest) {
 
     console.log("📦 Payload final (mínimo):", JSON.stringify(paymentBody, null, 2));
 
-    const payment = await paymentClient.create({
-      body: paymentBody,
+    // Testar com API REST direta ao invés do SDK
+    const response = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+        'X-Idempotency-Key': `${salon.id}-${Date.now()}`,
+      },
+      body: JSON.stringify(paymentBody),
     });
+
+    const responseData = await response.json();
+    
+    console.log("📥 Resposta do Mercado Pago:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: JSON.stringify(responseData, null, 2),
+    });
+
+    if (!response.ok) {
+      console.error("❌ Erro detalhado do MP:", responseData);
+      throw new Error(responseData.message || 'Erro ao processar pagamento');
+    }
+
+    const payment = responseData;
 
     console.log("✅ Pagamento criado:", {
       id: payment.id,
