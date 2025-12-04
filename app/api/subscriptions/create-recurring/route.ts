@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       reason: `Assinatura ${plan.name} - ${salon.name}`,
       external_reference: salon.id,
       payer_email: session.user.email,
-      card_id: parseInt(cardData.id),
+      card_token_id: cardToken, // Usa o token original, não o card_id
       status: "authorized",
     };
 
