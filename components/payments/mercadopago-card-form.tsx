@@ -152,6 +152,14 @@ export function MercadoPagoCardForm({
             }
 
             const data = await response.json();
+            
+            // Se retornou init_point, redirecionar para o Mercado Pago
+            if (data.init_point) {
+              window.location.href = data.init_point;
+              return;
+            }
+            
+            // Caso contrário, chamar onSuccess
             onSuccess(data.mpSubscriptionId || data.subscriptionId);
           } catch (error: any) {
             console.error("Erro na assinatura:", error);

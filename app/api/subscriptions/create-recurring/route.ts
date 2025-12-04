@@ -156,14 +156,14 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Preapproval plan criado:", planData.id);
 
-    // PASSO 4: Criar assinatura vinculada ao plan
+    // PASSO 3: Criar assinatura SEM cartão (redirect para MP processar)
     const preapprovalBody = {
       preapproval_plan_id: planData.id,
       reason: `Assinatura ${plan.name} - ${salon.name}`,
       external_reference: salon.id,
       payer_email: session.user.email,
-      card_token_id: cardToken, // Usa o token original, não o card_id
-      status: "authorized",
+      back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
+      status: "pending", // Pending até usuário pagar no MP
     };
 
     console.log("📦 Criando preapproval:", JSON.stringify(preapprovalBody, null, 2));
@@ -222,6 +222,7 @@ export async function POST(request: NextRequest) {
       status: subscription.status,
     });
 
+    // Retornar init_point para redirecionar usuário
     return NextResponse.json({
       success: true,
       subscriptionId: subscription.id,
@@ -229,6 +230,7 @@ export async function POST(request: NextRequest) {
       status: subscription.status,
       trialEndsAt: subscription.trialEndsAt,
       nextBillingDate: subscription.nextBillingDate,
+      init_point: preapproval.init_point, // Link para pagamento no MP
     });
 
   } catch (error: any) {
