@@ -135,8 +135,8 @@ export function MercadoPagoCardForm({
           }
 
           try {
-            // Enviar para nossa API criar assinatura recorrente
-            const response = await fetch("/api/subscriptions/create-recurring", {
+            // Enviar para nossa API criar assinatura (método simplificado)
+            const response = await fetch("/api/subscriptions/create-recurring-simple", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -148,19 +148,11 @@ export function MercadoPagoCardForm({
 
             if (!response.ok) {
               const error = await response.json();
-              throw new Error(error.error || "Erro ao criar assinatura recorrente");
+              throw new Error(error.error || "Erro ao criar assinatura");
             }
 
             const data = await response.json();
-            
-            // Se retornou init_point, redirecionar para o Mercado Pago
-            if (data.init_point) {
-              window.location.href = data.init_point;
-              return;
-            }
-            
-            // Caso contrário, chamar onSuccess
-            onSuccess(data.mpSubscriptionId || data.subscriptionId);
+            onSuccess(data.subscriptionId);
           } catch (error: any) {
             console.error("Erro na assinatura:", error);
             onError(error.message || "Erro ao criar assinatura");
