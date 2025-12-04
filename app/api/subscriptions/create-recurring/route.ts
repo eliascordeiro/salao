@@ -121,10 +121,12 @@ export async function POST(request: NextRequest) {
     // NOTA: Não salvamos o cartão separadamente porque o token será consumido
     // pelo Preapproval. O MP salva o cartão automaticamente no preapproval.
 
-    // PASSO 2: Criar Preapproval Plan (template de assinatura)
-    console.log("📋 Criando preapproval plan...");
-    const planBody = {
-      reason: `Assinatura ${plan.name}`,
+    // PASSO 2: Criar assinatura direta (sem plan) com redirect
+    const preapprovalBody = {
+      reason: `Assinatura ${plan.name} - ${salon.name}`,
+      external_reference: salon.id,
+      payer_email: session.user.email,
+      back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
@@ -135,34 +137,6 @@ export async function POST(request: NextRequest) {
           frequency_type: "days",
         },
       },
-      back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
-    };
-
-    const planResponse = await fetch('https://api.mercadopago.com/preapproval_plan', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(planBody),
-    });
-
-    const planData = await planResponse.json();
-
-    if (!planResponse.ok) {
-      console.error("❌ Erro ao criar preapproval plan:", planData);
-      throw new Error(planData.message || 'Erro ao criar plano de assinatura');
-    }
-
-    console.log("✅ Preapproval plan criado:", planData.id);
-
-    // PASSO 3: Criar assinatura SEM cartão (redirect para MP processar)
-    const preapprovalBody = {
-      preapproval_plan_id: planData.id,
-      reason: `Assinatura ${plan.name} - ${salon.name}`,
-      external_reference: salon.id,
-      payer_email: session.user.email,
-      back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
       status: "pending", // Pending até usuário pagar no MP
     };
 
