@@ -68,7 +68,10 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
     const controller = pollingControllerRef.current || { cancelled: false };
 
     const poll = async () => {
-      if (controller.cancelled) return;
+      if (controller.cancelled) {
+        console.log('🛑 Polling PIX cancelado pelo usuário');
+        return;
+      }
       attempts++;
       try {
         const response = await fetch(`/api/subscriptions/check-payment?paymentId=${paymentId}`);
@@ -263,7 +266,11 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
         {/* Botão Cancelar */}
         <Button
           onClick={() => {
-            if (pollingControllerRef.current) pollingControllerRef.current.cancelled = true;
+            console.log('🔴 Botão Cancelar clicado - versão atualizada');
+            if (pollingControllerRef.current) {
+              pollingControllerRef.current.cancelled = true;
+              console.log('✅ Polling marcado para cancelamento');
+            }
             onCancel();
           }}
           variant="ghost"
