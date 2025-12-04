@@ -84,14 +84,14 @@ export async function POST(request: NextRequest) {
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
 
-    // Criar pagamento de validação R$ 0.01
-    console.log("💳 Criando pagamento de validação (R$ 0.01)...");
+    // Criar pagamento de validação R$ 0.50 (mínimo do MP)
+    console.log("💳 Criando pagamento de validação (R$ 0.50)...");
     
     const paymentClient = new Payment(client);
     
     const validationPayment = await paymentClient.create({
       body: {
-        transaction_amount: 0.01,
+        transaction_amount: 0.50,
         token: cardToken,
         description: `Validação - Assinatura ${plan.name} - ${salon.name}`,
         installments: 1,
