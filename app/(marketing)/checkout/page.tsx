@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, CreditCard, QrCode, Check, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { MercadoPagoCardForm } from "@/components/payments/mercadopago-card-form";
+import { PixPayment } from "@/components/payments/pix-payment";
 
 // Força rendering dinâmico
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ function CheckoutContent() {
   const [processing, setProcessing] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [showCardForm, setShowCardForm] = useState(false);
+  const [showPixPayment, setShowPixPayment] = useState(false);
 
   // Verificar se já tem assinatura ativa
   useEffect(() => {
@@ -89,55 +91,8 @@ function CheckoutContent() {
       return;
     }
 
-    // PIX: redirecionar para Mercado Pago
-    console.log("🚀 Iniciando checkout PIX...", { planSlug: plan.slug, paymentMethod });
-    setProcessing(true);
-
-    try {
-      console.log("📡 Enviando requisição para /api/subscriptions/create-preference...");
-      const response = await fetch("/api/subscriptions/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planSlug: plan.slug,
-          paymentMethod,
-        }),
-      });
-
-      console.log("📨 Resposta recebida:", response.status);
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("❌ Erro na API:", error);
-        alert(error.error || "Erro ao processar pagamento");
-        setProcessing(false);
-        return;
-      }
-
-      const data = await response.json();
-      console.log("✅ Dados recebidos:", data);
-
-      // Redirecionar para checkout do Mercado Pago
-      const isProduction = window.location.hostname !== "localhost";
-      const checkoutUrl = isProduction
-        ? data.initPoint
-        : data.sandboxInitPoint;
-
-      console.log("🔗 Redirecionando para:", checkoutUrl);
-      
-      if (!checkoutUrl) {
-        console.error("❌ URL de checkout não encontrada!", data);
-        alert("Erro: URL de checkout não disponível");
-        setProcessing(false);
-        return;
-      }
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error("💥 Erro fatal:", error);
-      alert(`Erro ao processar pagamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-      setProcessing(false);
-    }
+    // PIX: mostrar componente PIX integrado
+    setShowPixPayment(true);
   };
 
   const handlePaymentSuccess = (paymentId: string) => {
@@ -387,7 +342,7 @@ function CheckoutContent() {
                     </Link>
                   </p>
                 </div>
-              ) : (
+              ) : showCardForm ? (
                 <div>
                   <Button
                     variant="ghost"
@@ -406,7 +361,15 @@ function CheckoutContent() {
                     onError={handlePaymentError}
                   />
                 </div>
-              )}
+              ) : showPixPayment ? (
+                <PixPayment
+                  planSlug={plan.slug}
+                  planName={plan.name}
+                  amount={plan.price}
+                  onSuccess={() => handlePaymentSuccess("pix")}
+                  onCancel={() => setShowPixPayment(false)}
+                />
+              ) : null}
             </Card>
           </div>
         </div>
