@@ -213,13 +213,41 @@ function CheckoutContent() {
             <Card className="p-6">
               <h2 className="text-2xl font-bold mb-4">Forma de Pagamento</h2>
 
-              {!showCardForm ? (
+              {showCardForm ? (
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCardForm(false)}
+                    className="mb-4"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar
+                  </Button>
+                  <MercadoPagoCardForm
+                    publicKey={process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || ""}
+                    amount={plan.price}
+                    planSlug={plan.slug}
+                    onSuccess={handlePaymentSuccess}
+                    onError={handlePaymentError}
+                  />
+                </div>
+              ) : showPixPayment ? (
+                <PixPayment
+                  planSlug={plan.slug}
+                  planName={plan.name}
+                  amount={plan.price}
+                  onSuccess={() => handlePaymentSuccess("pix")}
+                  onCancel={() => setShowPixPayment(false)}
+                />
+              ) : (
                 <div className="space-y-4">
                   {/* PIX */}
                   <button
                     onClick={() => {
                       setPaymentMethod("pix");
                       setShowCardForm(false);
+                      setShowPixPayment(false); // Reset PIX state
                     }}
                     className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                       paymentMethod === "pix"
@@ -250,6 +278,7 @@ function CheckoutContent() {
                     onClick={() => {
                       setPaymentMethod("credit_card");
                       setShowCardForm(false);
+                      setShowPixPayment(false); // Reset PIX state
                     }}
                     className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                       paymentMethod === "credit_card"
@@ -342,34 +371,7 @@ function CheckoutContent() {
                     </Link>
                   </p>
                 </div>
-              ) : showCardForm ? (
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowCardForm(false)}
-                    className="mb-4"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Voltar
-                  </Button>
-                  <MercadoPagoCardForm
-                    publicKey={process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || ""}
-                    amount={plan.price}
-                    planSlug={plan.slug}
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                  />
-                </div>
-              ) : showPixPayment ? (
-                <PixPayment
-                  planSlug={plan.slug}
-                  planName={plan.name}
-                  amount={plan.price}
-                  onSuccess={() => handlePaymentSuccess("pix")}
-                  onCancel={() => setShowPixPayment(false)}
-                />
-              ) : null}
+              )}
             </Card>
           </div>
         </div>
