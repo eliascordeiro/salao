@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Loader2, QrCode as QrCodeIcon } from "lucide-react";
@@ -27,6 +27,14 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [copied, setCopied] = useState(false);
   const [checking, setChecking] = useState(false);
+  const pollingControllerRef = useRef<{ cancelled: boolean } | null>(null);
+
+  // Limpa polling se o componente desmontar
+  useEffect(() => {
+    return () => {
+      if (pollingControllerRef.current) pollingControllerRef.current.cancelled = true;
+    };
+  }, []);
 
   const generatePix = async () => {
     setLoading(true);
@@ -44,8 +52,9 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
       const data = await response.json();
       setPixData(data);
-      
+
       // Iniciar polling para verificar pagamento
+      pollingControllerRef.current = { cancelled: false };
       startPaymentPolling(data.paymentId);
     } catch (error: any) {
       alert(error.message || "Erro ao gerar PIX");
@@ -55,23 +64,52 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
   };
 
   const startPaymentPolling = (paymentId: number) => {
-    const interval = setInterval(async () => {
+    let attempts = 0;
+    const controller = pollingControllerRef.current || { cancelled: false };
+
+    const poll = async () => {
+      if (controller.cancelled) return;
+      attempts++;
       try {
         const response = await fetch(`/api/subscriptions/check-payment?paymentId=${paymentId}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === "approved") {
-            clearInterval(interval);
-            onSuccess();
-          }
+        if (!response.ok) throw new Error('Erro ao verificar pagamento');
+        const data = await response.json();
+
+        // Se aprovado, chama onSuccess e para o polling
+        if (data.status === "approved") {
+          pollingControllerRef.current = null;
+          onSuccess();
+          return;
         }
+
+        // Se rejeitado, notifica e para
+        if (data.status === "rejected") {
+          pollingControllerRef.current = null;
+          alert('Pagamento rejeitado. Por favor, tente novamente.');
+          onCancel();
+          return;
+        }
+
+        // Recomenda intervalo enviado pelo servidor (ajusta para pending PIX)
+        const nextMs = data.nextCheckInMs ?? (attempts < 10 ? 3000 : 10000);
+
+        // Limite de tentativas razoável (ex.: 30 minutos)
+        const maxAttempts = Math.max(10, Math.floor((30 * 60 * 1000) / nextMs));
+        if (attempts >= maxAttempts) {
+          console.log('Polling PIX: limite de tentativas atingido, parando verificações');
+          return;
+        }
+
+        setTimeout(poll, nextMs);
       } catch (error) {
         console.error("Erro ao verificar pagamento:", error);
+        const backoff = Math.min(30000, attempts * 1000);
+        setTimeout(poll, backoff);
       }
-    }, 3000); // Verifica a cada 3 segundos
+    };
 
-    // Limpar após 30 minutos
-    setTimeout(() => clearInterval(interval), 30 * 60 * 1000);
+    // Iniciar primeira verificação imediatamente
+    poll();
   };
 
   const copyPixCode = () => {
@@ -224,7 +262,10 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
         {/* Botão Cancelar */}
         <Button
-          onClick={onCancel}
+          onClick={() => {
+            if (pollingControllerRef.current) pollingControllerRef.current.cancelled = true;
+            onCancel();
+          }}
           variant="ghost"
           className="w-full"
         >

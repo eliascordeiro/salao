@@ -60,10 +60,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Recomendar intervalo de próxima verificação para o frontend.
+    // PIXs que aguardam transferência podem demorar mais; sugerimos aumentar o intervalo.
+    let nextCheckInMs = 3000;
+    if (payment.status === 'pending' && payment.status_detail === 'pending_waiting_transfer') {
+      nextCheckInMs = 10000; // 10s para reduzir carga de polling
+    }
+
     return NextResponse.json({
       paymentId: payment.id,
       status: payment.status,
       statusDetail: payment.status_detail,
+      nextCheckInMs,
     });
 
   } catch (error: any) {
