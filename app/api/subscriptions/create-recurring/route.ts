@@ -142,9 +142,10 @@ export async function POST(request: NextRequest) {
 
     console.log("✅ Cartão salvo:", cardData.id);
 
-    // PASSO 3: Criar assinatura recorrente
-    const preapprovalBody = {
-      reason: `Assinatura ${plan.name} - ${salon.name}`,
+    // PASSO 3: Criar Preapproval Plan (template de assinatura)
+    console.log("📋 Criando preapproval plan...");
+    const planBody = {
+      reason: `Assinatura ${plan.name}`,
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
@@ -156,7 +157,33 @@ export async function POST(request: NextRequest) {
         },
       },
       back_url: `${process.env.NEXTAUTH_URL}/dashboard/assinatura/sucesso`,
+    };
+
+    const planResponse = await fetch('https://api.mercadopago.com/preapproval_plan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(planBody),
+    });
+
+    const planData = await planResponse.json();
+
+    if (!planResponse.ok) {
+      console.error("❌ Erro ao criar preapproval plan:", planData);
+      throw new Error(planData.message || 'Erro ao criar plano de assinatura');
+    }
+
+    console.log("✅ Preapproval plan criado:", planData.id);
+
+    // PASSO 4: Criar assinatura vinculada ao plan
+    const preapprovalBody = {
+      preapproval_plan_id: planData.id,
+      reason: `Assinatura ${plan.name} - ${salon.name}`,
+      external_reference: salon.id,
       payer_email: session.user.email,
+      card_id: parseInt(cardData.id),
       status: "authorized",
     };
 
@@ -185,30 +212,6 @@ export async function POST(request: NextRequest) {
 
     const preapproval = responseData;
     console.log("✅ Preapproval criado:", preapproval.id);
-
-    // PASSO 4: Associar método de pagamento (cartão) ao preapproval
-    console.log("🔗 Associando método de pagamento...");
-    const updateBody = {
-      card_id: parseInt(cardData.id),
-    };
-
-    const updateResponse = await fetch(`https://api.mercadopago.com/preapproval/${preapproval.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(updateBody),
-    });
-
-    const updateData = await updateResponse.json();
-
-    if (!updateResponse.ok) {
-      console.error("⚠️ Erro ao associar cartão (continuando mesmo assim):", updateData);
-      // Não falha se não conseguir associar, pois a assinatura já foi criada
-    } else {
-      console.log("✅ Método de pagamento associado!");
-    }
 
     // Salvar assinatura no banco
     const subscription = await prisma.subscription.upsert({
