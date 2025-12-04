@@ -118,31 +118,10 @@ export async function POST(request: NextRequest) {
       console.log("✅ Customer criado:", customerId);
     }
 
-    // PASSO 2: Salvar cartão do customer
-    console.log("💳 Salvando cartão...");
-    const cardBody = {
-      token: cardToken,
-    };
+    // NOTA: Não salvamos o cartão separadamente porque o token será consumido
+    // pelo Preapproval. O MP salva o cartão automaticamente no preapproval.
 
-    const cardResponse = await fetch(`https://api.mercadopago.com/v1/customers/${customerId}/cards`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify(cardBody),
-    });
-
-    const cardData = await cardResponse.json();
-
-    if (!cardResponse.ok) {
-      console.error("❌ Erro ao salvar cartão:", cardData);
-      throw new Error(cardData.message || 'Erro ao salvar cartão');
-    }
-
-    console.log("✅ Cartão salvo:", cardData.id);
-
-    // PASSO 3: Criar Preapproval Plan (template de assinatura)
+    // PASSO 2: Criar Preapproval Plan (template de assinatura)
     console.log("📋 Criando preapproval plan...");
     const planBody = {
       reason: `Assinatura ${plan.name}`,
