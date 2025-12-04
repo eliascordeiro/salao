@@ -73,31 +73,50 @@ export async function POST(request: NextRequest) {
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
 
-    // PASSO 1: Criar Customer no Mercado Pago
-    console.log("👤 Criando customer no MP...");
-    const customerBody = {
-      email: session.user.email,
-      first_name: session.user.name?.split(' ')[0] || 'Cliente',
-      last_name: session.user.name?.split(' ').slice(1).join(' ') || 'Salão',
-    };
-
-    const customerResponse = await fetch('https://api.mercadopago.com/v1/customers', {
-      method: 'POST',
+    // PASSO 1: Buscar ou criar Customer no Mercado Pago
+    console.log("👤 Buscando/criando customer no MP...");
+    
+    // Primeiro, tentar buscar customer existente
+    let customerId: string;
+    const searchResponse = await fetch(`https://api.mercadopago.com/v1/customers/search?email=${encodeURIComponent(session.user.email)}`, {
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
       },
-      body: JSON.stringify(customerBody),
     });
 
-    const customerData = await customerResponse.json();
+    const searchData = await searchResponse.json();
 
-    if (!customerResponse.ok) {
-      console.error("❌ Erro ao criar customer:", customerData);
-      throw new Error(customerData.message || 'Erro ao criar customer');
+    if (searchData.results && searchData.results.length > 0) {
+      // Customer já existe
+      customerId = searchData.results[0].id;
+      console.log("✅ Customer encontrado:", customerId);
+    } else {
+      // Criar novo customer
+      const customerBody = {
+        email: session.user.email,
+        first_name: session.user.name?.split(' ')[0] || 'Cliente',
+        last_name: session.user.name?.split(' ').slice(1).join(' ') || 'Salão',
+      };
+
+      const customerResponse = await fetch('https://api.mercadopago.com/v1/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify(customerBody),
+      });
+
+      const customerData = await customerResponse.json();
+
+      if (!customerResponse.ok) {
+        console.error("❌ Erro ao criar customer:", customerData);
+        throw new Error(customerData.message || 'Erro ao criar customer');
+      }
+
+      customerId = customerData.id;
+      console.log("✅ Customer criado:", customerId);
     }
-
-    console.log("✅ Customer criado:", customerData.id);
 
     // PASSO 2: Salvar cartão do customer
     console.log("💳 Salvando cartão...");
@@ -105,7 +124,7 @@ export async function POST(request: NextRequest) {
       token: cardToken,
     };
 
-    const cardResponse = await fetch(`https://api.mercadopago.com/v1/customers/${customerData.id}/cards`, {
+    const cardResponse = await fetch(`https://api.mercadopago.com/v1/customers/${customerId}/cards`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
