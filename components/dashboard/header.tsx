@@ -38,20 +38,20 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   return (
     <header className="glass-card border-b border-border/50 sticky top-0 z-30">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 md:py-4">
+        <div className="flex items-center justify-between gap-3">
           {/* Título da página */}
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-foreground">
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="text-lg md:text-xl font-semibold text-foreground truncate">
               {user?.role === "ADMIN" ? "Painel Administrativo" : "Meu Painel"}
             </h1>
           </div>
 
           {/* User Menu Railway Style */}
-          <div className="flex items-center gap-4">
-            <div className="hidden md:block text-right">
-              <p className="text-sm font-medium text-foreground">{user?.name}</p>
-              <p className="text-xs text-muted-foreground">{user?.email}</p>
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            <div className="hidden lg:block text-right">
+              <p className="text-sm font-medium text-foreground truncate max-w-[200px]">{user?.name}</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[200px]">{user?.email}</p>
             </div>
             
             <div className="flex gap-2">

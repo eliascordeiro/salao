@@ -89,7 +89,7 @@ export default function NewServicePage() {
       <DashboardHeader user={{ name: "Admin", email: "admin@example.com", role: "ADMIN" }} />
       
       <GridBackground>
-        <main className="container mx-auto px-4 py-12 max-w-2xl">
+        <main className="container mx-auto px-4 py-8 md:py-12 max-w-2xl">
           {/* Header */}
           <div className="mb-8 animate-fadeInUp">
             <Link href="/dashboard/servicos">
@@ -98,19 +98,19 @@ export default function NewServicePage() {
                 Voltar
               </GradientButton>
             </Link>
-            <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-2 md:gap-3">
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Novo Serviço
             </h1>
-            <p className="text-foreground-muted">
+            <p className="text-foreground-muted text-sm sm:text-base">
               Adicione um novo serviço ao seu salão
             </p>
           </div>
 
           {/* Formulário */}
-          <GlassCard glow="primary" className="p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <GlassCard glow="primary" className="p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                 <Package className="h-6 w-6 text-primary" />
                 Informações do Serviço
               </h2>
@@ -146,7 +146,7 @@ export default function NewServicePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="duration" className="text-foreground">Duração (minutos) *</Label>
                   <Input

@@ -189,7 +189,7 @@ export default async function DashboardPage() {
           )}
 
         {/* Cards de Estatísticas Railway */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "200ms" }}>
           {/* Card Agendamentos */}
           <GlassCard hover glow={bookingsGrowth >= 0 ? "success" : "primary"} className="group">
             <div className="flex items-start justify-between mb-4">
@@ -301,7 +301,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Stats & Ações Rápidas Railway */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "400ms" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-12 animate-fadeInUp" style={{ animationDelay: "400ms" }}>
           {/* Visão Geral Modernizada */}
           <GlassCard hover className="relative overflow-hidden group">
             {/* Gradient Background */}
@@ -350,7 +350,7 @@ export default async function DashboardPage() {
           </GlassCard>
 
           {/* Ações Rápidas Modernizadas */}
-          <GlassCard hover className="md:col-span-2 relative overflow-hidden group">
+          <GlassCard hover className="lg:col-span-2 relative overflow-hidden group">
             {/* Animated Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-primary/5 to-success/5 opacity-50 group-hover:opacity-100 transition-opacity" />
             
@@ -363,7 +363,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <Link
                   href="/dashboard/caixa"
                   className="glass-card p-4 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all text-center group/item relative overflow-hidden"

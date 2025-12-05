@@ -322,23 +322,23 @@ export default function CaixaPage() {
     <>
       <div className="space-y-6">
       {/* Header com Botão Voltar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
           <Button
             variant="ghost"
             onClick={() => router.push("/dashboard")}
-            className="hover:bg-primary/10"
+            className="hover:bg-primary/10 flex-shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Frente de Caixa</h1>
-            <p className="text-muted-foreground mt-1">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold">Frente de Caixa</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               Gerencie o fechamento de contas dos clientes
             </p>
           </div>
         </div>
-        <Button onClick={() => loadAllData(selectedDate)} variant="outline" size="sm">
+        <Button onClick={() => loadAllData(selectedDate)} variant="outline" size="sm" className="w-full sm:w-auto">
           <Loader2 className="h-4 w-4 mr-2" />
           Atualizar
         </Button>
@@ -401,10 +401,10 @@ export default function CaixaPage() {
       </GlassCard>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
+      <div className="flex gap-2 border-b border-border overflow-x-auto">
         <button
           onClick={() => setActiveTab("pending")}
-          className={`px-6 py-3 font-medium transition-colors relative ${
+          className={`px-4 sm:px-6 py-3 font-medium transition-colors relative whitespace-nowrap ${
             activeTab === "pending"
               ? "text-primary"
               : "text-muted-foreground hover:text-foreground"
@@ -425,7 +425,7 @@ export default function CaixaPage() {
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`px-6 py-3 font-medium transition-colors relative ${
+          className={`px-4 sm:px-6 py-3 font-medium transition-colors relative whitespace-nowrap ${
             activeTab === "history"
               ? "text-primary"
               : "text-muted-foreground hover:text-foreground"
@@ -447,7 +447,7 @@ export default function CaixaPage() {
       </div>
 
       {/* Stats do Dia */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <GlassCard className="p-5">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -513,20 +513,20 @@ export default function CaixaPage() {
 
       {/* Lista de Clientes */}
       <GlassCard className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
             {activeTab === "pending" ? (
               <AlertCircle className="h-5 w-5 text-yellow-500" />
             ) : (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             )}
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-lg sm:text-xl font-semibold">
               {activeTab === "pending" ? "Aguardando Pagamento" : "Pagamentos Realizados"}
             </h2>
           </div>
 
           {/* Campo de Busca */}
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"

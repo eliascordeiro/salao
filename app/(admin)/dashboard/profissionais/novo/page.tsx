@@ -127,7 +127,7 @@ export default function NewStaffPage() {
       <DashboardHeader user={session.user} />
 
       <GridBackground>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           {/* Header */}
           <div className="mb-8 animate-fadeInUp">
             <Link href="/dashboard/profissionais">
@@ -136,22 +136,22 @@ export default function NewStaffPage() {
                 Voltar para Profissionais
               </GradientButton>
             </Link>
-            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 md:gap-3">
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Novo Profissional
             </h1>
-            <p className="text-foreground-muted mt-2">
+            <p className="text-foreground-muted mt-2 text-sm sm:text-base">
               Adicione um novo profissional à sua equipe
             </p>
           </div>
 
           {/* Abas de Navegação */}
-          <div className="mb-6">
-            <div className="flex gap-2 p-1 glass-card bg-background-alt/30 rounded-lg inline-flex">
+          <div className="mb-6 overflow-x-auto">
+            <div className="flex gap-2 p-1 glass-card bg-background-alt/30 rounded-lg inline-flex min-w-full sm:min-w-0">
               <button
                 type="button"
                 onClick={() => setActiveTab("info")}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
                   activeTab === "info"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
@@ -163,7 +163,7 @@ export default function NewStaffPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab("schedule")}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all whitespace-nowrap ${
                   activeTab === "schedule"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
@@ -177,9 +177,9 @@ export default function NewStaffPage() {
 
           {/* Aba Informações */}
           {activeTab === "info" && (
-          <GlassCard glow="success" className="max-w-2xl p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <GlassCard glow="success" className="max-w-2xl p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                 <UserPlus className="h-6 w-6 text-primary" />
                 Informações do Profissional
               </h2>
