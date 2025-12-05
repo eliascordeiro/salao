@@ -37,6 +37,12 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
   }, []);
 
   const generatePix = async () => {
+    // Cancelar polling anterior se existir
+    if (pollingControllerRef.current) {
+      console.log('🛑 Cancelando polling anterior');
+      pollingControllerRef.current.cancelled = true;
+    }
+    
     setLoading(true);
     try {
       const response = await fetch("/api/subscriptions/create-pix", {
@@ -53,8 +59,9 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
       const data = await response.json();
       setPixData(data);
 
-      // Iniciar polling para verificar pagamento
+      // Iniciar novo polling
       pollingControllerRef.current = { cancelled: false };
+      console.log('🟢 Iniciando polling para pagamento:', data.paymentId);
       startPaymentPolling(data.paymentId);
     } catch (error: any) {
       alert(error.message || "Erro ao gerar PIX");
@@ -73,6 +80,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
         return;
       }
       attempts++;
+      console.log(`🔍 Verificando pagamento ${paymentId} - tentativa ${attempts}`);
       try {
         const response = await fetch(`/api/subscriptions/check-payment?paymentId=${paymentId}`);
         if (!response.ok) throw new Error('Erro ao verificar pagamento');
@@ -80,6 +88,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
         // Se aprovado, chama onSuccess e para o polling
         if (data.status === "approved") {
+          console.log('✅ Pagamento aprovado! Finalizando polling.');
           pollingControllerRef.current = null;
           onSuccess();
           return;
@@ -87,6 +96,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
         // Se rejeitado, notifica e para
         if (data.status === "rejected") {
+          console.log('❌ Pagamento rejeitado! Finalizando polling.');
           pollingControllerRef.current = null;
           alert('Pagamento rejeitado. Por favor, tente novamente.');
           onCancel();
@@ -95,11 +105,12 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
         // Recomenda intervalo enviado pelo servidor (ajusta para pending PIX)
         const nextMs = data.nextCheckInMs ?? (attempts < 10 ? 3000 : 10000);
+        console.log(`⏱️ Próxima verificação em ${nextMs}ms (status: ${data.status})`);
 
         // Limite de tentativas razoável (ex.: 30 minutos)
         const maxAttempts = Math.max(10, Math.floor((30 * 60 * 1000) / nextMs));
         if (attempts >= maxAttempts) {
-          console.log('Polling PIX: limite de tentativas atingido, parando verificações');
+          console.log('⏰ Polling PIX: limite de tentativas atingido, parando verificações');
           return;
         }
 
