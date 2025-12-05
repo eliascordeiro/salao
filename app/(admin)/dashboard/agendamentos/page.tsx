@@ -789,20 +789,20 @@ export default function AgendamentosPage() {
       <GridBackground>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-                <Sparkles className="h-8 w-8 text-primary" />
+          <div className="mb-8 animate-fadeInUp flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 md:gap-3">
+                <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                 Agendamentos
               </h1>
-              <p className="text-foreground-muted mt-2">
+              <p className="text-sm sm:text-base text-foreground-muted mt-1 md:mt-2">
                 Gerencie todos os agendamentos do salão
               </p>
             </div>
             <GradientButton
               variant="primary"
               onClick={handleOpenCreate}
-              className="px-4 py-2 gap-2"
+              className="w-full sm:w-auto px-4 py-2 gap-2 min-h-[44px]"
             >
               <Plus className="h-5 w-5" />
               Novo Agendamento
@@ -811,18 +811,18 @@ export default function AgendamentosPage() {
 
           {/* Filtros */}
           <GlassCard className="mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 md:gap-4 mb-4">
               <GradientButton
                 variant="primary"
                 onClick={() => setShowFilters(!showFilters)}
-                className="px-4 py-2"
+                className="px-4 py-2 min-h-[44px] w-full sm:w-auto"
               >
                 <Filter className="h-4 w-4" />
                 {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
               </GradientButton>
 
-              <div className="flex items-center gap-2 flex-1 max-w-md ml-4">
-                <Search className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-2 flex-1 max-w-full sm:max-w-md">
+                <Search className="h-4 w-4 text-primary flex-shrink-0" />
                 <Input
                   placeholder="Buscar por cliente, serviço ou profissional..."
                   value={filters.search}
@@ -1059,7 +1059,7 @@ export default function AgendamentosPage() {
                         <Button
                           variant="outline"
                           onClick={() => handleOpenEdit(booking)}
-                          className="w-full py-2 gap-2 border-primary/30 hover:bg-primary/10"
+                          className="w-full py-2 gap-2 border-primary/30 hover:bg-primary/10 min-h-[44px]"
                         >
                           <Edit2 className="h-4 w-4" />
                           Editar
@@ -1073,7 +1073,7 @@ export default function AgendamentosPage() {
                             onClick={() =>
                               handleStatusChange(booking.id, "CONFIRMED")
                             }
-                            className="w-full py-2"
+                            className="w-full py-2 min-h-[44px]"
                           >
                             <CheckCircle className="h-4 w-4" />
                             Confirmar
@@ -1083,7 +1083,7 @@ export default function AgendamentosPage() {
                             onClick={() =>
                               handleStatusChange(booking.id, "CANCELLED")
                             }
-                            className="w-full py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive"
+                            className="w-full py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive min-h-[44px]"
                           >
                             <XCircle className="h-4 w-4" />
                             Cancelar
@@ -1097,7 +1097,7 @@ export default function AgendamentosPage() {
                             onClick={() =>
                               handleStatusChange(booking.id, "COMPLETED")
                             }
-                            className="w-full py-2"
+                            className="w-full py-2 min-h-[44px]"
                           >
                             <CheckCircle className="h-4 w-4" />
                             Marcar Concluído
@@ -1107,7 +1107,7 @@ export default function AgendamentosPage() {
                             onClick={() =>
                               handleStatusChange(booking.id, "NO_SHOW")
                             }
-                            className="w-full py-2"
+                            className="w-full py-2 min-h-[44px]"
                           >
                             <XCircle className="h-4 w-4" />
                             Não Compareceu
@@ -1132,10 +1132,10 @@ export default function AgendamentosPage() {
 
       {/* Modal de Criar Agendamento */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="glass-card max-w-4xl max-h-[92vh] overflow-y-auto">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-              <Plus className="h-7 w-7 text-primary" />
+        <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[92vh] overflow-y-auto">
+          <DialogHeader className="pb-3 md:pb-4">
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
+              <Plus className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary" />
               Novo Agendamento
             </DialogTitle>
             <DialogDescription className="text-base mt-2">
@@ -1472,12 +1472,12 @@ export default function AgendamentosPage() {
             </div>
 
             {/* Botões */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowCreateModal(false)}
                 disabled={saving}
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <XIcon className="h-4 w-4 mr-2" />
                 Cancelar
@@ -1486,7 +1486,7 @@ export default function AgendamentosPage() {
                 variant="primary"
                 onClick={handleCreate}
                 disabled={saving}
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 {saving ? (
                   <>
@@ -1507,10 +1507,10 @@ export default function AgendamentosPage() {
 
       {/* Modal de Editar Agendamento */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="glass-card max-w-4xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader className="pb-6 border-b border-primary/10">
-            <DialogTitle className="text-3xl font-bold flex items-center gap-3">
-              <Edit2 className="h-8 w-8 text-primary" />
+        <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader className="pb-4 md:pb-6 border-b border-primary/10">
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
+              <Edit2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Editar Agendamento
             </DialogTitle>
             <DialogDescription className="text-base mt-3 text-muted-foreground">
@@ -1706,7 +1706,7 @@ export default function AgendamentosPage() {
             </div>
 
             {/* Botões */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -1714,7 +1714,7 @@ export default function AgendamentosPage() {
                   setEditingBooking(null);
                 }}
                 disabled={saving}
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <XIcon className="h-4 w-4 mr-2" />
                 Cancelar
@@ -1723,7 +1723,7 @@ export default function AgendamentosPage() {
                 variant="primary"
                 onClick={handleUpdate}
                 disabled={saving}
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 {saving ? (
                   <>
