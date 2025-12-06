@@ -776,20 +776,20 @@ export default function CaixaPage() {
 
       {/* Modal de Checkout */}
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Fechar Conta</DialogTitle>
-            <DialogDescription>
-              Finalize o pagamento do cliente {selectedClient?.client.name}
+        <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[92vh] sm:max-h-[90vh] flex flex-col p-4 sm:p-6">
+          <DialogHeader className="pb-3 sm:pb-4">
+            <DialogTitle className="text-xl sm:text-2xl">Fechar Conta</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
+              Finalize o pagamento do cliente <span className="font-semibold">{selectedClient?.client.name}</span>
             </DialogDescription>
           </DialogHeader>
 
           {selectedClient && (
-            <div className="space-y-6 py-4 overflow-y-auto flex-1">
+            <div className="space-y-4 sm:space-y-6 py-3 sm:py-4 overflow-y-auto flex-1">
               {/* Resumo de Serviços */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label>Serviços Prestados</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <Label className="text-sm sm:text-base font-semibold">Serviços Prestados</Label>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -800,16 +800,20 @@ export default function CaixaPage() {
                           new Set(selectedClient.bookings.map((b) => b.id))
                         )
                       }
+                      className="flex-1 sm:flex-initial min-h-[40px]"
                     >
-                      Todos
+                      <Check className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden xs:inline">Todos</span>
                     </Button>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedBookings(new Set())}
+                      className="flex-1 sm:flex-initial min-h-[40px]"
                     >
-                      Nenhum
+                      <X className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden xs:inline">Nenhum</span>
                     </Button>
                   </div>
                 </div>
@@ -817,7 +821,7 @@ export default function CaixaPage() {
                   {selectedClient.bookings.map((booking) => (
                     <div
                       key={booking.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-colors ${
+                      className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg border-2 transition-colors ${
                         selectedBookings.has(booking.id)
                           ? "bg-primary/10 border-primary/50"
                           : "bg-background-alt/50 border-transparent"
@@ -827,34 +831,35 @@ export default function CaixaPage() {
                         checked={selectedBookings.has(booking.id)}
                         onCheckedChange={() => toggleBookingSelection(booking.id)}
                         id={`booking-${booking.id}`}
+                        className="flex-shrink-0"
                       />
                       <label
                         htmlFor={`booking-${booking.id}`}
-                        className="flex-1 cursor-pointer"
+                        className="flex-1 cursor-pointer min-w-0"
                       >
-                        <p className="font-medium">{booking.service.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-medium text-sm sm:text-base truncate">{booking.service.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {booking.staff.name}
                         </p>
                       </label>
-                      <span className="font-medium">
+                      <span className="font-medium text-sm sm:text-base flex-shrink-0">
                         R$ {booking.price.toFixed(2)}
                       </span>
                       {selectedBookings.has(booking.id) && (
-                        <Check className="h-5 w-5 text-primary" />
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="text-sm text-muted-foreground text-center">
-                  {selectedBookings.size} de {selectedClient.bookings.length}{" "}
+                <div className="text-xs sm:text-sm text-muted-foreground text-center py-1 bg-muted/30 rounded">
+                  <span className="font-semibold">{selectedBookings.size}</span> de <span className="font-semibold">{selectedClient.bookings.length}</span>{" "}
                   serviço(s) selecionado(s)
                 </div>
               </div>
 
               {/* Desconto */}
               <div className="space-y-2">
-                <Label htmlFor="discount">Desconto (R$)</Label>
+                <Label htmlFor="discount" className="text-sm sm:text-base font-semibold">Desconto (R$)</Label>
                 <Input
                   id="discount"
                   type="number"
@@ -864,15 +869,19 @@ export default function CaixaPage() {
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
                   placeholder="0.00"
+                  className="h-11 text-base"
                 />
+                {discount > getSelectedSubtotal() && (
+                  <p className="text-xs text-destructive">Desconto não pode ser maior que o subtotal</p>
+                )}
               </div>
 
               {/* Método de Pagamento */}
               <div className="space-y-2">
-                <Label htmlFor="payment">Método de Pagamento</Label>
+                <Label htmlFor="payment" className="text-sm sm:text-base font-semibold">Método de Pagamento</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger id="payment">
-                    <SelectValue placeholder="Selecione..." />
+                  <SelectTrigger id="payment" className="h-11">
+                    <SelectValue placeholder="Selecione o método..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CASH">
@@ -904,39 +913,40 @@ export default function CaixaPage() {
               </div>
 
               {/* Totais */}
-              <div className="space-y-2 pt-4 border-t">
-                <div className="flex items-center justify-between text-sm">
+              <div className="space-y-2 pt-3 sm:pt-4 border-t-2 border-primary/20">
+                <div className="flex items-center justify-between text-sm sm:text-base">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>R$ {getSelectedSubtotal().toFixed(2)}</span>
+                  <span className="font-medium">R$ {getSelectedSubtotal().toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Desconto</span>
-                    <span className="text-red-500">- R$ {discount.toFixed(2)}</span>
+                    <span className="text-red-500 font-medium">- R$ {discount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between text-lg font-bold pt-2 border-t">
+                <div className="flex items-center justify-between text-lg sm:text-xl font-bold pt-2 border-t-2 border-primary/20">
                   <span>Total</span>
-                  <span className="text-primary">
+                  <span className="text-primary text-xl sm:text-2xl">
                     R$ {(getSelectedSubtotal() - discount).toFixed(2)}
                   </span>
                 </div>
               </div>
 
               {/* Botões */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
                 <Button
                   variant="outline"
                   onClick={() => setShowCheckoutModal(false)}
                   disabled={processing}
-                  className="flex-1"
+                  className="flex-1 min-h-[48px] text-base order-2 sm:order-1"
                 >
+                  <X className="h-4 w-4 mr-2" />
                   Cancelar
                 </Button>
                 <Button
                   onClick={handleCloseAccount}
                   disabled={processing || !paymentMethod || selectedBookings.size === 0}
-                  className="flex-1"
+                  className="flex-1 min-h-[48px] text-base order-1 sm:order-2"
                 >
                   {processing ? (
                     <>
@@ -946,7 +956,7 @@ export default function CaixaPage() {
                   ) : (
                     <>
                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Confirmar Pagamento
+                      Confirmar
                     </>
                   )}
                 </Button>
