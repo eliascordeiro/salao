@@ -576,18 +576,18 @@ export default function CaixaPage() {
                 {filteredClients.map((clientData: any) => (
               <GlassCard
                 key={clientData.sessionId || clientData.client.id}
-                className="p-5 hover:shadow-lg transition-shadow"
+                className="p-4 sm:p-5 hover:shadow-lg transition-shadow"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   {/* Info do Cliente */}
                   <div className="flex-1 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <Users className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold">{clientData.client.name}</h3>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{clientData.client.name}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {clientData.client.email}
                         </p>
                         {clientData.sessionId && (
@@ -599,20 +599,20 @@ export default function CaixaPage() {
                     </div>
 
                     {/* Lista de Serviços */}
-                    <div className="space-y-2 pl-13">
+                    <div className="space-y-2 pl-0 sm:pl-13">
                       {clientData.bookings.map((booking: Booking) => (
                         <div
                           key={booking.id}
-                          className="flex items-center justify-between text-sm"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm"
                         >
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{booking.service.name}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="font-medium">{booking.service.name}</span>
                             <Badge variant="outline" className="text-xs">
                               {booking.staff.name}
                             </Badge>
                           </div>
-                          <span className="font-medium">
+                          <span className="font-medium text-primary sm:text-foreground">
                             R$ {booking.price.toFixed(2)}
                           </span>
                         </div>
@@ -629,15 +629,16 @@ export default function CaixaPage() {
                   </div>
 
                   {/* Botão de Ação */}
-                  <div className="flex flex-col gap-2">
-                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                  <div className="flex flex-row lg:flex-col gap-2 w-full lg:w-auto">
+                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 whitespace-nowrap flex-shrink-0">
                       <AlertCircle className="h-4 w-4 mr-1" />
-                      Aguardando Pagamento
+                      <span className="hidden sm:inline">Aguardando Pagamento</span>
+                      <span className="sm:hidden">Aguardando</span>
                     </Badge>
                     <Button
                       onClick={() => handleOpenCheckout(clientData)}
                       size="sm"
-                      className="w-full"
+                      className="flex-1 lg:w-full min-h-[44px]"
                     >
                       <DollarSign className="h-4 w-4 mr-1" />
                       Receber
@@ -676,18 +677,18 @@ export default function CaixaPage() {
                 {filteredClients.map((clientData: any) => (
                 <GlassCard
                   key={clientData.sessionId}
-                  className="p-5"
+                  className="p-4 sm:p-5"
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     {/* Info do Cliente */}
                     <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                      <div className="flex items-start gap-3">
+                        <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
                           <CheckCircle2 className="h-5 w-5 text-green-500" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{clientData.client.name}</h3>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{clientData.client.name}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {clientData.client.email}
                           </p>
                           {clientData.sessionId && (
@@ -699,20 +700,20 @@ export default function CaixaPage() {
                       </div>
 
                       {/* Lista de Serviços */}
-                      <div className="space-y-2 pl-13">
+                      <div className="space-y-2 pl-0 sm:pl-13">
                         {clientData.bookings.map((booking: Booking) => (
                           <div
                             key={booking.id}
-                            className="flex items-center justify-between text-sm"
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm"
                           >
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{booking.service.name}</span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="font-medium">{booking.service.name}</span>
                               <Badge variant="outline" className="text-xs">
                                 {booking.staff.name}
                               </Badge>
                             </div>
-                            <span className="font-medium">
+                            <span className="font-medium text-green-500 sm:text-foreground">
                               R$ {booking.price.toFixed(2)}
                             </span>
                           </div>
@@ -745,13 +746,13 @@ export default function CaixaPage() {
                     </div>
 
                     {/* Badge e Info de Pagamento */}
-                    <div className="flex flex-col gap-2 items-end">
-                      <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
+                    <div className="flex flex-row lg:flex-col gap-2 lg:items-end w-full lg:w-auto">
+                      <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 whitespace-nowrap flex-shrink-0">
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Pago
                       </Badge>
                       {clientData.paymentMethod && (
-                        <div className="text-sm font-medium text-muted-foreground">
+                        <div className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
                           {clientData.paymentMethod === "CASH" && "💵 Dinheiro"}
                           {clientData.paymentMethod === "CARD" && "💳 Cartão"}
                           {clientData.paymentMethod === "PIX" && "📱 PIX"}
@@ -759,7 +760,7 @@ export default function CaixaPage() {
                         </div>
                       )}
                       {clientData.paidAt && (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-auto lg:ml-0">
                           {format(new Date(clientData.paidAt), "HH:mm", { locale: ptBR })}
                         </div>
                       )}
