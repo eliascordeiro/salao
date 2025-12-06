@@ -346,25 +346,19 @@ export default function CaixaPage() {
 
       {/* Navegação de Data */}
       <GlassCard className="p-4">
-        <div className="flex items-center justify-between gap-2 md:gap-4">
-          {/* Botão Anterior */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToPreviousDay}
-            className="flex-shrink-0 min-h-[44px]"
-          >
-            <ChevronLeft className="h-4 w-4 md:mr-1" />
-            <span className="hidden sm:inline">Anterior</span>
-          </Button>
-
-          {/* Data Atual */}
-          <div className="flex-1 text-center min-w-0">
-            <div className="flex items-center justify-center gap-2 md:gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Data Atual - Aparece primeiro em mobile */}
+          <div className="flex-1 text-center sm:order-2 min-w-0">
+            <div className="flex items-center justify-center gap-2">
               <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate">
+                {/* Formato completo para desktop */}
+                <p className="hidden md:block text-base md:text-lg font-bold text-foreground">
                   {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                </p>
+                {/* Formato abreviado para mobile/tablet */}
+                <p className="md:hidden text-sm sm:text-base font-bold text-foreground">
+                  {format(selectedDate, "EEE, dd/MM", { locale: ptBR })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {format(selectedDate, "yyyy")}
@@ -373,30 +367,46 @@ export default function CaixaPage() {
             </div>
           </div>
 
-          {/* Botão Próximo */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToNextDay}
-            className="flex-shrink-0 min-h-[44px]"
-            disabled={isToday(selectedDate)}
-          >
-            <span className="hidden sm:inline">Próximo</span>
-            <ChevronRight className="h-4 w-4 md:ml-1" />
-          </Button>
-
-          {/* Botão Hoje */}
-          {!isToday(selectedDate) && (
+          {/* Botões de navegação */}
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:order-1">
+            {/* Botão Anterior */}
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
-              onClick={goToToday}
-              className="flex-shrink-0 min-h-[44px]"
+              onClick={goToPreviousDay}
+              className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
             >
-              <Calendar className="h-4 w-4 mr-1" />
-              Hoje
+              <ChevronLeft className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Anterior</span>
             </Button>
-          )}
+          </div>
+
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:order-3">
+            {/* Botão Próximo */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextDay}
+              className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
+              disabled={isToday(selectedDate)}
+            >
+              <span className="hidden sm:inline">Próximo</span>
+              <ChevronRight className="h-4 w-4 sm:ml-1" />
+            </Button>
+
+            {/* Botão Hoje */}
+            {!isToday(selectedDate) && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={goToToday}
+                className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
+              >
+                <Calendar className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Hoje</span>
+              </Button>
+            )}
+          </div>
         </div>
       </GlassCard>
 
