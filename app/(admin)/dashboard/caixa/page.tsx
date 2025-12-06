@@ -346,24 +346,24 @@ export default function CaixaPage() {
 
       {/* Navegação de Data */}
       <GlassCard className="p-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-2 md:gap-4">
           {/* Botão Anterior */}
           <Button
             variant="outline"
             size="sm"
             onClick={goToPreviousDay}
-            className="flex-shrink-0"
+            className="flex-shrink-0 min-h-[44px]"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Anterior
+            <ChevronLeft className="h-4 w-4 md:mr-1" />
+            <span className="hidden sm:inline">Anterior</span>
           </Button>
 
           {/* Data Atual */}
-          <div className="flex-1 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <Calendar className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-lg font-bold text-foreground">
+          <div className="flex-1 text-center min-w-0">
+            <div className="flex items-center justify-center gap-2 md:gap-3">
+              <Calendar className="h-4 w-4 md:h-5 md:w-5 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm sm:text-base md:text-lg font-bold text-foreground truncate">
                   {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -378,11 +378,11 @@ export default function CaixaPage() {
             variant="outline"
             size="sm"
             onClick={goToNextDay}
-            className="flex-shrink-0"
+            className="flex-shrink-0 min-h-[44px]"
             disabled={isToday(selectedDate)}
           >
-            Próximo
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <span className="hidden sm:inline">Próximo</span>
+            <ChevronRight className="h-4 w-4 md:ml-1" />
           </Button>
 
           {/* Botão Hoje */}
@@ -391,7 +391,7 @@ export default function CaixaPage() {
               variant="default"
               size="sm"
               onClick={goToToday}
-              className="flex-shrink-0"
+              className="flex-shrink-0 min-h-[44px]"
             >
               <Calendar className="h-4 w-4 mr-1" />
               Hoje
