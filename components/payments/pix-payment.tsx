@@ -136,21 +136,21 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
   // Estado inicial: botão para gerar PIX
   if (!pixData && !loading) {
     return (
-      <Card className="p-8">
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
-            <QrCodeIcon className="h-8 w-8 text-primary" />
+      <Card className="p-4 sm:p-6 md:p-8">
+        <div className="text-center space-y-4 sm:space-y-6">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10">
+            <QrCodeIcon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           </div>
           
           <div>
-            <h3 className="text-xl font-semibold mb-2">Pagamento via PIX</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">Pagamento via PIX</h3>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Pague R$ {amount.toFixed(2)} via PIX de forma rápida e segura
             </p>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <p className="text-sm text-blue-700 dark:text-blue-300">
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300">
               <strong>Vantagens do PIX:</strong>
               <br />
               • Aprovação instantânea
@@ -161,17 +161,17 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
               onClick={onCancel}
               variant="outline"
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             >
               Voltar
             </Button>
             <Button
               onClick={generatePix}
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             >
               Gerar QR Code PIX
             </Button>
@@ -184,10 +184,10 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
   // Carregando
   if (loading) {
     return (
-      <Card className="p-8">
+      <Card className="p-6 sm:p-8">
         <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Gerando QR Code PIX...</p>
+          <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary mx-auto" />
+          <p className="text-sm sm:text-base text-muted-foreground">Gerando QR Code PIX...</p>
         </div>
       </Card>
     );
@@ -195,62 +195,65 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
 
   // Exibir QR Code
   return (
-    <Card className="p-8">
-      <div className="space-y-6">
+    <Card className="p-4 sm:p-6 md:p-8">
+      <div className="space-y-4 sm:space-y-6">
         <div className="text-center">
-          <h3 className="text-xl font-semibold mb-2">Escaneie o QR Code</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-lg sm:text-xl font-semibold mb-2">Escaneie o QR Code</h3>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Use o app do seu banco para pagar
           </p>
         </div>
 
         {/* QR Code */}
         <div className="flex justify-center">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
+          <div className="bg-white p-3 sm:p-4 rounded-lg shadow-lg max-w-full">
             <Image
               src={`data:image/png;base64,${pixData!.qrCodeBase64}`}
               alt="QR Code PIX"
               width={256}
               height={256}
-              className="w-64 h-64"
+              className="w-full h-auto max-w-[200px] sm:max-w-[256px] md:max-w-[280px] mx-auto"
             />
           </div>
         </div>
 
         {/* Valor */}
         <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-1">Valor a pagar</p>
-          <p className="text-3xl font-bold text-primary">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-1">Valor a pagar</p>
+          <p className="text-2xl sm:text-3xl font-bold text-primary">
             R$ {pixData!.amount.toFixed(2)}
           </p>
         </div>
 
         {/* Código Copia e Cola */}
         <div>
-          <label className="text-sm font-medium mb-2 block">
+          <label className="text-xs sm:text-sm font-medium mb-2 block">
             Ou copie o código PIX:
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={pixData!.qrCode}
               readOnly
-              className="flex-1 px-3 py-2 text-sm bg-muted border rounded-md font-mono overflow-hidden text-ellipsis"
+              className="flex-1 px-3 py-2 text-xs sm:text-sm bg-muted border rounded-md font-mono overflow-hidden text-ellipsis min-h-[44px]"
             />
             <Button
               onClick={copyPixCode}
               variant="outline"
               size="sm"
+              className="min-h-[44px] w-full sm:w-auto"
             >
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Copiado!
+                  <Check className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Copiado!</span>
+                  <span className="sm:hidden">✓</span>
                 </>
               ) : (
                 <>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copiar
+                  <Copy className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Copiar</span>
+                  <span className="sm:hidden">Copiar Código</span>
                 </>
               )}
             </Button>
@@ -258,7 +261,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
         </div>
 
         {/* Instruções */}
-        <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+        <div className="bg-muted/50 rounded-lg p-3 sm:p-4 space-y-2 text-xs sm:text-sm">
           <p className="font-semibold">Como pagar:</p>
           <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
             <li>Abra o app do seu banco</li>
@@ -269,9 +272,10 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
         </div>
 
         {/* Status */}
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Aguardando confirmação do pagamento...
+          <span className="hidden sm:inline">Aguardando confirmação do pagamento...</span>
+          <span className="sm:hidden">Aguardando pagamento...</span>
         </div>
 
         {/* Botão Cancelar */}
@@ -285,7 +289,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
             onCancel();
           }}
           variant="ghost"
-          className="w-full"
+          className="w-full min-h-[44px]"
         >
           Cancelar
         </Button>
