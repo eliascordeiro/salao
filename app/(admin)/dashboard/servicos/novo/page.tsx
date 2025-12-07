@@ -89,13 +89,14 @@ export default function NewServicePage() {
       <DashboardHeader user={{ name: "Admin", email: "admin@example.com", role: "ADMIN" }} />
       
       <GridBackground>
-        <main className="container mx-auto px-4 py-8 md:py-12 max-w-2xl">
+        <main className="container mx-auto px-4 py-6 sm:py-8 md:py-12 max-w-2xl">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp">
+          <div className="mb-6 sm:mb-8 animate-fadeInUp">
             <Link href="/dashboard/servicos">
-              <GradientButton variant="primary" className="mb-4 px-4 py-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
+              <GradientButton variant="primary" className="mb-4 px-3 sm:px-4 py-2 min-h-[44px] w-full sm:w-auto">
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden xs:inline">Voltar para Serviços</span>
+                <span className="xs:hidden">Voltar</span>
               </GradientButton>
             </Link>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 flex items-center gap-2 md:gap-3">
@@ -118,9 +119,9 @@ export default function NewServicePage() {
                 Preencha os dados do serviço
               </p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground">Nome do Serviço *</Label>
+                <Label htmlFor="name" className="text-foreground text-sm sm:text-base">Nome do Serviço *</Label>
                 <Input
                   id="name"
                   name="name"
@@ -129,26 +130,26 @@ export default function NewServicePage() {
                   placeholder="Ex: Corte Masculino"
                   required
                   disabled={isLoading}
-                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-foreground">Descrição</Label>
+                <Label htmlFor="description" className="text-foreground text-sm sm:text-base">Descrição</Label>
                 <textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Descreva o serviço..."
-                  className="flex min-h-[80px] w-full rounded-lg glass-card bg-background-alt/50 border-primary/20 px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-[80px] w-full rounded-lg glass-card bg-background-alt/50 border-primary/20 px-3 py-2 text-base text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isLoading}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="duration" className="text-foreground">Duração (minutos) *</Label>
+                  <Label htmlFor="duration" className="text-foreground text-sm sm:text-base">Duração (minutos) *</Label>
                   <Input
                     id="duration"
                     name="duration"
@@ -159,12 +160,12 @@ export default function NewServicePage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
-                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-foreground">Preço (R$) *</Label>
+                  <Label htmlFor="price" className="text-foreground text-sm sm:text-base">Preço (R$) *</Label>
                   <Input
                     id="price"
                     name="price"
@@ -176,13 +177,13 @@ export default function NewServicePage() {
                     placeholder="0.00"
                     required
                     disabled={isLoading}
-                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                    className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-foreground">Categoria</Label>
+                <Label htmlFor="category" className="text-foreground text-sm sm:text-base">Categoria</Label>
                 <Input
                   id="category"
                   name="category"
@@ -190,58 +191,61 @@ export default function NewServicePage() {
                   onChange={handleChange}
                   placeholder="Ex: Corte, Barba, Coloração"
                   disabled={isLoading}
-                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
               </div>
 
               {staff.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-foreground">Profissionais</Label>
-                  <p className="text-xs text-foreground-muted mb-2">
+                  <Label className="text-foreground text-sm sm:text-base font-semibold">Profissionais</Label>
+                  <p className="text-xs sm:text-sm text-foreground-muted mb-2">
                     Selecione os profissionais que prestam este serviço
                   </p>
-                  <div className="space-y-2 max-h-40 overflow-y-auto glass-card border-primary/20 rounded-lg p-3">
+                  <div className="space-y-2 max-h-48 overflow-y-auto glass-card border-primary/20 rounded-lg p-3 sm:p-4">
                     {staff.map((s) => (
                       <label
                         key={s.id}
-                        className="flex items-center gap-2 cursor-pointer hover:bg-primary/10 p-2 rounded transition-colors"
+                        className="flex items-center gap-2 sm:gap-3 cursor-pointer hover:bg-primary/10 p-2.5 sm:p-2 rounded transition-colors min-h-[44px]"
                       >
                         <input
                           type="checkbox"
                           checked={selectedStaff.includes(s.id)}
                           onChange={() => toggleStaff(s.id)}
-                          className="rounded border-primary/30 text-primary focus:ring-primary"
+                          className="h-5 w-5 sm:h-4 sm:w-4 rounded border-primary/30 text-primary focus:ring-primary flex-shrink-0"
                           disabled={isLoading}
                         />
-                        <span className="text-sm text-foreground">{s.name}</span>
-                        {s.specialty && (
-                          <span className="text-xs text-foreground-muted">- {s.specialty}</span>
-                        )}
+                        <span className="text-sm sm:text-base text-foreground flex-1 min-w-0">
+                          <span className="block truncate">{s.name}</span>
+                          {s.specialty && (
+                            <span className="text-xs sm:text-sm text-foreground-muted block truncate">({s.specialty})</span>
+                          )}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-3 pt-6">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <GradientButton
                   type="submit"
                   variant="accent"
                   disabled={isLoading}
-                  className="flex-1 py-3"
+                  className="flex-1 py-3 min-h-[48px] order-1"
                 >
-                  <Save className="h-4 w-4" />
-                  {isLoading ? "Salvando..." : "Salvar Serviço"}
+                  <Save className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden xs:inline">{isLoading ? "Salvando..." : "Salvar Serviço"}</span>
+                  <span className="xs:hidden">{isLoading ? "Salvando..." : "Salvar"}</span>
                 </GradientButton>
-                <Link href="/dashboard/servicos">
+                <Link href="/dashboard/servicos" className="order-2 flex-1">
                   <GradientButton 
                     type="button" 
                     variant="primary" 
                     disabled={isLoading}
-                    className="py-3"
+                    className="py-3 min-h-[48px] w-full"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                    Cancelar
+                    <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Cancelar</span>
                   </GradientButton>
                 </Link>
               </div>
