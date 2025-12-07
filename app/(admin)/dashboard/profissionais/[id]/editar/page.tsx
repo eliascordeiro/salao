@@ -283,22 +283,23 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
       <DashboardHeader user={session.user} />
 
       <GridBackground>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp">
+          <div className="mb-6 sm:mb-8 animate-fadeInUp">
             <Link href="/dashboard/profissionais">
-              <GradientButton variant="primary" className="mb-4 px-4 py-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar para Profissionais
+              <GradientButton variant="primary" className="mb-4 px-3 sm:px-4 py-2 min-h-[44px] w-full sm:w-auto">
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden xs:inline">Voltar para Profissionais</span>
+                <span className="xs:hidden">Voltar</span>
               </GradientButton>
             </Link>
-            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 md:gap-3">
+              <UserPlus className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Editar Profissional
             </h1>
-            <p className="text-foreground-muted mt-2">
-            Atualize as informações do profissional
-          </p>
+            <p className="text-sm sm:text-base text-foreground-muted mt-1 sm:mt-2">
+              Atualize as informações do profissional
+            </p>
           </div>
 
           {/* Abas de Navegação */}
@@ -345,17 +346,17 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
           {/* Conteúdo das Abas */}
           {activeTab === "info" && (
-            <GlassCard glow="accent" className="max-w-2xl p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <UserPlus className="h-6 w-6 text-accent" />
+            <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
                 Informações do Profissional
               </h2>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Nome */}
               <div>
-                <Label htmlFor="name" className="text-foreground">
+                <Label htmlFor="name" className="text-foreground text-sm sm:text-base">
                   Nome Completo <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -365,16 +366,16 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: João Silva"
-                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.name ? "border-destructive" : ""}`}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base ${errors.name ? "border-destructive" : ""}`}
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive mt-1">{errors.name}</p>
+                  <p className="text-xs sm:text-sm text-destructive mt-1">{errors.name}</p>
                 )}
               </div>
 
               {/* Email */}
               <div>
-                <Label htmlFor="email" className="text-foreground">
+                <Label htmlFor="email" className="text-foreground text-sm sm:text-base">
                   Email <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -385,16 +386,16 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     setFormData({ ...formData, email: e.target.value })
                   }
                   placeholder="joao@exemplo.com"
-                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.email ? "border-destructive" : ""}`}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base ${errors.email ? "border-destructive" : ""}`}
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive mt-1">{errors.email}</p>
+                  <p className="text-xs sm:text-sm text-destructive mt-1">{errors.email}</p>
                 )}
               </div>
 
               {/* Telefone */}
               <div>
-                <Label htmlFor="phone" className="text-foreground">Telefone</Label>
+                <Label htmlFor="phone" className="text-foreground text-sm sm:text-base">Telefone</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -403,13 +404,13 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="(11) 98765-4321"
-                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
               </div>
 
               {/* Especialidade */}
               <div>
-                <Label htmlFor="specialty" className="text-foreground">Especialidade</Label>
+                <Label htmlFor="specialty" className="text-foreground text-sm sm:text-base">Especialidade</Label>
                 <Input
                   id="specialty"
                   value={formData.specialty}
@@ -417,12 +418,12 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     setFormData({ ...formData, specialty: e.target.value })
                   }
                   placeholder="Ex: Barbeiro, Cabeleireiro, Manicure"
-                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
               </div>
 
               {/* Status */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-h-[44px]">
                 <input
                   type="checkbox"
                   id="active"
@@ -430,35 +431,36 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   onChange={(e) =>
                     setFormData({ ...formData, active: e.target.checked })
                   }
-                  className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
+                  className="h-5 w-5 sm:h-4 sm:w-4 text-primary focus:ring-primary border-primary/30 rounded flex-shrink-0"
                 />
-                <Label htmlFor="active" className="cursor-pointer text-foreground">
+                <Label htmlFor="active" className="cursor-pointer text-foreground text-sm sm:text-base">
                   Profissional ativo (disponível para agendamentos)
                 </Label>
               </div>
 
               {/* Botões */}
-              <div className="flex gap-3 pt-6">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <GradientButton
                   type="button"
                   variant="primary"
                   onClick={() => router.push("/dashboard/profissionais")}
                   disabled={loading}
-                  className="flex-1 py-3"
+                  className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Cancelar
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Cancelar</span>
                 </GradientButton>
-                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3">
+                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3 min-h-[48px] order-1 sm:order-2">
                   {loading ? (
                     <>
-                      <Sparkles className="h-4 w-4 animate-spin" />
+                      <Sparkles className="h-4 w-4 animate-spin sm:mr-2" />
                       Salvando...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
-                      Salvar Alterações
+                      <Save className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden xs:inline">Salvar Alterações</span>
+                      <span className="xs:hidden">Salvar</span>
                     </>
                   )}
                 </GradientButton>
@@ -469,29 +471,29 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
           {/* Aba Horários */}
           {activeTab === "schedule" && (
-            <GlassCard glow="primary" className="max-w-4xl p-8">
+            <GlassCard glow="primary" className="max-w-4xl p-4 sm:p-6 md:p-8">
               {showSuccess && (
-                <div className="mb-4 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2 text-green-300">
-                  <Sparkles className="h-5 w-5" />
+                <div className="mb-4 p-3 sm:p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2 text-green-300 text-sm sm:text-base">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Horários salvos com sucesso!</span>
                 </div>
               )}
 
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                  <Clock className="h-6 w-6 text-primary" />
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   Configuração de Horários
                 </h2>
-                <p className="text-foreground-muted mt-1">
+                <p className="text-foreground-muted mt-1 text-xs sm:text-sm md:text-base">
                   Configure os dias e horários de trabalho
                 </p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Dias de Trabalho */}
                 <div>
-                  <Label className="text-foreground mb-3 block">Dias de Trabalho</Label>
-                  <div className="grid grid-cols-7 gap-2">
+                  <Label className="text-foreground text-sm sm:text-base font-semibold mb-2 sm:mb-3 block">Dias de Trabalho</Label>
+                  <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
                     {[
                       { value: "0", label: "Dom" },
                       { value: "1", label: "Seg" },
@@ -505,7 +507,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                         key={day.value}
                         type="button"
                         onClick={() => toggleWorkDay(day.value)}
-                        className={`p-3 rounded-lg font-medium transition-all ${
+                        className={`p-2.5 sm:p-3 rounded-lg font-medium transition-all text-sm sm:text-base min-h-[44px] ${
                           scheduleData.workDays.includes(day.value)
                             ? "bg-gradient-primary text-white shadow-lg"
                             : "glass-card bg-background-alt/30 text-foreground-muted hover:bg-background-alt/50"
@@ -518,9 +520,9 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 </div>
 
                 {/* Horário de Trabalho */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label htmlFor="workStart" className="text-foreground">Início do Expediente</Label>
+                    <Label htmlFor="workStart" className="text-foreground text-sm sm:text-base">Início do Expediente</Label>
                     <Input
                       id="workStart"
                       type="time"
@@ -528,11 +530,11 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       onChange={(e) =>
                         setScheduleData({ ...scheduleData, workStart: e.target.value })
                       }
-                      className="glass-card bg-background-alt/50 border-primary/20"
+                      className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="workEnd" className="text-foreground">Término do Expediente</Label>
+                    <Label htmlFor="workEnd" className="text-foreground text-sm sm:text-base">Término do Expediente</Label>
                     <Input
                       id="workEnd"
                       type="time"
@@ -540,15 +542,15 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       onChange={(e) =>
                         setScheduleData({ ...scheduleData, workEnd: e.target.value })
                       }
-                      className="glass-card bg-background-alt/50 border-primary/20"
+                      className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                     />
                   </div>
                 </div>
 
                 {/* Horário de Almoço */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label htmlFor="lunchStart" className="text-foreground">Início do Almoço</Label>
+                    <Label htmlFor="lunchStart" className="text-foreground text-sm sm:text-base">Início do Almoço</Label>
                     <Input
                       id="lunchStart"
                       type="time"
@@ -556,11 +558,11 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       onChange={(e) =>
                         setScheduleData({ ...scheduleData, lunchStart: e.target.value })
                       }
-                      className="glass-card bg-background-alt/50 border-primary/20"
+                      className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lunchEnd" className="text-foreground">Término do Almoço</Label>
+                    <Label htmlFor="lunchEnd" className="text-foreground text-sm sm:text-base">Término do Almoço</Label>
                     <Input
                       id="lunchEnd"
                       type="time"
@@ -568,21 +570,21 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       onChange={(e) =>
                         setScheduleData({ ...scheduleData, lunchEnd: e.target.value })
                       }
-                      className="glass-card bg-background-alt/50 border-primary/20"
+                      className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                     />
                   </div>
                 </div>
 
                 {/* Intervalo de Slots */}
                 <div>
-                  <Label htmlFor="slotInterval" className="text-foreground">Intervalo entre Slots</Label>
+                  <Label htmlFor="slotInterval" className="text-foreground text-sm sm:text-base">Intervalo entre Slots</Label>
                   <select
                     id="slotInterval"
                     value={scheduleData.slotInterval}
                     onChange={(e) =>
                       setScheduleData({ ...scheduleData, slotInterval: parseInt(e.target.value) })
                     }
-                    className="w-full glass-card bg-background-alt/50 border-primary/20 text-foreground px-3 py-2 rounded-lg"
+                    className="w-full glass-card bg-background-alt/50 border-primary/20 text-foreground px-3 py-2 rounded-lg min-h-[44px] text-base"
                   >
                     <option value={5}>5 minutos</option>
                     <option value={10}>10 minutos</option>
@@ -598,16 +600,16 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   variant="primary"
                   onClick={handleScheduleSave}
                   disabled={loading}
-                  className="w-full py-3"
+                  className="w-full py-3 min-h-[48px]"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
                       Salvando...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
+                      <Save className="h-4 w-4 sm:mr-2" />
                       Salvar Horários
                     </>
                   )}
@@ -618,13 +620,13 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
           {/* Aba Bloqueios */}
           {activeTab === "blocks" && (
-            <GlassCard glow="accent" className="max-w-4xl p-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                  <Calendar className="h-6 w-6 text-accent" />
+            <GlassCard glow="accent" className="max-w-4xl p-4 sm:p-6 md:p-8">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
                   Gestão de Bloqueios
                 </h2>
-                <p className="text-foreground-muted mt-1">
+                <p className="text-foreground-muted mt-1 text-xs sm:text-sm md:text-base">
                   Crie bloqueios para datas/horários indisponíveis
                 </p>
               </div>
@@ -635,129 +637,130 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   type="button"
                   variant="accent"
                   onClick={() => setShowBlockForm(true)}
-                  className="mb-6 w-full py-3"
+                  className="mb-4 sm:mb-6 w-full py-3 min-h-[48px]"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-4 w-4 sm:mr-2" />
                   Novo Bloqueio
                 </GradientButton>
               )}
 
               {/* Formulário de Bloqueio */}
               {showBlockForm && (
-                <form onSubmit={handleBlockSubmit} className="mb-6 p-6 glass-card bg-background-alt/30 rounded-lg space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-foreground">Novo Bloqueio</h3>
+                <form onSubmit={handleBlockSubmit} className="mb-4 sm:mb-6 p-4 sm:p-6 glass-card bg-background-alt/30 rounded-lg space-y-3 sm:space-y-4">
+                  <div className="flex justify-between items-center mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Novo Bloqueio</h3>
                     <button
                       type="button"
                       onClick={() => setShowBlockForm(false)}
-                      className="text-foreground-muted hover:text-foreground"
+                      className="text-foreground-muted hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <Label htmlFor="blockDate" className="text-foreground">Data</Label>
+                      <Label htmlFor="blockDate" className="text-foreground text-sm sm:text-base">Data</Label>
                       <Input
                         id="blockDate"
                         type="date"
                         value={blockForm.date}
                         onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
                         required
-                        className="glass-card bg-background-alt/50 border-primary/20"
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="blockStartTime" className="text-foreground">Horário Início</Label>
+                      <Label htmlFor="blockStartTime" className="text-foreground text-sm sm:text-base">Horário Início</Label>
                       <Input
                         id="blockStartTime"
                         type="time"
                         value={blockForm.startTime}
                         onChange={(e) => setBlockForm({ ...blockForm, startTime: e.target.value })}
                         required
-                        className="glass-card bg-background-alt/50 border-primary/20"
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="blockEndTime" className="text-foreground">Horário Término</Label>
+                      <Label htmlFor="blockEndTime" className="text-foreground text-sm sm:text-base">Horário Término</Label>
                       <Input
                         id="blockEndTime"
                         type="time"
                         value={blockForm.endTime}
                         onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })}
                         required
-                        className="glass-card bg-background-alt/50 border-primary/20"
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="blockReason" className="text-foreground">Motivo</Label>
+                      <Label htmlFor="blockReason" className="text-foreground text-sm sm:text-base">Motivo</Label>
                       <Input
                         id="blockReason"
                         value={blockForm.reason}
                         onChange={(e) => setBlockForm({ ...blockForm, reason: e.target.value })}
                         placeholder="Reunião, compromisso..."
-                        className="glass-card bg-background-alt/50 border-primary/20"
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-h-[44px]">
                     <input
                       type="checkbox"
                       id="recurring"
                       checked={blockForm.recurring}
                       onChange={(e) => setBlockForm({ ...blockForm, recurring: e.target.checked })}
-                      className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
+                      className="h-5 w-5 sm:h-4 sm:w-4 text-primary focus:ring-primary border-primary/30 rounded flex-shrink-0"
                     />
-                    <Label htmlFor="recurring" className="cursor-pointer text-foreground">
+                    <Label htmlFor="recurring" className="cursor-pointer text-foreground text-sm sm:text-base">
                       Repetir semanalmente
                     </Label>
                   </div>
 
-                  <div className="flex gap-2">
-                    <GradientButton type="button" variant="primary" onClick={() => setShowBlockForm(false)} className="flex-1 py-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <GradientButton type="button" variant="primary" onClick={() => setShowBlockForm(false)} className="flex-1 py-2 min-h-[48px] order-2 sm:order-1">
                       Cancelar
                     </GradientButton>
-                    <GradientButton type="submit" variant="accent" className="flex-1 py-2">
-                      <Plus className="h-4 w-4" />
-                      Criar Bloqueio
+                    <GradientButton type="submit" variant="accent" className="flex-1 py-2 min-h-[48px] order-1 sm:order-2">
+                      <Plus className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden xs:inline">Criar Bloqueio</span>
+                      <span className="xs:hidden">Criar</span>
                     </GradientButton>
                   </div>
                 </form>
               )}
 
               {/* Lista de Bloqueios */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {blocks.length === 0 ? (
-                  <div className="text-center py-12 text-foreground-muted">
-                    <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhum bloqueio configurado</p>
+                  <div className="text-center py-8 sm:py-12 text-foreground-muted">
+                    <Calendar className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 opacity-50" />
+                    <p className="text-sm sm:text-base">Nenhum bloqueio configurado</p>
                   </div>
                 ) : (
                   blocks.map((block) => (
-                    <div key={block.id} className="glass-card bg-background-alt/30 p-4 rounded-lg flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="h-4 w-4 text-accent" />
-                          <span className="font-medium text-foreground">{block.date}</span>
-                          <span className="text-foreground-muted">•</span>
-                          <Clock className="h-4 w-4 text-primary" />
-                          <span className="text-foreground">{block.startTime} - {block.endTime}</span>
+                    <div key={block.id} className="glass-card bg-background-alt/30 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
+                          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent flex-shrink-0" />
+                          <span className="font-medium text-foreground text-sm sm:text-base">{block.date}</span>
+                          <span className="text-foreground-muted text-sm">•</span>
+                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                          <span className="text-foreground text-xs sm:text-sm">{block.startTime} - {block.endTime}</span>
                           {block.recurring && (
-                            <span className="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full">
+                            <span className="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full whitespace-nowrap">
                               Recorrente
                             </span>
                           )}
                         </div>
                         {block.reason && (
-                          <p className="text-sm text-foreground-muted ml-6">{block.reason}</p>
+                          <p className="text-xs sm:text-sm text-foreground-muted sm:ml-6 truncate">{block.reason}</p>
                         )}
                       </div>
                       <button
                         type="button"
                         onClick={() => handleBlockDelete(block.id)}
-                        className="p-2 hover:bg-destructive/20 rounded-lg transition-colors text-destructive"
+                        className="p-2 hover:bg-destructive/20 rounded-lg transition-colors text-destructive self-end sm:self-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

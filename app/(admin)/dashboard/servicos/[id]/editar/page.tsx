@@ -191,36 +191,37 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
       <DashboardHeader user={session.user} />
 
       <GridBackground>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
           {/* Header */}
-          <div className="mb-8 animate-fadeInUp">
+          <div className="mb-6 sm:mb-8 animate-fadeInUp">
             <Link href="/dashboard/servicos">
-              <GradientButton variant="primary" className="mb-4 px-4 py-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar para Serviços
+              <GradientButton variant="primary" className="mb-4 px-3 sm:px-4 py-2 min-h-[44px] w-full sm:w-auto">
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden xs:inline">Voltar para Serviços</span>
+                <span className="xs:hidden">Voltar</span>
               </GradientButton>
             </Link>
-            <h1 className="text-4xl font-bold text-foreground flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 md:gap-3">
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Editar Serviço
             </h1>
-            <p className="text-foreground-muted mt-2">
+            <p className="text-sm sm:text-base text-foreground-muted mt-1 sm:mt-2">
               Atualize as informações do serviço
             </p>
           </div>
 
           {/* Formulário */}
-          <GlassCard glow="accent" className="max-w-2xl p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Package className="h-6 w-6 text-accent" />
+          <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
                 Informações do Serviço
               </h2>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               {/* Nome */}
               <div>
-                <Label htmlFor="name" className="text-foreground">
+                <Label htmlFor="name" className="text-foreground text-sm sm:text-base">
                   Nome do Serviço <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -230,16 +231,16 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: Corte de Cabelo Masculino"
-                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.name ? "border-destructive" : ""}`}
+                  className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base ${errors.name ? "border-destructive" : ""}`}
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive mt-1">{errors.name}</p>
+                  <p className="text-xs sm:text-sm text-destructive mt-1">{errors.name}</p>
                 )}
               </div>
 
               {/* Descrição */}
               <div>
-                <Label htmlFor="description" className="text-foreground">Descrição</Label>
+                <Label htmlFor="description" className="text-foreground text-sm sm:text-base">Descrição</Label>
                 <textarea
                   id="description"
                   value={formData.description}
@@ -248,14 +249,14 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   }
                   placeholder="Descreva o serviço..."
                   rows={4}
-                  className="w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg glass-card bg-background-alt/50 border-primary/20 text-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               {/* Duração e Preço */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="duration" className="text-foreground">
+                  <Label htmlFor="duration" className="text-foreground text-sm sm:text-base">
                     Duração (minutos) <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -267,17 +268,17 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                       setFormData({ ...formData, duration: e.target.value })
                     }
                     placeholder="Ex: 30"
-                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.duration ? "border-destructive" : ""}`}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base ${errors.duration ? "border-destructive" : ""}`}
                   />
                   {errors.duration && (
-                    <p className="text-sm text-destructive mt-1">
+                    <p className="text-xs sm:text-sm text-destructive mt-1">
                       {errors.duration}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="price" className="text-foreground">
+                  <Label htmlFor="price" className="text-foreground text-sm sm:text-base">
                     Preço (R$) <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -290,17 +291,17 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                       setFormData({ ...formData, price: e.target.value })
                     }
                     placeholder="Ex: 45.00"
-                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground ${errors.price ? "border-destructive" : ""}`}
+                    className={`glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base ${errors.price ? "border-destructive" : ""}`}
                   />
                   {errors.price && (
-                    <p className="text-sm text-destructive mt-1">{errors.price}</p>
+                    <p className="text-xs sm:text-sm text-destructive mt-1">{errors.price}</p>
                   )}
                 </div>
               </div>
 
               {/* Categoria */}
               <div>
-                <Label htmlFor="category" className="text-foreground">Categoria</Label>
+                <Label htmlFor="category" className="text-foreground text-sm sm:text-base">Categoria</Label>
                 <Input
                   id="category"
                   value={formData.category}
@@ -308,12 +309,12 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                     setFormData({ ...formData, category: e.target.value })
                   }
                   placeholder="Ex: Cabelo, Barba, Tratamentos"
-                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
+                  className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
               </div>
 
               {/* Status */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-h-[44px]">
                 <input
                   type="checkbox"
                   id="isActive"
@@ -321,41 +322,41 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
                   onChange={(e) =>
                     setFormData({ ...formData, isActive: e.target.checked })
                   }
-                  className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
+                  className="h-5 w-5 sm:h-4 sm:w-4 text-primary focus:ring-primary border-primary/30 rounded flex-shrink-0"
                 />
-                <Label htmlFor="isActive" className="cursor-pointer text-foreground">
+                <Label htmlFor="isActive" className="cursor-pointer text-foreground text-sm sm:text-base">
                   Serviço ativo (visível para clientes)
                 </Label>
               </div>
 
               {/* Profissionais */}
               <div>
-                <Label className="text-foreground">Profissionais que prestam este serviço</Label>
-                <p className="text-sm text-foreground-muted mb-2">
+                <Label className="text-foreground text-sm sm:text-base font-semibold">Profissionais que prestam este serviço</Label>
+                <p className="text-xs sm:text-sm text-foreground-muted mb-2">
                   Selecione os profissionais que podem executar este serviço
                 </p>
                 {allStaff.length === 0 ? (
-                  <p className="text-sm text-foreground-muted italic">
+                  <p className="text-xs sm:text-sm text-foreground-muted italic">
                     Nenhum profissional encontrado para este salão
                   </p>
                 ) : (
-                  <div className="glass-card border-primary/20 rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
+                  <div className="glass-card border-primary/20 rounded-lg p-3 sm:p-4 space-y-2 max-h-64 overflow-y-auto">
                     {allStaff.map((staff) => (
-                      <div key={staff.id} className="flex items-center hover:bg-primary/10 p-2 rounded transition-colors">
+                      <div key={staff.id} className="flex items-center hover:bg-primary/10 p-2 rounded transition-colors min-h-[44px]">
                         <input
                           type="checkbox"
                           id={`staff-${staff.id}`}
                           checked={formData.staffIds.includes(staff.id)}
                           onChange={() => handleStaffToggle(staff.id)}
-                          className="h-4 w-4 text-primary focus:ring-primary border-primary/30 rounded"
+                          className="h-5 w-5 sm:h-4 sm:w-4 text-primary focus:ring-primary border-primary/30 rounded flex-shrink-0"
                         />
                         <label
                           htmlFor={`staff-${staff.id}`}
-                          className="ml-2 text-sm cursor-pointer text-foreground"
+                          className="ml-2 sm:ml-3 text-sm sm:text-base cursor-pointer text-foreground flex-1 min-w-0"
                         >
-                          {staff.name}
+                          <span className="truncate block">{staff.name}</span>
                           {staff.specialty && (
-                            <span className="text-foreground-muted ml-1">
+                            <span className="text-xs sm:text-sm text-foreground-muted block truncate">
                               ({staff.specialty})
                             </span>
                           )}
@@ -367,27 +368,28 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Botões */}
-              <div className="flex gap-3 pt-6">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
                 <GradientButton
                   type="button"
                   variant="primary"
                   onClick={() => router.push("/dashboard/servicos")}
                   disabled={loading}
-                  className="flex-1 py-3"
+                  className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
                 >
-                  <ArrowLeft className="h-4 w-4" />
-                  Cancelar
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Cancelar</span>
                 </GradientButton>
-                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3">
+                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3 min-h-[48px] order-1 sm:order-2">
                   {loading ? (
                     <>
-                      <Sparkles className="h-4 w-4 animate-spin" />
+                      <Sparkles className="h-4 w-4 animate-spin sm:mr-2" />
                       Salvando...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
-                      Salvar Alterações
+                      <Save className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden xs:inline">Salvar Alterações</span>
+                      <span className="xs:hidden">Salvar</span>
                     </>
                   )}
                 </GradientButton>
