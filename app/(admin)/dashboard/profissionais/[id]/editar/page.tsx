@@ -303,43 +303,43 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           </div>
 
           {/* Abas de Navegação */}
-          <div className="mb-6">
-            <div className="flex gap-2 p-1 glass-card bg-background-alt/30 rounded-lg inline-flex">
+          <div className="mb-6 overflow-x-auto">
+            <div className="flex gap-2 p-1 glass-card bg-background-alt/30 rounded-lg inline-flex min-w-full sm:min-w-0">
               <button
                 type="button"
                 onClick={() => setActiveTab("info")}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`flex-1 sm:flex-initial px-3 sm:px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
                   activeTab === "info"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
                 }`}
               >
-                <UserPlus className="h-4 w-4 inline mr-2" />
-                Informações
+                <Info className="h-4 w-4 inline mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">Informações</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("schedule")}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`flex-1 sm:flex-initial px-3 sm:px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
                   activeTab === "schedule"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
                 }`}
               >
-                <Clock className="h-4 w-4 inline mr-2" />
-                Horários
+                <Clock className="h-4 w-4 inline mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">Horários</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("blocks")}
-                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                className={`flex-1 sm:flex-initial px-3 sm:px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
                   activeTab === "blocks"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
                 }`}
               >
-                <Calendar className="h-4 w-4 inline mr-2" />
-                Bloqueios
+                <Calendar className="h-4 w-4 inline mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">Bloqueios</span>
               </button>
             </div>
           </div>
