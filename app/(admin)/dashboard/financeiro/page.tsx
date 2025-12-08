@@ -136,27 +136,28 @@ export default function FinanceiroPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 Análise Financeira
               </h1>
-              <p className="text-foreground-muted">
+              <p className="text-sm sm:text-base text-foreground-muted">
                 Relatórios avançados de receita, despesas e lucro
               </p>
             </div>
 
           {/* Seletor de Período */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             {PERIODS.map((p) => (
               <Button
                 key={p.value}
                 variant={period === p.value ? "default" : "outline"}
                 size="sm"
                 onClick={() => setPeriod(p.value)}
+                className="flex-1 sm:flex-initial min-w-[90px] min-h-[40px]"
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                {p.label}
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm">{p.label}</span>
               </Button>
             ))}
           </div>
@@ -165,38 +166,38 @@ export default function FinanceiroPage() {
 
       {/* Alerta de Receita Pendente */}
       {pendingRevenue && pendingRevenue.sessionCount > 0 && (
-        <GlassCard className="p-6 mb-8 border-l-4 border-yellow-500">
-          <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="h-6 w-6 text-yellow-500" />
+        <GlassCard className="p-4 sm:p-6 mb-8 border-l-4 border-yellow-500">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-1">
+            <div className="flex-1 w-full">
+              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
                 Receita Pendente
               </h3>
-              <p className="text-sm text-foreground-muted mb-3">
+              <p className="text-xs sm:text-sm text-foreground-muted mb-3">
                 Você tem agendamentos completados aguardando pagamento no caixa
               </p>
-              <div className="flex items-end gap-6 mb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6 mb-4">
                 <div>
-                  <p className="text-sm text-foreground-muted">Valor Total</p>
-                  <p className="text-3xl font-bold text-yellow-500">
+                  <p className="text-xs sm:text-sm text-foreground-muted">Valor Total</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-yellow-500">
                     R$ {pendingRevenue.totalPending.toFixed(2)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-foreground-muted">Sessões Abertas</p>
-                  <p className="text-2xl font-semibold text-foreground">
+                  <p className="text-xs sm:text-sm text-foreground-muted">Sessões Abertas</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-foreground">
                     {pendingRevenue.sessionCount}
                   </p>
                 </div>
               </div>
               <Button
                 onClick={() => router.push("/dashboard/caixa")}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white w-full sm:w-auto min-h-[44px]"
               >
                 <DollarSign className="h-4 w-4 mr-2" />
-                Ir para o Caixa
+                <span className="text-sm sm:text-base">Ir para o Caixa</span>
               </Button>
             </div>
           </div>
@@ -204,122 +205,123 @@ export default function FinanceiroPage() {
       )}
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         {/* Receita Total */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-foreground-muted mb-1">Receita Total</p>
-              <p className="text-2xl font-bold text-green-500">
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Receita Total</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-500">
                 R$ {summary.totalRevenue.toFixed(2)}
               </p>
               {trends.revenue !== 0 && (
                 <div className="flex items-center gap-1 mt-2">
                   {trends.revenue > 0 ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-500" />
+                    <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                   ) : (
-                    <ArrowDownRight className="h-4 w-4 text-red-500" />
+                    <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
                   )}
-                  <span className={`text-sm ${trends.revenue > 0 ? "text-green-500" : "text-red-500"}`}>
+                  <span className={`text-xs sm:text-sm ${trends.revenue > 0 ? "text-green-500" : "text-red-500"}`}>
                     {Math.abs(trends.revenue).toFixed(1)}%
                   </span>
                 </div>
               )}
             </div>
-            <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-              <TrendingUp className="h-6 w-6 text-green-500" />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
             </div>
           </div>
         </GlassCard>
 
         {/* Despesas Totais */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-foreground-muted mb-1">Despesas Totais</p>
-              <p className="text-2xl font-bold text-red-500">
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Despesas Totais</p>
+              <p className="text-xl sm:text-2xl font-bold text-red-500">
                 R$ {summary.totalExpenses.toFixed(2)}
               </p>
-              <p className="text-xs text-foreground-muted mt-2">
+              <p className="text-[10px] sm:text-xs text-foreground-muted mt-2">
                 Média mensal: R$ {summary.avgMonthlyExpenses.toFixed(2)}
               </p>
             </div>
-            <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
-              <TrendingDown className="h-6 w-6 text-red-500" />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+              <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
             </div>
           </div>
         </GlassCard>
 
         {/* Lucro Líquido */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-foreground-muted mb-1">Lucro Líquido</p>
-              <p className={`text-2xl font-bold ${summary.netProfit >= 0 ? "text-green-500" : "text-red-500"}`}>
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Lucro Líquido</p>
+              <p className={`text-xl sm:text-2xl font-bold ${summary.netProfit >= 0 ? "text-green-500" : "text-red-500"}`}>
                 R$ {summary.netProfit.toFixed(2)}
               </p>
               {trends.profit !== 0 && (
                 <div className="flex items-center gap-1 mt-2">
                   {trends.profit > 0 ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-500" />
+                    <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                   ) : (
-                    <ArrowDownRight className="h-4 w-4 text-red-500" />
+                    <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
                   )}
-                  <span className={`text-sm ${trends.profit > 0 ? "text-green-500" : "text-red-500"}`}>
+                  <span className={`text-xs sm:text-sm ${trends.profit > 0 ? "text-green-500" : "text-red-500"}`}>
                     {Math.abs(trends.profit).toFixed(1)}%
                   </span>
                 </div>
               )}
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <DollarSign className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
           </div>
         </GlassCard>
 
         {/* Margem de Lucro */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-foreground-muted mb-1">Margem de Lucro</p>
-              <p className="text-2xl font-bold text-primary">
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Margem de Lucro</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">
                 {summary.profitMargin.toFixed(1)}%
               </p>
               <Badge 
                 variant={summary.profitMargin >= 20 ? "default" : "secondary"}
-                className="mt-2"
+                className="mt-2 text-[10px] sm:text-xs"
               >
                 {summary.profitMargin >= 20 ? "Excelente" : summary.profitMargin >= 10 ? "Bom" : "Atenção"}
               </Badge>
             </div>
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <BarChart3 className="h-6 w-6 text-primary" />
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
           </div>
         </GlassCard>
       </div>
 
       {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
         {/* Evolução Mensal */}
-        <GlassCard className="p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Evolução Mensal
+        <GlassCard className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span className="text-sm sm:text-base">Evolução Mensal</span>
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyEvolution}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'rgba(0, 0, 0, 0.8)', 
                   border: 'none',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  fontSize: '12px'
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ fontSize: '12px' }} />
               <Line 
                 type="monotone" 
                 dataKey="revenue" 
@@ -346,10 +348,10 @@ export default function FinanceiroPage() {
         </GlassCard>
 
         {/* Despesas por Categoria */}
-        <GlassCard className="p-6">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <PieChartIcon className="h-5 w-5 text-primary" />
-            Despesas por Categoria
+        <GlassCard className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+            <PieChartIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span className="text-sm sm:text-base">Despesas por Categoria</span>
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -358,7 +360,7 @@ export default function FinanceiroPage() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={(entry: any) => `${entry.name}: ${((entry.value / summary.totalExpenses) * 100).toFixed(1)}%`}
+                label={(entry: any) => `${((entry.value / summary.totalExpenses) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
@@ -371,7 +373,8 @@ export default function FinanceiroPage() {
                 contentStyle={{ 
                   backgroundColor: 'rgba(0, 0, 0, 0.8)', 
                   border: 'none',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  fontSize: '12px'
                 }}
                 formatter={(value: number) => `R$ ${value.toFixed(2)}`}
               />
@@ -381,21 +384,21 @@ export default function FinanceiroPage() {
       </div>
 
       {/* Tabela de Top Categorias */}
-      <GlassCard className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Top Categorias de Despesa</h3>
+      <GlassCard className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold mb-4">Top Categorias de Despesa</h3>
         <div className="space-y-3">
           {expensesByCategory.map((item: any, index: number) => {
             const percentage = (item.total / summary.totalExpenses) * 100;
             return (
-              <div key={item.category} className="flex items-center gap-4">
+              <div key={item.category} className="flex items-center gap-2 sm:gap-4">
                 <div 
-                  className="h-10 w-10 rounded-lg flex items-center justify-center font-bold"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center font-bold text-sm sm:text-base flex-shrink-0"
                   style={{ backgroundColor: COLORS[index % COLORS.length] + "20", color: COLORS[index % COLORS.length] }}
                 >
                   {index + 1}
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium">{CATEGORY_LABELS[item.category] || item.category}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{CATEGORY_LABELS[item.category] || item.category}</p>
                   <div className="w-full bg-background-alt/50 rounded-full h-2 mt-1">
                     <div 
                       className="h-2 rounded-full transition-all"
@@ -406,9 +409,9 @@ export default function FinanceiroPage() {
                     />
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">R$ {item.total.toFixed(2)}</p>
-                  <p className="text-xs text-foreground-muted">{percentage.toFixed(1)}%</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-bold text-sm sm:text-base">R$ {item.total.toFixed(2)}</p>
+                  <p className="text-[10px] sm:text-xs text-foreground-muted">{percentage.toFixed(1)}%</p>
                 </div>
               </div>
             );
