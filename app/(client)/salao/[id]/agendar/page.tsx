@@ -1153,9 +1153,8 @@ export default function AgendarSalaoPage() {
                   onClick={prevStep} 
                   className="flex-1 glass-card hover:bg-background-alt min-h-[48px] order-2 sm:order-1"
                 >
-                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden xs:inline">Voltar</span>
-                  <span className="xs:hidden">Voltar</span>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar
                 </Button>
                 <GradientButton
                   variant="success"
@@ -1165,13 +1164,13 @@ export default function AgendarSalaoPage() {
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       <span className="hidden xs:inline">Confirmando...</span>
-                      <span className="xs:hidden">Confirmar</span>
+                      <span className="xs:hidden">Aguarde...</span>
                     </>
                   ) : (
                     <>
-                      <Check className="h-4 w-4 sm:mr-2 group-hover:scale-110 transition-transform" />
+                      <Check className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
                       <span className="hidden xs:inline">Confirmar Agendamento</span>
                       <span className="xs:hidden">Confirmar</span>
                     </>
