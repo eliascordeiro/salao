@@ -31,6 +31,8 @@ model User {
   managedUsers    User[]           @relation("UserOwner")
   supportTickets  SupportTicket[]
   ticketMessages  TicketMessage[]
+  platformTickets PlatformTicket[]
+  platformTicketMessages PlatformTicketMessage[]
   
   @@index([ownerId])
   @@index([roleType])
@@ -77,6 +79,7 @@ model Salon {
   staff        Staff[]
   subscription Subscription?
   expenses     Expense[]  // Despesas do salão
+  platformTickets PlatformTicket[]  // Tickets de suporte da plataforma
 }
 
 model Staff {
@@ -356,6 +359,69 @@ model TicketMessage {
   // Relação
   ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   user      User?         @relation(fields: [userId], references: [id])
+  
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// SISTEMA DE SUPORTE DA PLATAFORMA
+// Chamados dos proprietários para o desenvolvedor
+// ==========================================
+
+model PlatformTicket {
+  id          String                   @id @default(cuid())
+  ticketNumber Int                     @unique @default(autoincrement())
+  
+  // Proprietário que abriu o chamado
+  userId      String
+  salonId     String                   // Salão relacionado ao chamado
+  
+  // Dados do ticket
+  subject     String
+  category    String                   // "BUG", "FEATURE_REQUEST", "QUESTION", "INTEGRATION", "BILLING", "OTHER"
+  description String
+  status      String                   @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
+  priority    String                   @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
+  
+  // Metadata
+  assignedTo  String?                  // ID do desenvolvedor/suporte
+  resolvedAt  DateTime?
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  
+  // Relações
+  user        User                     @relation(fields: [userId], references: [id])
+  salon       Salon                    @relation(fields: [salonId], references: [id])
+  messages    PlatformTicketMessage[]
+  
+  @@index([userId])
+  @@index([salonId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model PlatformTicketMessage {
+  id        String         @id @default(cuid())
+  ticketId  String
+  
+  // Remetente
+  userId    String
+  name      String         // Nome de quem enviou
+  isSupport Boolean        @default(false) // Se é resposta do suporte da plataforma
+  
+  // Conteúdo
+  message   String
+  
+  // Anexos (opcional para futuro)
+  attachments String[]     @default([])
+  
+  createdAt DateTime       @default(now())
+  
+  // Relação
+  ticket    PlatformTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id])
   
   @@index([ticketId])
   @@index([createdAt])
