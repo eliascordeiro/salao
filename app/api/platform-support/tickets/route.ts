@@ -9,10 +9,22 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    // Buscar usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -22,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     // Construir filtros
     const where: any = {
-      userId: session.user.id, // Apenas tickets do usuário logado
+      userId: user.id, // Apenas tickets do usuário logado
     };
     
     if (status && status !== "ALL") {
@@ -83,10 +95,22 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    // Buscar usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -102,7 +126,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter salão do usuário
-    const salon = await getSalonByUserId(session.user.id);
+    const salon = await getSalonByUserId(user.id);
     
     if (!salon) {
       return NextResponse.json(
@@ -114,7 +138,7 @@ export async function POST(request: NextRequest) {
     // Criar ticket
     const ticket = await prisma.platformTicket.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         salonId: salon.id,
         subject,
         category,

@@ -116,10 +116,25 @@ export default function SuportePlataformaPage() {
   const fetchTickets = async () => {
     try {
       const response = await fetch("/api/platform-support/tickets");
+      
+      if (!response.ok) {
+        console.error("Erro na resposta:", response.status);
+        setTickets([]);
+        return;
+      }
+      
       const data = await response.json();
-      setTickets(data);
+      
+      // Verificar se data é um array
+      if (Array.isArray(data)) {
+        setTickets(data);
+      } else {
+        console.error("Resposta inválida:", data);
+        setTickets([]);
+      }
     } catch (error) {
       console.error("Erro ao carregar tickets:", error);
+      setTickets([]);
     } finally {
       setLoading(false);
     }

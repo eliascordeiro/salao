@@ -11,10 +11,22 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    // Buscar usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -60,7 +72,7 @@ export async function GET(
     }
 
     // Verificar se o usuário tem permissão para ver este ticket
-    if (ticket.userId !== session.user.id) {
+    if (ticket.userId !== user.id) {
       return NextResponse.json(
         { error: "Sem permissão para ver este ticket" },
         { status: 403 }
@@ -85,10 +97,22 @@ export async function PATCH(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    // Buscar usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -108,7 +132,7 @@ export async function PATCH(
     }
 
     // Verificar permissão
-    if (ticket.userId !== session.user.id) {
+    if (ticket.userId !== user.id) {
       return NextResponse.json(
         { error: "Sem permissão para alterar este ticket" },
         { status: 403 }

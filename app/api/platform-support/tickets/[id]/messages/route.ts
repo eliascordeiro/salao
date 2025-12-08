@@ -11,10 +11,22 @@ export async function POST(
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Não autenticado" },
         { status: 401 }
+      );
+    }
+
+    // Buscar usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -41,7 +53,7 @@ export async function POST(
       );
     }
 
-    if (ticket.userId !== session.user.id) {
+    if (ticket.userId !== user.id) {
       return NextResponse.json(
         { error: "Sem permissão para responder este ticket" },
         { status: 403 }
@@ -52,7 +64,7 @@ export async function POST(
     const ticketMessage = await prisma.platformTicketMessage.create({
       data: {
         ticketId: id,
-        userId: session.user.id,
+        userId: user.id,
         name: session.user.name || "Usuário",
         message,
         isSupport: false, // Proprietário não é suporte
