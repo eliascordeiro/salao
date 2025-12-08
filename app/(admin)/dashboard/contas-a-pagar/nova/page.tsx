@@ -229,23 +229,23 @@ export default function NovaExpensePage() {
           </div>
 
           {/* Botões */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
               disabled={loading}
-              className="flex-1"
+              className="flex-1 min-h-[44px]"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 gap-2"
+              className="flex-1 gap-3 min-h-[44px]"
             >
-              <Save className="h-4 w-4" />
-              {loading ? "Salvando..." : "Salvar Despesa"}
+              <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-sm sm:text-base">{loading ? "Salvando..." : "Salvar Despesa"}</span>
             </Button>
           </div>
         </form>
