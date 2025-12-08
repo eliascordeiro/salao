@@ -1,4 +1,4 @@
-import { UserCog, CreditCard, Settings, Headset } from "lucide-react"
+import { UserCog, Settings, Headset } from "lucide-react"
 import { MenuModule } from "../types"
 
 /**
@@ -21,20 +21,11 @@ export const adminModule: MenuModule = {
       group: "admin",
     },
     {
-      id: "subscription",
-      label: "Assinatura",
-      icon: CreditCard,
-      href: "/dashboard/assinatura",
-      ownerOnly: true,
-      order: 2,
-      group: "admin",
-    },
-    {
       id: "platform-support",
       label: "Suporte da Plataforma",
       icon: Headset,
       href: "/dashboard/suporte-plataforma",
-      order: 3,
+      order: 2,
       group: "admin",
     },
     {
@@ -43,7 +34,7 @@ export const adminModule: MenuModule = {
       icon: Settings,
       href: "/dashboard/configuracoes",
       permission: "settings.view",
-      order: 4,
+      order: 3,
       group: "admin",
     },
   ],
