@@ -84,6 +84,33 @@ interface DailyData {
   clients: Client[];
 }
 
+// Funções auxiliares para formatação de moeda
+function formatCurrencyInput(value: string): string {
+  // Remove tudo que não é número
+  const numbers = value.replace(/\D/g, '');
+  
+  if (!numbers) return '';
+  
+  // Converte para número com 2 casas decimais
+  const amount = parseInt(numbers) / 100;
+  
+  // Formata no padrão brasileiro
+  return amount.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function parseCurrencyInput(formatted: string): number {
+  if (!formatted) return 0;
+  
+  // Remove pontos (separador de milhar) e substitui vírgula por ponto
+  const cleaned = formatted.replace(/\./g, '').replace(',', '.');
+  const value = parseFloat(cleaned);
+  
+  return isNaN(value) ? 0 : value;
+}
+
 export default function CaixaPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -96,6 +123,7 @@ export default function CaixaPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [discountDisplay, setDiscountDisplay] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [processing, setProcessing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -175,6 +203,7 @@ export default function CaixaPage() {
   const handleOpenCheckout = (client: Client) => {
     setSelectedClient(client);
     setDiscount(0);
+    setDiscountDisplay('');
     setPaymentMethod("");
     // Inicializa todos os bookings como selecionados (default "sim")
     setSelectedBookings(new Set(client.bookings.map(b => b.id)));
@@ -860,19 +889,30 @@ export default function CaixaPage() {
               {/* Desconto */}
               <div className="space-y-2">
                 <Label htmlFor="discount" className="text-sm sm:text-base font-semibold">Desconto (R$)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  min="0"
-                  max={getSelectedSubtotal()}
-                  step="0.01"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value))}
-                  placeholder="0.00"
-                  className="h-11 text-base"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                    R$
+                  </span>
+                  <Input
+                    id="discount"
+                    type="text"
+                    inputMode="decimal"
+                    value={discountDisplay}
+                    onChange={(e) => {
+                      const formatted = formatCurrencyInput(e.target.value);
+                      setDiscountDisplay(formatted);
+                      const numericValue = parseCurrencyInput(formatted);
+                      setDiscount(numericValue);
+                    }}
+                    placeholder="0,00"
+                    className="h-11 text-base pl-10"
+                  />
+                </div>
                 {discount > getSelectedSubtotal() && (
-                  <p className="text-xs text-destructive">Desconto não pode ser maior que o subtotal</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Desconto não pode ser maior que o subtotal
+                  </p>
                 )}
               </div>
 
