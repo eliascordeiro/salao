@@ -107,6 +107,21 @@ export async function POST(request: Request) {
       )
     }
 
+    // Calcular slotInterval inteligente baseado nos serviços
+    let finalSlotInterval = slotInterval || 15; // Padrão mínimo de 15 minutos
+    
+    // Se o profissional presta apenas UM serviço, usar a duração desse serviço como intervalo
+    if (!slotInterval && serviceIds.length === 1) {
+      const service = await prisma.service.findUnique({
+        where: { id: serviceIds[0] },
+        select: { duration: true }
+      });
+      if (service) {
+        finalSlotInterval = service.duration;
+        console.log(`🎯 [POST /api/staff] Intervalo calculado automaticamente: ${finalSlotInterval} min (baseado no serviço único)`);
+      }
+    }
+
     const staff = await prisma.staff.create({
       data: {
         name,
@@ -120,7 +135,7 @@ export async function POST(request: Request) {
         workEnd: workEnd || null,
         lunchStart: lunchStart || null,
         lunchEnd: lunchEnd || null,
-        slotInterval: slotInterval || 5,
+        slotInterval: finalSlotInterval,
         services: {
           create: serviceIds.map((serviceId: string) => ({
             serviceId,

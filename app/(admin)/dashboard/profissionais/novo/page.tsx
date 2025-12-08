@@ -32,7 +32,7 @@ export default function NewStaffPage() {
     workEnd: "18:00",
     lunchStart: "12:00",
     lunchEnd: "13:00",
-    slotInterval: 5,
+    slotInterval: 15,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});

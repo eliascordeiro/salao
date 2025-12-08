@@ -180,7 +180,7 @@ export async function PATCH(
         workEnd: workEnd || null,
         lunchStart: lunchStart && lunchStart.trim() !== "" ? lunchStart : null,
         lunchEnd: lunchEnd && lunchEnd.trim() !== "" ? lunchEnd : null,
-        slotInterval: slotInterval || 5,
+        slotInterval: slotInterval || 15,
       },
       include: {
         salon: true,

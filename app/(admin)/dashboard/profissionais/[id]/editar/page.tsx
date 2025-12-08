@@ -116,10 +116,10 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
         setScheduleData({
           workDays: staff.workDays ? staff.workDays.split(",") : [],
           workStart: staff.workStart || "",
-          workEnd: staff.workEnd || "",
-          lunchStart: staff.lunchStart || "",
-          lunchEnd: staff.lunchEnd || "",
-          slotInterval: staff.slotInterval || 5,
+          workEnd: staff.workEnd || '',
+          lunchStart: staff.lunchStart || '',
+          lunchEnd: staff.lunchEnd || '',
+          slotInterval: staff.slotInterval || 15,
         });
 
         // Buscar bloqueios

@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
  * @param workEnd Horário de término (ex: "18:00")
  * @param lunchStart Horário de início do almoço (opcional, ex: "12:00")
  * @param lunchEnd Horário de término do almoço (opcional, ex: "13:00")
- * @param slotInterval Intervalo em minutos entre slots (padrão: 5)
+ * @param slotInterval Intervalo em minutos entre slots (padrão: 15)
  * @returns Array de horários no formato "HH:MM"
  */
 function generateTimeSlots(
@@ -18,7 +18,7 @@ function generateTimeSlots(
   workEnd: string,
   lunchStart: string | null,
   lunchEnd: string | null,
-  slotInterval: number = 5
+  slotInterval: number = 15
 ): string[] {
   const slots: string[] = [];
   
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
       staff.workEnd,
       staff.lunchStart,
       staff.lunchEnd,
-      staff.slotInterval || 5 // Fallback para 5 se for null/undefined
+      staff.slotInterval || 15 // Fallback para 15 se for null/undefined
     );
 
     console.log('  Slots gerados:', allTimeSlots.length);

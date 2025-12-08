@@ -55,7 +55,7 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
     workEnd: "18:00",
     lunchStart: "",
     lunchEnd: "",
-    slotInterval: "5",
+    slotInterval: "15",
   });
 
   const [blockForm, setBlockForm] = useState({
@@ -88,7 +88,7 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
         workEnd: data.workEnd || "18:00",
         lunchStart: data.lunchStart || "",
         lunchEnd: data.lunchEnd || "",
-        slotInterval: String(data.slotInterval || 5),
+        slotInterval: String(data.slotInterval || 15),
       });
 
       await fetchBlocks();
@@ -173,8 +173,8 @@ export default function StaffSchedulePage({ params }: { params: { id: string } }
     }
 
     const interval = parseInt(formData.slotInterval);
-    if (isNaN(interval) || interval < 5 || interval > 60) {
-      newErrors.slotInterval = "Intervalo deve ser entre 5 e 60 minutos";
+    if (isNaN(interval) || interval < 15 || interval > 60) {
+      newErrors.slotInterval = "Intervalo deve ser entre 15 e 60 minutos";
     }
 
     if (Object.keys(newErrors).length > 0) {
