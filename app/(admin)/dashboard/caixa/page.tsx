@@ -23,6 +23,9 @@ import {
   ChevronRight,
   Search,
   Check,
+  Sun,
+  Moon,
+  RefreshCw,
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DashboardHeader } from "@/components/dashboard/header";
+import { useTheme } from "@/contexts/theme-context";
 import {
   Dialog,
   DialogContent,
@@ -114,6 +117,7 @@ function parseCurrencyInput(formatted: string): number {
 export default function CaixaPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
@@ -350,13 +354,15 @@ export default function CaixaPage() {
   return (
     <>
       <div className="space-y-6">
-      {/* Header com Botão Voltar */}
+      {/* Header com Controles */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button
             variant="ghost"
+            size="icon"
             onClick={() => router.push("/dashboard")}
             className="hover:bg-primary/10 flex-shrink-0"
+            title="Voltar ao Dashboard"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -367,10 +373,34 @@ export default function CaixaPage() {
             </p>
           </div>
         </div>
-        <Button onClick={() => loadAllData(selectedDate)} variant="outline" size="sm" className="w-full sm:w-auto">
-          <Loader2 className="h-4 w-4 mr-2" />
-          Atualizar
-        </Button>
+        
+        {/* Controles do Header */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button 
+            onClick={() => loadAllData(selectedDate)} 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 sm:flex-initial"
+            title="Atualizar dados"
+          >
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden xs:inline">Atualizar</span>
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="hover:bg-primary/10 flex-shrink-0"
+            title={resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+          >
+            {resolvedTheme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Navegação de Data */}
