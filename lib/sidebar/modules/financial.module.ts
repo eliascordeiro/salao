@@ -13,7 +13,7 @@ export const financialModule: MenuModule = {
   items: [
     {
       id: "expenses",
-      label: "Contas a Pagar",
+      label: "Despesas",
       icon: Receipt,
       href: "/dashboard/contas-a-pagar",
       permission: "expenses.view",
@@ -22,7 +22,7 @@ export const financialModule: MenuModule = {
     },
     {
       id: "financial-analysis",
-      label: "Análise Financeira",
+      label: "Relatórios Financeiros",
       icon: TrendingUp,
       href: "/dashboard/financeiro",
       permission: "financial.view",
