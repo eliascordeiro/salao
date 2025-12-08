@@ -32,8 +32,9 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
       
-      // Permitir acesso para ADMIN ou usuários com roleType (OWNER, STAFF, CUSTOM)
-      const hasAccess = token.role === "ADMIN" || (token as any).roleType
+      // Permitir acesso APENAS para ADMIN (super admin da plataforma)
+      // OWNER, STAFF, CUSTOM não têm acesso por padrão
+      const hasAccess = token.role === "ADMIN"
       
       if (!hasAccess) {
         return NextResponse.redirect(new URL("/saloes", request.url));
@@ -45,8 +46,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     
-    // Bloquear acesso de clientes sem roleType (clientes normais da plataforma)
-    if (token?.role === "CLIENT" && !(token as any).roleType && pathname.startsWith("/dashboard")) {
+    // Bloquear acesso de todos não-ADMIN ao dashboard
+    if (token?.role !== "ADMIN" && pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/meus-agendamentos", request.url));
     }
   }
@@ -103,12 +104,12 @@ export async function middleware(request: NextRequest) {
     
     // Se não for rota pública, redirecionar baseado no usuário
     if (!isPublicRoute) {
-      // Usuários com roleType (OWNER, STAFF, CUSTOM) vão para dashboard
-      if (token && (token.role === "ADMIN" || (token as any).roleType)) {
+      // Apenas ADMIN tem acesso ao dashboard
+      if (token && token.role === "ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
-      // Clientes normais vão para listagem de salões
-      if (token?.role === "CLIENT" && !(token as any).roleType) {
+      // Todos os outros usuários (CLIENT, OWNER, STAFF, CUSTOM) vão para salões
+      if (token) {
         return NextResponse.redirect(new URL("/saloes", request.url));
       }
       // Usuário não autenticado tentando acessar rota protegida
@@ -128,8 +129,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     
-    // Permitir acesso para ADMIN ou usuários com roleType (OWNER, STAFF, CUSTOM)
-    const hasAccess = token.role === "ADMIN" || (token as any).roleType
+    // Permitir acesso APENAS para ADMIN (super admin da plataforma)
+    const hasAccess = token.role === "ADMIN"
     
     if (!hasAccess) {
       return NextResponse.redirect(new URL("/saloes", request.url));
