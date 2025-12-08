@@ -133,10 +133,10 @@ export default function ContasAPagarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Contas a Pagar</h1>
-          <p className="text-foreground-muted">Gerencie as despesas do seu salão</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Contas a Pagar</h1>
+          <p className="text-sm sm:text-base text-foreground-muted">Gerencie as despesas do seu salão</p>
         </div>
-        <Button className="gap-2" onClick={() => router.push("/dashboard/contas-a-pagar/nova")}>
+        <Button className="gap-2 w-full sm:w-auto min-h-[44px]" onClick={() => router.push("/dashboard/contas-a-pagar/nova")}>
           <Plus className="h-4 w-4" />
           Nova Despesa
         </Button>
@@ -244,18 +244,18 @@ export default function ContasAPagarPage() {
                 key={expense.id}
                 className="glass-card p-4 hover:border-primary/50 transition-all"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-foreground">{expense.description}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${STATUS_MAP[expense.status as keyof typeof STATUS_MAP].color}`}>
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                  <div className="flex-1 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-foreground text-base sm:text-lg">{expense.description}</h3>
+                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_MAP[expense.status as keyof typeof STATUS_MAP].color}`}>
                         {STATUS_MAP[expense.status as keyof typeof STATUS_MAP].label}
                       </span>
                     </div>
                     <p className="text-sm text-foreground-muted">
                       {CATEGORIES[expense.category as keyof typeof CATEGORIES]}
                     </p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-foreground-muted">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-foreground-muted">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         Venc: {new Date(expense.dueDate).toLocaleDateString("pt-BR")}
@@ -269,20 +269,20 @@ export default function ContasAPagarPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
-                    <p className="text-2xl font-bold text-foreground">
+                  <div className="flex flex-col sm:items-end gap-3 w-full sm:w-auto">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       R$ {expense.amount.toFixed(2)}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {expense.status === "PENDING" && (
                         <Button
                           size="sm"
                           variant="outline"
-                          className="gap-1"
+                          className="gap-1 min-h-[40px]"
                           onClick={() => handleMarkAsPaid(expense.id)}
                         >
-                          <Check className="h-3 w-3" />
-                          Marcar Pago
+                          <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">Marcar Pago</span>
                         </Button>
                       )}
                       <Button
@@ -290,17 +290,18 @@ export default function ContasAPagarPage() {
                         variant="outline"
                         onClick={() => router.push(`/dashboard/contas-a-pagar/${expense.id}/editar`)}
                         title="Editar despesa"
+                        className="min-h-[40px] min-w-[40px]"
                       >
-                        <Edit className="h-3 w-3" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 min-h-[40px] min-w-[40px]"
                         onClick={() => handleDelete(expense.id)}
                         title="Deletar despesa"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </div>
