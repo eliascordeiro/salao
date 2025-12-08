@@ -804,7 +804,7 @@ export default function AgendarSalaoPage() {
                         <Button 
                           variant="outline" 
                           onClick={() => setCurrentStep(1)}
-                          className="mt-4"
+                          className="mt-4 min-h-[48px]"
                         >
                           Escolher outro serviço
                         </Button>
@@ -849,10 +849,11 @@ export default function AgendarSalaoPage() {
               <Button 
                 variant="outline" 
                 onClick={prevStep} 
-                className="w-full glass-card hover:bg-background-alt"
+                className="w-full glass-card hover:bg-background-alt min-h-[48px]"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden xs:inline">Voltar</span>
+                <span className="xs:hidden">Voltar</span>
               </Button>
             </div>
           )}
@@ -1015,23 +1016,24 @@ export default function AgendarSalaoPage() {
                 </div>
               )}
               
-              <div className="flex gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
                 <Button 
                   variant="outline" 
                   onClick={prevStep} 
-                  className="flex-1 glass-card hover:bg-background-alt"
+                  className="flex-1 glass-card hover:bg-background-alt min-h-[48px] order-2 sm:order-1"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden xs:inline">Voltar</span>
+                  <span className="xs:hidden">Voltar</span>
                 </Button>
                 <GradientButton
                   variant="primary"
                   onClick={nextStep}
                   disabled={!selectedDate || !selectedTime}
-                  className="flex-1 group"
+                  className="flex-1 group min-h-[48px] order-1 sm:order-2"
                 >
                   Continuar
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-4 w-4 sm:ml-2 group-hover:translate-x-1 transition-transform" />
                 </GradientButton>
               </div>
             </div>
@@ -1145,30 +1147,33 @@ export default function AgendarSalaoPage() {
                 </div>
               </GlassCard>
               
-              <div className="flex gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-2">
                 <Button 
                   variant="outline" 
                   onClick={prevStep} 
-                  className="flex-1 glass-card hover:bg-background-alt"
+                  className="flex-1 glass-card hover:bg-background-alt min-h-[48px] order-2 sm:order-1"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden xs:inline">Voltar</span>
+                  <span className="xs:hidden">Voltar</span>
                 </Button>
                 <GradientButton
                   variant="success"
                   onClick={handleConfirmBooking}
                   disabled={submitting}
-                  className="flex-1 group"
+                  className="flex-1 group min-h-[48px] order-1 sm:order-2"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Confirmando...
+                      <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+                      <span className="hidden xs:inline">Confirmando...</span>
+                      <span className="xs:hidden">Confirmar</span>
                     </>
                   ) : (
                     <>
-                      <Check className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                      Confirmar Agendamento
+                      <Check className="h-4 w-4 sm:mr-2 group-hover:scale-110 transition-transform" />
+                      <span className="hidden xs:inline">Confirmar Agendamento</span>
+                      <span className="xs:hidden">Confirmar</span>
                     </>
                   )}
                 </GradientButton>
