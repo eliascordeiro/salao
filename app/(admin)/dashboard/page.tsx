@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { GlassCard } from "@/components/ui/glass-card"
 import { AnimatedText } from "@/components/ui/animated-text"
 import { GridBackground } from "@/components/ui/grid-background"
-import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3, ArrowRight, Zap } from "lucide-react"
+import { Calendar, Users, Scissors, TrendingUp, DollarSign, TrendingDown, CheckCircle, BarChart3, ArrowRight, Zap, Receipt } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { TrialStatus } from "@/components/dashboard/trial-status"
 import { ExpenseSummary } from "@/components/dashboard/expense-summary"
@@ -363,7 +363,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <Link
                   href="/dashboard/caixa"
                   className="glass-card p-4 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all text-center group/item relative overflow-hidden"
@@ -375,6 +375,20 @@ export default async function DashboardPage() {
                     </div>
                     <span className="text-sm font-semibold text-foreground">Caixa</span>
                     <p className="text-xs text-muted-foreground mt-1">Fechamento</p>
+                  </div>
+                </Link>
+                
+                <Link
+                  href="/dashboard/contas-a-pagar"
+                  className="glass-card p-4 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all text-center group/item relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-600/5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  <div className="relative z-10">
+                    <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Receipt className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-foreground">Despesas</span>
+                    <p className="text-xs text-muted-foreground mt-1">Contas</p>
                   </div>
                 </Link>
                 
