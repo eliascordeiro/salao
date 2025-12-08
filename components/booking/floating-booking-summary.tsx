@@ -82,10 +82,11 @@ export function FloatingBookingSummary({
             {/* Header - Sempre visível (MOBILE APENAS) */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full px-4 py-4 flex items-center justify-between"
+              className="w-full px-4 py-4 flex items-center justify-between hover:bg-background-alt/50 transition-colors min-h-[80px] active:scale-[0.98] touch-manipulation"
+              aria-label={isExpanded ? "Recolher resumo" : "Expandir resumo"}
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div className="text-left">
@@ -95,38 +96,40 @@ export function FloatingBookingSummary({
                   </p>
                 </div>
               </div>
-              {isExpanded ? (
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <ChevronUp className="h-5 w-5 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {isExpanded ? (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />
+                ) : (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform animate-bounce" />
+                )}
+              </div>
             </button>
 
             {/* Content - Collapsible (MOBILE APENAS) */}
             <div
               className={cn(
-                "px-4 py-4 space-y-4 transition-all duration-300",
-                isExpanded ? "block" : "hidden"
+                "px-4 pb-4 space-y-3 transition-all duration-300 border-t border-border/30",
+                isExpanded ? "block pt-4" : "hidden"
               )}
             >
               {/* Serviço */}
               {serviceName && (
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Briefcase className="h-4 w-4 text-primary" />
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">Serviço</p>
-                    <p className="font-medium text-sm truncate">{serviceName}</p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">Serviço</p>
+                    <p className="font-semibold text-sm truncate text-foreground">{serviceName}</p>
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                       {serviceDuration && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
                           <Clock className="h-3 w-3 mr-1" />
                           {serviceDuration} min
                         </Badge>
                       )}
                       {servicePrice && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5 font-semibold">
                           <DollarSign className="h-3 w-3 mr-1" />
                           R$ {servicePrice.toFixed(2)}
                         </Badge>
@@ -138,33 +141,33 @@ export function FloatingBookingSummary({
 
               {/* Profissional */}
               {staffName && (
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <User className="h-4 w-4 text-blue-500" />
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                  <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">Profissional</p>
-                    <p className="font-medium text-sm truncate">{staffName}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">Profissional</p>
+                    <p className="font-semibold text-sm truncate text-foreground">{staffName}</p>
                   </div>
                 </div>
               )}
 
               {/* Data e Horário */}
               {(date || time) && (
-                <div className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                    <Calendar className="h-4 w-4 text-green-500" />
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/10">
+                  <div className="h-9 w-9 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="h-5 w-5 text-green-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">Data e Horário</p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 font-semibold">Data e Horário</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {date && (
-                        <p className="font-medium text-sm">
+                        <p className="font-semibold text-sm text-foreground">
                           {format(date, "dd 'de' MMMM", { locale: ptBR })}
                         </p>
                       )}
                       {time && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5 font-semibold">
                           <Clock className="h-3 w-3 mr-1" />
                           {time}
                         </Badge>
@@ -176,9 +179,9 @@ export function FloatingBookingSummary({
 
               {/* Valor Total */}
               {servicePrice && (
-                <div className="pt-4 border-t border-border/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Valor Total</span>
+                <div className="pt-3 mt-3 border-t border-border/50">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20">
+                    <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Valor Total</span>
                     <span className="text-2xl font-bold text-primary">
                       R$ {servicePrice.toFixed(2)}
                     </span>
@@ -189,15 +192,17 @@ export function FloatingBookingSummary({
 
             {/* Botão Continuar */}
             {showContinueButton && onContinue && (
-              <div className="px-4 pb-4">
+              <div className="px-4 pb-4 pt-2">
                 <Button
                   size="lg"
                   onClick={onContinue}
                   disabled={continueDisabled}
-                  className="w-full gap-2 shadow-lg hover:shadow-xl transition-all"
+                  className="w-full min-h-[56px] text-base font-semibold shadow-lg hover:shadow-xl transition-all bg-gradient-primary hover:opacity-90"
                 >
-                  {continueLabel}
-                  <ArrowRight className="h-5 w-5" />
+                  <span className="flex items-center justify-center gap-2">
+                    {continueLabel}
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </Button>
               </div>
             )}
