@@ -1418,7 +1418,7 @@ export default function AgendamentosPage() {
                     </div>
                   ) : (
                     <div>
-                      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3 max-h-72 overflow-y-auto p-4 glass-card rounded-lg">
+                      <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 max-h-72 overflow-y-auto p-3 sm:p-4 glass-card rounded-lg">
                         {availableSlots.map((slot) => (
                           <button
                             key={slot.time}
@@ -1429,7 +1429,7 @@ export default function AgendamentosPage() {
                             }
                             disabled={!slot.available}
                             className={`
-                              px-4 py-3 rounded-lg text-sm font-medium transition-all
+                              px-2 sm:px-3 md:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all min-h-[44px]
                               ${
                                 formData.time === slot.time
                                   ? "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg scale-105"
@@ -1443,7 +1443,7 @@ export default function AgendamentosPage() {
                           </button>
                         ))}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-3 text-center font-medium">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-3 text-center font-medium">
                         {availableSlots.filter(s => s.available).length} horários disponíveis
                       </p>
                     </div>
@@ -1656,7 +1656,7 @@ export default function AgendamentosPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto p-4 glass-card rounded-xl border border-primary/10">
+                    <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-3 max-h-64 overflow-y-auto p-3 sm:p-4 glass-card rounded-xl border border-primary/10">
                       {availableSlots.map((slot) => (
                         <button
                           key={slot.time}
@@ -1667,7 +1667,7 @@ export default function AgendamentosPage() {
                           }
                           disabled={!slot.available}
                           className={`
-                            px-5 py-4 rounded-xl text-base font-medium transition-all
+                            px-2 sm:px-3 md:px-5 py-3 sm:py-3.5 md:py-4 rounded-xl text-xs sm:text-sm md:text-base font-medium transition-all min-h-[44px]
                             ${
                               formData.time === slot.time
                                 ? "bg-primary text-primary-foreground ring-2 ring-primary/50 shadow-lg shadow-primary/20"
