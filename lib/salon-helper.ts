@@ -90,6 +90,64 @@ export async function getUserSalonId(): Promise<string | null> {
 }
 
 /**
+ * Obtém o salão associado a um userId específico
+ * Útil para APIs que já têm o userId do usuário
+ */
+export async function getSalonByUserId(userId: string) {
+  try {
+    // Buscar usuário com seu salão
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        ownedSalons: {
+          where: { active: true },
+          take: 1
+        },
+        owner: {
+          include: {
+            ownedSalons: {
+              where: { active: true },
+              take: 1
+            }
+          }
+        }
+      }
+    })
+
+    if (!user) {
+      return null
+    }
+
+    // Se o usuário tem salão próprio, retornar o primeiro
+    if (user.ownedSalons && user.ownedSalons.length > 0) {
+      return user.ownedSalons[0]
+    }
+
+    // Se o usuário é gerenciado (tem ownerId), buscar o salão do owner
+    if (user.ownerId && user.owner) {
+      if (user.owner.ownedSalons && user.owner.ownedSalons.length > 0) {
+        return user.owner.ownedSalons[0]
+      }
+    }
+
+    // Se o usuário não tem salão próprio mas é ADMIN, 
+    // retornar o primeiro salão ativo do sistema
+    if (user.role === 'ADMIN') {
+      const firstSalon = await prisma.salon.findFirst({
+        where: { active: true },
+        orderBy: { createdAt: 'asc' }
+      })
+      return firstSalon
+    }
+
+    return null
+  } catch (error) {
+    console.error('Erro ao buscar salão do usuário:', error)
+    return null
+  }
+}
+
+/**
  * Verifica se o usuário tem acesso a um salão específico
  */
 export async function canAccessSalon(salonId: string): Promise<boolean> {
