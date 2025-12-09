@@ -366,85 +366,79 @@ export default async function DashboardPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <Link
                   href="/dashboard/caixa"
-                  className="glass-card p-4 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-600/5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <DollarSign className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <DollarSign className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Caixa</span>
-                    <p className="text-xs text-muted-foreground mt-1">Fechamento</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Caixa</span>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/contas-a-pagar"
-                  className="glass-card p-4 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-600/5 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <Receipt className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Receipt className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Despesas</span>
-                    <p className="text-xs text-muted-foreground mt-1">Contas</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Despesas</span>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/relatorios"
-                  className="glass-card p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-primary rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <BarChart3 className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-primary rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <BarChart3 className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Relatórios</span>
-                    <p className="text-xs text-muted-foreground mt-1">Analytics</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Relatórios</span>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/agendamentos"
-                  className="glass-card p-4 hover:border-success/50 hover:shadow-lg hover:shadow-success/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-success/50 hover:shadow-lg hover:shadow-success/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-success/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-success rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <Calendar className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-success rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Calendar className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Agendamentos</span>
-                    <p className="text-xs text-muted-foreground mt-1">Calendário</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Agenda</span>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/servicos"
-                  className="glass-card p-4 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-accent/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-accent rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <Scissors className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-accent rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Scissors className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Serviços</span>
-                    <p className="text-xs text-muted-foreground mt-1">Catálogo</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Serviços</span>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/profissionais"
-                  className="glass-card p-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
+                  className="glass-card p-3 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group/item relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                   <div className="relative z-10">
-                    <div className="p-3 bg-gradient-primary rounded-xl w-fit mx-auto mb-3 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
-                      <Users className="h-6 w-6 text-white" />
+                    <div className="p-2.5 bg-gradient-primary rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
+                      <Users className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-sm font-semibold text-foreground">Profissionais</span>
-                    <p className="text-xs text-muted-foreground mt-1">Equipe</p>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">Equipe</span>
                   </div>
                 </Link>
               </div>
