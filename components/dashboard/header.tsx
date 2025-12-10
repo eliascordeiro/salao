@@ -4,7 +4,6 @@ import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { LogOut, User, Sun, Moon, UserCircle, KeyRound } from "lucide-react"
-import { useTheme } from "@/contexts/theme-context"
 import { useState, useRef, useEffect } from "react"
 
 interface DashboardHeaderProps {
@@ -16,12 +15,27 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
-  const { resolvedTheme, setTheme } = useTheme()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isDark, setIsDark] = useState(true)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
   const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+    const root = document.documentElement
+    if (root.classList.contains('dark')) {
+      root.classList.remove('dark')
+      root.classList.add('light')
+      localStorage.setItem('display-mode', 'light')
+      setIsDark(false)
+    } else {
+      root.classList.remove('light')
+      root.classList.add('dark')
+      localStorage.setItem('display-mode', 'dark')
+      setIsDark(true)
+    }
   }
 
   // Fechar menu ao clicar fora
@@ -61,9 +75,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 size="sm"
                 onClick={toggleTheme}
                 className="hover:bg-background-alt hover:text-primary transition-colors"
-                title={resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+                title={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
               >
-                {resolvedTheme === "dark" ? (
+                {isDark ? (
                   <Sun className="h-4 w-4 text-foreground" />
                 ) : (
                   <Moon className="h-4 w-4 text-foreground" />
