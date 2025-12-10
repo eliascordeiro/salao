@@ -1,18 +1,50 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useTheme } from "@/contexts/theme-context"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Sun, Moon, Monitor, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DashboardHeader } from "@/components/dashboard/header"
+import { ThemeSelector } from "@/components/theme-selector"
+import { useState, useEffect } from "react"
 
 export default function ConfiguracoesPage() {
   const { data: session } = useSession()
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [displayMode, setDisplayMode] = useState<'light' | 'dark' | 'system'>('dark')
+  const [mounted, setMounted] = useState(false)
 
-  const themes = [
+  useEffect(() => {
+    setMounted(true)
+    // Load saved display mode
+    const saved = localStorage.getItem('display-mode') as 'light' | 'dark' | 'system'
+    if (saved) {
+      setDisplayMode(saved)
+      applyDisplayMode(saved)
+    }
+  }, [])
+
+  const applyDisplayMode = (mode: 'light' | 'dark' | 'system') => {
+    const root = document.documentElement
+    
+    if (mode === 'system') {
+      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      root.classList.remove('light', 'dark')
+      root.classList.add(systemPreference)
+    } else {
+      root.classList.remove('light', 'dark')
+      root.classList.add(mode)
+    }
+    
+    localStorage.setItem('display-mode', mode)
+  }
+
+  const handleDisplayModeChange = (mode: 'light' | 'dark' | 'system') => {
+    setDisplayMode(mode)
+    applyDisplayMode(mode)
+  }
+
+  const displayModes = [
     {
       value: "light" as const,
       label: "Modo Claro",
@@ -32,6 +64,10 @@ export default function ConfiguracoesPage() {
       description: "Usar preferência do sistema operacional",
     },
   ]
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <>
@@ -60,27 +96,27 @@ export default function ConfiguracoesPage() {
         <div className="space-y-4">
           <div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              {resolvedTheme === "dark" ? (
+              {displayMode === "dark" ? (
                 <Moon className="h-5 w-5 text-primary" />
               ) : (
                 <Sun className="h-5 w-5 text-primary" />
               )}
-              Aparência
+              Modo de Exibição
             </h2>
             <p className="text-sm text-foreground-muted mt-1">
-              Escolha o tema de cores da interface
+              Escolha entre modo claro, escuro ou automático
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {themes.map((themeOption) => {
-              const Icon = themeOption.icon
-              const isActive = theme === themeOption.value
+            {displayModes.map((mode) => {
+              const Icon = mode.icon
+              const isActive = displayMode === mode.value
 
               return (
                 <button
-                  key={themeOption.value}
-                  onClick={() => setTheme(themeOption.value)}
+                  key={mode.value}
+                  onClick={() => handleDisplayModeChange(mode.value)}
                   className={cn(
                     "relative p-6 rounded-lg border-2 transition-all",
                     "hover:border-primary/50 hover:bg-background-alt/50",
@@ -121,12 +157,12 @@ export default function ConfiguracoesPage() {
                       isActive ? "text-primary" : "text-foreground"
                     )}
                   >
-                    {themeOption.label}
+                    {mode.label}
                   </h3>
 
                   {/* Description */}
                   <p className="text-sm text-foreground-muted">
-                    {themeOption.description}
+                    {mode.description}
                   </p>
                 </button>
               )
@@ -134,6 +170,9 @@ export default function ConfiguracoesPage() {
           </div>
         </div>
       </GlassCard>
+
+      {/* Color Theme Section */}
+      <ThemeSelector />
 
       {/* Preview Section */}
       <GlassCard className="p-6">

@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { ThemeType, Theme as ColorTheme, getTheme, applyTheme } from '@/types/theme'
 
 type Theme = "light" | "dark" | "system"
 
@@ -8,6 +9,10 @@ interface ThemeContextType {
   theme: Theme
   setTheme: (theme: Theme) => void
   resolvedTheme: "light" | "dark"
+  // Color theme management
+  colorTheme: ColorTheme
+  colorThemeId: ThemeType
+  setColorTheme: (themeId: ThemeType) => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -16,6 +21,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system")
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark")
   const [mounted, setMounted] = useState(false)
+  
+  // Color theme state
+  const [colorThemeId, setColorThemeId] = useState<ThemeType>('modern')
 
   useEffect(() => {
     setMounted(true)
@@ -23,6 +31,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const savedTheme = (typeof window !== 'undefined' ? localStorage.getItem("theme") : null) as Theme | null
     if (savedTheme) {
       setThemeState(savedTheme)
+    }
+    
+    // Carregar color theme salvo
+    const savedColorTheme = (typeof window !== 'undefined' ? localStorage.getItem("color-theme") : null) as ThemeType | null
+    if (savedColorTheme && ['modern', 'barber-classic', 'barber-premium'].includes(savedColorTheme)) {
+      setColorThemeId(savedColorTheme)
     }
     
     // Atualizar resolvedTheme inicial
@@ -67,13 +81,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, mounted])
 
+  // Apply color theme whenever it changes
+  useEffect(() => {
+    if (mounted) {
+      const colorTheme = getTheme(colorThemeId)
+      applyTheme(colorTheme)
+    }
+  }, [colorThemeId, mounted])
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
     localStorage.setItem("theme", newTheme)
   }
 
+  const setColorTheme = (newThemeId: ThemeType) => {
+    setColorThemeId(newThemeId)
+    localStorage.setItem("color-theme", newThemeId)
+  }
+
+  const colorTheme = getTheme(colorThemeId)
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, colorTheme, colorThemeId, setColorTheme }}>
       {children}
     </ThemeContext.Provider>
   )

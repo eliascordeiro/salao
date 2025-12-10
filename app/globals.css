@@ -17,18 +17,28 @@
     --border: 260 10% 15%;           /* #252128 - Borda com toque roxo */
     --border-hover: 260 8% 25%;      /* #3e3a43 - Hover com toque roxo */
     
-    /* Primary - Purple/Indigo gradient */
+    /* Primary - Purple/Indigo gradient (will be overridden by theme) */
     --primary: 250 70% 60%;          /* #6366f1 */
+    --primary-light: 250 80% 70%;
+    --primary-dark: 250 70% 50%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Accent - Purple */
-    --accent: 280 70% 65%;           /* #a855f7 */
+    /* Secondary (will be overridden by theme) */
+    --secondary: 280 70% 65%;        /* #a855f7 */
+    --secondary-light: 280 80% 75%;
+    --secondary-dark: 280 70% 55%;
+    
+    /* Accent - Purple (will be overridden by theme) */
+    --accent: 193 82% 31%;           /* #06B6D4 */
+    --accent-light: 193 82% 41%;
+    --accent-dark: 193 82% 21%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
     /* Status colors */
     --success: 142 76% 36%;          /* #10b981 */
     --error: 0 84% 60%;              /* #ef4444 */
     --warning: 38 92% 50%;           /* #f59e0b */
+    --info: 217 91% 60%;             /* #3B82F6 */
   }
 
   /* Light Theme */
@@ -45,18 +55,28 @@
     --border: 260 10% 90%;           /* #e5e4e7 - Borda clara com toque roxo */
     --border-hover: 260 8% 80%;      /* #cfcdd2 - Hover mais escuro */
     
-    /* Primary - Purple/Indigo gradient (mantém vibrante) */
-    --primary: 250 70% 55%;          /* #5558e3 - Um pouco mais escuro no light */
+    /* Primary - will be overridden by theme */
+    --primary: 250 70% 55%;          /* #5558e3 */
+    --primary-light: 250 80% 65%;
+    --primary-dark: 250 70% 45%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Accent - Purple */
-    --accent: 280 70% 60%;           /* #9d3dd9 - Um pouco mais escuro no light */
+    /* Secondary - will be overridden by theme */
+    --secondary: 280 70% 60%;        /* #9d3dd9 */
+    --secondary-light: 280 80% 70%;
+    --secondary-dark: 280 70% 50%;
+    
+    /* Accent - will be overridden by theme */
+    --accent: 193 82% 31%;           /* #06B6D4 */
+    --accent-light: 193 82% 41%;
+    --accent-dark: 193 82% 21%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
     /* Status colors */
     --success: 142 76% 36%;          /* #10b981 */
     --error: 0 84% 60%;              /* #ef4444 */
     --warning: 38 92% 50%;           /* #f59e0b */
+    --info: 217 91% 60%;             /* #3B82F6 */
   }
   
   * {
