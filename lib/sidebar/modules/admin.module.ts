@@ -22,7 +22,7 @@ export const adminModule: MenuModule = {
     },
     {
       id: "platform-support",
-      label: "Suporte da Plataforma",
+      label: "Suporte",
       icon: Headset,
       href: "/dashboard/suporte-plataforma",
       order: 2,

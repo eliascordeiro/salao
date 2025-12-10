@@ -22,7 +22,7 @@ export const financialModule: MenuModule = {
     },
     {
       id: "financial-analysis",
-      label: "Relatórios Financeiros",
+      label: "Análise Financeira",
       icon: TrendingUp,
       href: "/dashboard/financeiro",
       permission: "financial.view",

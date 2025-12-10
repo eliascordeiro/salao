@@ -5,6 +5,7 @@ import {
   Users, 
   Scissors, 
   Wallet,
+  BarChart3,
 } from "lucide-react"
 import { MenuModule } from "../types"
 
@@ -70,6 +71,15 @@ export const coreModule: MenuModule = {
       href: "/dashboard/caixa",
       permission: "cashier.view",
       order: 6,
+      group: "main",
+    },
+    {
+      id: "reports",
+      label: "Relatórios",
+      icon: BarChart3,
+      href: "/dashboard/relatorios",
+      permission: "reports.view",
+      order: 7,
       group: "main",
     },
   ],

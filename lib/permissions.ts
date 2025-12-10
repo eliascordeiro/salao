@@ -35,6 +35,9 @@ export const PERMISSIONS = {
   CASHIER_OPEN_SESSION: "cashier.openSession",
   CASHIER_CLOSE_SESSION: "cashier.closeSession",
   
+  // Relatórios
+  REPORTS_VIEW: "reports.view",
+  
   // Contas a Pagar
   EXPENSES_VIEW: "expenses.view",
   EXPENSES_CREATE: "expenses.create",
@@ -110,6 +113,13 @@ export const PERMISSION_GROUPS = [
       { key: PERMISSIONS.CASHIER_VIEW, label: "Visualizar caixa" },
       { key: PERMISSIONS.CASHIER_OPEN_SESSION, label: "Abrir sessão de caixa" },
       { key: PERMISSIONS.CASHIER_CLOSE_SESSION, label: "Fechar sessão de caixa" },
+    ],
+  },
+  {
+    label: "Relatórios",
+    description: "Visualizar relatórios e análises gerais",
+    permissions: [
+      { key: PERMISSIONS.REPORTS_VIEW, label: "Visualizar relatórios" },
     ],
   },
   {
