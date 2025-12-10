@@ -174,42 +174,6 @@ export default function ConfiguracoesPage() {
       {/* Color Theme Section */}
       <ThemeSelector />
 
-      {/* Preview Section */}
-      <GlassCard className="p-6">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">
-            Preview do Tema
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Card Example */}
-            <div className="p-4 rounded-lg border border-border/50 bg-background-alt/50 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary" />
-                <div className="flex-1">
-                  <div className="h-3 bg-foreground/20 rounded w-24 mb-2" />
-                  <div className="h-2 bg-foreground/10 rounded w-32" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="h-2 bg-foreground/10 rounded" />
-                <div className="h-2 bg-foreground/10 rounded w-5/6" />
-              </div>
-            </div>
-
-            {/* Buttons Example */}
-            <div className="p-4 rounded-lg border border-border/50 bg-background-alt/50 space-y-3">
-              <Button className="w-full">Botão Principal</Button>
-              <Button variant="outline" className="w-full">
-                Botão Secundário
-              </Button>
-              <Button variant="ghost" className="w-full">
-                Botão Ghost
-              </Button>
-            </div>
-          </div>
-        </div>
-      </GlassCard>
-
       {/* Info */}
       <div className="text-sm text-foreground-muted bg-background-alt/30 border border-border/30 rounded-lg p-4">
         <p>
