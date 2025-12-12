@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 /**
  * Webhook do Mercado Pago para notificações de pagamento
@@ -309,6 +309,10 @@ async function sendPaymentSuccessEmail(
   amount: number
 ) {
   try {
+    if (!resend) {
+      console.log("⚠️ Resend não configurado, email não enviado");
+      return;
+    }
     await resend.emails.send({
       from: process.env.SMTP_FROM || 'noreply@agendahora.com',
       to: email,
@@ -349,6 +353,10 @@ async function sendPaymentFailureEmail(
   reason: string
 ) {
   try {
+    if (!resend) {
+      console.log("⚠️ Resend não configurado, email não enviado");
+      return;
+    }
     await resend.emails.send({
       from: process.env.SMTP_FROM || 'noreply@agendahora.com',
       to: email,
@@ -387,6 +395,10 @@ async function sendSubscriptionCanceledEmail(
   planName: string
 ) {
   try {
+    if (!resend) {
+      console.log("⚠️ Resend não configurado, email não enviado");
+      return;
+    }
     await resend.emails.send({
       from: process.env.SMTP_FROM || 'noreply@agendahora.com',
       to: email,

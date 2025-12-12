@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Instanciar Resend apenas se a API key existir
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 interface SendEmailParams {
   to: string | string[]
@@ -15,6 +16,11 @@ export async function sendEmailViaResend({
   html,
   from,
 }: SendEmailParams) {
+  // Se não tiver Resend configurado, lançar erro informativo
+  if (!resend) {
+    throw new Error('Resend não está configurado. Configure RESEND_API_KEY ou use SMTP.')
+  }
+
   try {
     // Resend requer domínio verificado. Use onboarding@resend.dev se não tiver domínio próprio
     const senderEmail = from || process.env.SMTP_FROM || 'AgendaHora Salão <onboarding@resend.dev>'
