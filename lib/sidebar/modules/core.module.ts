@@ -6,6 +6,7 @@ import {
   Scissors, 
   Wallet,
   BarChart3,
+  CreditCard,
 } from "lucide-react"
 import { MenuModule } from "../types"
 
@@ -80,6 +81,15 @@ export const coreModule: MenuModule = {
       href: "/dashboard/relatorios",
       permission: "reports.view",
       order: 7,
+      group: "main",
+    },
+    {
+      id: "subscription",
+      label: "Assinaturas",
+      icon: CreditCard,
+      href: "/dashboard/assinatura",
+      ownerOnly: true,
+      order: 8,
       group: "main",
     },
   ],
