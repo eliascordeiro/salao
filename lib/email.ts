@@ -1,27 +1,19 @@
-import nodemailer from "nodemailer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
+import { sendEmailViaResend } from "@/lib/email/resend";
 
-// Configuração do transportador SMTP
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // true para 465, false para outras portas
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-// Verificar conexão SMTP (opcional, para debug)
+// Verificar conexão de email (Resend)
 export async function verifyEmailConnection() {
   try {
-    await transporter.verify();
-    console.log("✅ Servidor SMTP pronto para enviar emails");
+    if (!process.env.RESEND_API_KEY) {
+      console.error("❌ RESEND_API_KEY não configurada");
+      return false;
+    }
+    console.log("✅ Resend configurado e pronto para enviar emails");
     return true;
   } catch (error) {
-    console.error("❌ Erro ao conectar com servidor SMTP:", error);
+    console.error("❌ Erro ao verificar configuração de email:", error);
     return false;
   }
 }
@@ -229,15 +221,15 @@ export async function sendBookingCreatedEmail(
   `;
 
   const subject = `Agendamento Realizado - ${data.serviceName}`;
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: data.clientEmail,
-    subject,
-    html: getEmailTemplate("Agendamento Realizado", content),
-  };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendEmailViaResend({
+      to: data.clientEmail,
+      subject,
+      html: getEmailTemplate("Agendamento Realizado", content),
+      from: process.env.SMTP_FROM,
+    });
+    
     console.log(`✅ Email de criação enviado para ${data.clientEmail}`);
     
     // Registrar notificação no banco
@@ -335,15 +327,15 @@ export async function sendBookingConfirmedEmail(
   `;
 
   const subject = `✅ Agendamento Confirmado - ${data.serviceName}`;
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: data.clientEmail,
-    subject,
-    html: getEmailTemplate("Agendamento Confirmado", content),
-  };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendEmailViaResend({
+      to: data.clientEmail,
+      subject,
+      html: getEmailTemplate("Agendamento Confirmado", content),
+      from: process.env.SMTP_FROM,
+    });
+    
     console.log(`✅ Email de confirmação enviado para ${data.clientEmail}`);
     
     if (bookingId) {
@@ -439,15 +431,15 @@ export async function sendBookingReminderEmail(
   `;
 
   const subject = `🔔 Lembrete: Agendamento amanhã às ${formattedTime}`;
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: data.clientEmail,
-    subject,
-    html: getEmailTemplate("Lembrete de Agendamento", content),
-  };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendEmailViaResend({
+      to: data.clientEmail,
+      subject,
+      html: getEmailTemplate("Lembrete de Agendamento", content),
+      from: process.env.SMTP_FROM,
+    });
+    
     console.log(`✅ Email de lembrete enviado para ${data.clientEmail}`);
     
     if (bookingId) {
@@ -535,15 +527,15 @@ export async function sendBookingCancelledEmail(
   `;
 
   const subject = `Agendamento Cancelado - ${data.serviceName}`;
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: data.clientEmail,
-    subject,
-    html: getEmailTemplate("Agendamento Cancelado", content),
-  };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sendEmailViaResend({
+      to: data.clientEmail,
+      subject,
+      html: getEmailTemplate("Agendamento Cancelado", content),
+      from: process.env.SMTP_FROM,
+    });
+    
     console.log(`✅ Email de cancelamento enviado para ${data.clientEmail}`);
     
     if (bookingId) {
