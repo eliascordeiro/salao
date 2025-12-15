@@ -24,6 +24,7 @@ export default function UsuariosPage() {
   const router = useRouter()
   const [users, setUsers] = useState<ManagedUser[]>([])
   const [loading, setLoading] = useState(true)
+  const [resendingInvite, setResendingInvite] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -82,20 +83,30 @@ export default function UsuariosPage() {
     }
   }
 
-  const handleResendInvite = async (userId: string) => {
+  const handleResendInvite = async (userId: string, userEmail: string) => {
+    if (!confirm(`Reenviar convite para ${userEmail}?\n\nUma nova senha temporária será gerada e enviada por email.`)) {
+      return
+    }
+
+    setResendingInvite(userId)
+
     try {
       const res = await fetch(`/api/users/${userId}/resend-invite`, {
         method: "POST",
       })
 
+      const data = await res.json()
+
       if (res.ok) {
-        alert("Convite reenviado com sucesso!")
+        alert(`✅ Convite reenviado com sucesso para ${userEmail}!\n\nO usuário receberá um email com a nova senha temporária.`)
       } else {
-        alert("Erro ao reenviar convite")
+        alert(data.error || "Erro ao reenviar convite")
       }
     } catch (error) {
       console.error("Erro:", error)
       alert("Erro ao reenviar convite")
+    } finally {
+      setResendingInvite(null)
     }
   }
 
@@ -255,12 +266,21 @@ export default function UsuariosPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleResendInvite(user.id)}
-                      disabled={!user.active}
+                      onClick={() => handleResendInvite(user.id, user.email)}
+                      disabled={!user.active || resendingInvite === user.id}
                       className="flex-1 gap-2 min-h-[40px]"
                     >
-                      <Mail className="h-4 w-4" />
-                      <span className="text-xs">Reenviar</span>
+                      {resendingInvite === user.id ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          <span className="text-xs">Enviando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4" />
+                          <span className="text-xs">Reenviar</span>
+                        </>
+                      )}
                     </Button>
                     <Button
                       variant="outline"
@@ -342,12 +362,16 @@ export default function UsuariosPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleResendInvite(user.id)}
-                            disabled={!user.active}
+                            onClick={() => handleResendInvite(user.id, user.email)}
+                            disabled={!user.active || resendingInvite === user.id}
                             title="Reenviar convite"
                             className="h-8 w-8 p-0"
                           >
-                            <Mail className="h-4 w-4" />
+                            {resendingInvite === user.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            ) : (
+                              <Mail className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             variant="ghost"
