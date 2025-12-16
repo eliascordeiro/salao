@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -11,7 +11,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 // Configurar token do Mapbox
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-export default function NavegacaoPage() {
+function NavegacaoContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -284,5 +284,19 @@ export default function NavegacaoPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function NavegacaoPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <NavegacaoContent />
+    </Suspense>
   );
 }
