@@ -441,7 +441,8 @@ model Plan {
   // Limites e Features
   maxStaff      Int?           // null = ilimitado
   maxUsers      Int            @default(1) // Usuários administrativos
-  features      String[]       // ["payments", "whatsapp", "reports", "expenses"]
+  features      Json           // { whatsapp: true, maps: true, multiUser: true, advancedReports: true }
+  featuresList  String[]       @default([]) // Lista simples para queries (deprecated, usar features Json)
   
   // Status
   active        Boolean        @default(true)
