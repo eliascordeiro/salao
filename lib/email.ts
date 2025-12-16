@@ -520,7 +520,7 @@ export async function sendBookingCancelledEmail(
     </div>
     
     <p style="text-align: center;">
-      <a href="${process.env.NEXTAUTH_URL}/servicos" class="button">
+      <a href="${process.env.NEXTAUTH_URL}/saloes" class="button">
         Fazer Novo Agendamento
       </a>
     </p>
