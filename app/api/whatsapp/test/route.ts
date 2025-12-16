@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { authOptions } from "@/lib/auth";
 import { getWhatsAppClient } from "@/lib/whatsapp/evolution-client";
 import { hasFeature, FEATURES } from "@/lib/subscription-features";
 import { getSalonByUserId } from "@/lib/salon-helper";
