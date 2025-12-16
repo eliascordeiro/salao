@@ -28,6 +28,15 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 
+// Helper para capitalizar nomes
+function capitalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 type Step = 1 | 2 | 3 | 4;
 
 interface Service {
@@ -726,7 +735,7 @@ export default function AgendarSalaoPage() {
                   >
                     <div className="space-y-3">
                       <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                        {service.name}
+                        {capitalizeName(service.name)}
                       </h3>
                       {service.description && (
                         <p className="text-sm text-foreground-muted">
@@ -767,7 +776,7 @@ export default function AgendarSalaoPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-foreground-muted">Serviço selecionado</p>
-                      <p className="font-semibold text-foreground">{selectedService.name}</p>
+                      <p className="font-semibold text-foreground">{capitalizeName(selectedService.name)}</p>
                     </div>
                     <Button 
                       variant="ghost" 
@@ -798,7 +807,7 @@ export default function AgendarSalaoPage() {
                         </div>
                         <h3 className="font-semibold text-lg">Nenhum profissional disponível</h3>
                         <p className="text-sm text-foreground-muted max-w-md mx-auto">
-                          Não há profissionais vinculados ao serviço <strong>{selectedService?.name}</strong> no momento.
+                          Não há profissionais vinculados ao serviço <strong>{capitalizeName(selectedService?.name || '')}</strong> no momento.
                           Por favor, selecione outro serviço ou entre em contato com o salão.
                         </p>
                         <Button 
@@ -833,7 +842,7 @@ export default function AgendarSalaoPage() {
                   >
                     <div className="space-y-2">
                       <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                        {member.name}
+                        {capitalizeName(member.name)}
                       </h3>
                       {member.specialty && (
                         <p className="text-sm text-foreground-muted">
@@ -873,7 +882,7 @@ export default function AgendarSalaoPage() {
                 <div className="flex items-center justify-between pb-2">
                   <div>
                     <p className="text-sm text-foreground-muted">Serviço</p>
-                    <p className="font-semibold text-foreground">{selectedService?.name}</p>
+                    <p className="font-semibold text-foreground">{capitalizeName(selectedService?.name || '')}</p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -887,7 +896,7 @@ export default function AgendarSalaoPage() {
                 <div className="flex items-center justify-between border-t border-border pt-3">
                   <div>
                     <p className="text-sm text-foreground-muted">Profissional</p>
-                    <p className="font-semibold text-foreground">{selectedStaff?.name}</p>
+                    <p className="font-semibold text-foreground">{capitalizeName(selectedStaff?.name || '')}</p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -1112,7 +1121,7 @@ export default function AgendarSalaoPage() {
                     </div>
                     <div>
                       <p className="text-xs text-foreground-muted uppercase tracking-wider mb-1">Serviço</p>
-                      <p className="font-semibold text-lg text-foreground">{selectedService?.name}</p>
+                      <p className="font-semibold text-lg text-foreground">{capitalizeName(selectedService?.name || '')}</p>
                       <p className="text-sm text-foreground-muted mt-1">
                         {selectedService?.duration} minutos • R$ {selectedService?.price.toFixed(2)}
                       </p>
@@ -1125,7 +1134,7 @@ export default function AgendarSalaoPage() {
                     </div>
                     <div>
                       <p className="text-xs text-foreground-muted uppercase tracking-wider mb-1">Profissional</p>
-                      <p className="font-semibold text-lg text-foreground">{selectedStaff?.name}</p>
+                      <p className="font-semibold text-lg text-foreground">{capitalizeName(selectedStaff?.name || '')}</p>
                       {selectedStaff?.specialty && (
                         <p className="text-sm text-foreground-muted mt-1">
                           {selectedStaff.specialty}
