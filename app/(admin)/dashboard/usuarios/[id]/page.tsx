@@ -178,34 +178,37 @@ export default function EditarUsuarioPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto px-4 sm:px-6 lg:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Editar Usuário</h1>
-            <p className="text-muted-foreground mt-1">
-              Atualize as informações e permissões do usuário
-            </p>
+      <div className="space-y-4">
+        {/* Botão Voltar + Título */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="gap-2 flex-shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Voltar</span>
+            </Button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Editar Usuário</h1>
+              <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                Atualize as informações e permissões do usuário
+              </p>
+            </div>
           </div>
         </div>
         
-        {/* Botão Reenviar Convite */}
+        {/* Botão Reenviar Convite - Full width em mobile */}
         <Button
           type="button"
           variant="outline"
           onClick={handleResendInvite}
           disabled={resendingInvite}
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
         >
           <Mail className="h-4 w-4" />
           {resendingInvite ? "Enviando..." : "Reenviar Convite"}
@@ -214,8 +217,8 @@ export default function EditarUsuarioPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Dados Básicos */}
-        <Card className="p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Dados do Usuário</h2>
+        <Card className="p-4 sm:p-6 space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold">Dados do Usuário</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -259,10 +262,10 @@ export default function EditarUsuarioPage() {
         </Card>
 
         {/* Permissões */}
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Permissões</h2>
-            <div className="text-sm text-muted-foreground">
+        <Card className="p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 className="text-lg sm:text-xl font-semibold">Permissões</h2>
+            <div className="text-xs sm:text-sm text-muted-foreground">
               {selectedPermissions.size} permissões selecionadas
             </div>
           </div>
@@ -274,37 +277,38 @@ export default function EditarUsuarioPage() {
               const someSelected = groupPermissions.some((p) => selectedPermissions.has(p))
 
               return (
-                <div key={group.label} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{group.label}</h3>
-                      <p className="text-sm text-muted-foreground">{group.description}</p>
+                <div key={group.label} className="border rounded-lg p-3 sm:p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base sm:text-lg">{group.label}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{group.description}</p>
                     </div>
                     <Button
                       type="button"
                       variant={allSelected ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleToggleGroup(groupPermissions)}
+                      className="w-full sm:w-auto flex-shrink-0"
                     >
                       {allSelected ? "Desmarcar Todos" : "Marcar Todos"}
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {group.permissions.map((permissionItem) => {
                       const permission = permissionItem.key as Permission
                       return (
                         <label
                           key={permission}
-                          className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="flex items-center gap-2 p-2.5 sm:p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={selectedPermissions.has(permission)}
                             onChange={() => handleTogglePermission(permission)}
-                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary flex-shrink-0"
                           />
-                          <span className="text-sm font-medium">
+                          <span className="text-xs sm:text-sm font-medium">
                             {permissionItem.label}
                           </span>
                         </label>
@@ -318,16 +322,17 @@ export default function EditarUsuarioPage() {
         </Card>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
           <Button
             type="button"
             variant="outline"
             onClick={() => router.back()}
             disabled={saving}
+            className="w-full sm:w-auto"
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={saving} className="gap-2">
+          <Button type="submit" disabled={saving} className="gap-2 w-full sm:w-auto">
             {saving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
