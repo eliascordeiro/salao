@@ -1,7 +1,8 @@
 "use client";
 
-import { MapPin, Navigation } from "lucide-react";
+import { Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface DirectionsButtonProps {
   latitude: number;
@@ -24,47 +25,17 @@ export function DirectionsButton({
   className = "",
   iconOnly = false,
 }: DirectionsButtonProps) {
+  const router = useRouter();
+
   const handleGetDirections = () => {
-    // Detectar se é mobile e qual app de mapa está disponível
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    // Criar query string com nome ou endereço
-    const query = address || salonName;
-
-    if (isMobile) {
-      if (isIOS) {
-        // iOS: Tentar abrir Apple Maps, fallback para Google Maps
-        const appleMapsUrl = `maps://maps.apple.com/?daddr=${latitude},${longitude}&q=${encodeURIComponent(
-          query
-        )}`;
-        window.location.href = appleMapsUrl;
-
-        // Fallback para Google Maps depois de 1 segundo
-        setTimeout(() => {
-          const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${encodeURIComponent(
-            query
-          )}`;
-          window.open(googleMapsUrl, "_blank");
-        }, 1000);
-      } else {
-        // Android: Tentar abrir Google Maps app, fallback para web
-        const googleMapsApp = `google.navigation:q=${latitude},${longitude}`;
-        window.location.href = googleMapsApp;
-
-        // Fallback para Google Maps web depois de 1 segundo
-        setTimeout(() => {
-          const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-          window.open(googleMapsUrl, "_blank");
-        }, 1000);
-      }
-    } else {
-      // Desktop: Abrir Google Maps na web
-      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&destination_place_id=${encodeURIComponent(
-        query
-      )}`;
-      window.open(googleMapsUrl, "_blank");
-    }
+    // Navegar para página interna de navegação com Mapbox
+    const params = new URLSearchParams({
+      lat: latitude.toString(),
+      lng: longitude.toString(),
+      name: salonName,
+    });
+    
+    router.push(`/navegacao?${params.toString()}`);
   };
 
   return (
