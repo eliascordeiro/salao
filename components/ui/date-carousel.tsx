@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "./button";
 import { Badge } from "./badge";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface DateCarouselProps {
@@ -29,8 +29,8 @@ export function DateCarousel({
     if (!scrollRef.current) return;
     
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
   };
 
   useEffect(() => {
@@ -38,15 +38,38 @@ export function DateCarousel({
     const scrollElement = scrollRef.current;
     if (scrollElement) {
       scrollElement.addEventListener("scroll", checkScroll);
-      return () => scrollElement.removeEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
+      return () => {
+        scrollElement.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
+      };
     }
   }, [dates]);
+
+  // Auto-scroll para data selecionada
+  useEffect(() => {
+    if (selectedDate && scrollRef.current) {
+      const selectedIndex = dates.findIndex(
+        (d) => d.toDateString() === selectedDate.toDateString()
+      );
+      if (selectedIndex !== -1) {
+        const selectedElement = scrollRef.current.children[selectedIndex] as HTMLElement;
+        if (selectedElement) {
+          selectedElement.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      }
+    }
+  }, [selectedDate, dates]);
 
   // Rolar para esquerda
   const scrollLeft = () => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollBy({
-      left: -300,
+      left: -320,
       behavior: "smooth",
     });
   };
@@ -55,116 +78,145 @@ export function DateCarousel({
   const scrollRight = () => {
     if (!scrollRef.current) return;
     scrollRef.current.scrollBy({
-      left: 300,
+      left: 320,
       behavior: "smooth",
     });
   };
 
+  // Obter label especial para datas
+  const getDateLabel = (date: Date) => {
+    if (isToday(date)) return "Hoje";
+    if (isTomorrow(date)) return "Amanhã";
+    return null;
+  };
+
   return (
-    <div className={`relative ${className}`}>
-      {/* Botão Esquerda - Visível apenas em desktop quando pode rolar */}
+    <div className={`relative group ${className}`}>
+      {/* Gradiente esquerda */}
       {canScrollLeft && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={scrollLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-2 border-primary/20 hover:bg-primary hover:text-white hidden sm:flex"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
+        <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
       )}
+
+      {/* Botão Esquerda */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={scrollLeft}
+        disabled={!canScrollLeft}
+        className={`absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-full bg-background/95 backdrop-blur-md shadow-lg border-2 transition-all ${
+          canScrollLeft
+            ? "border-primary/30 hover:bg-primary hover:text-white hover:border-primary opacity-100 hover:scale-110"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+      </Button>
 
       {/* Container de Scroll */}
       <div
         ref={scrollRef}
-        className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory px-10 sm:px-12"
+        className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory py-2 px-12 sm:px-14"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
           WebkitOverflowScrolling: "touch",
         }}
       >
-        {dates.map((date) => {
+        {dates.map((date, index) => {
           const isSelected =
             selectedDate?.toDateString() === date.toDateString();
-          const isToday = date.toDateString() === new Date().toDateString();
+          const specialLabel = getDateLabel(date);
+          const dayName = format(date, "EEE", { locale: ptBR });
 
           return (
-            <Button
+            <button
               key={date.toISOString()}
-              variant={isSelected ? "default" : "outline"}
-              className={`flex flex-col h-auto py-3 px-4 min-w-[80px] sm:min-w-[90px] transition-all snap-center flex-shrink-0 ${
+              type="button"
+              className={`flex flex-col items-center justify-center h-auto py-3 sm:py-4 px-3 sm:px-4 min-w-[72px] sm:min-w-[90px] rounded-xl transition-all snap-center flex-shrink-0 border-2 ${
                 isSelected
-                  ? "bg-gradient-primary text-white shadow-lg shadow-primary/30 scale-105"
-                  : "glass-card hover:bg-background-alt hover:border-primary/30 hover:scale-105"
+                  ? "bg-gradient-primary text-white shadow-xl shadow-primary/40 scale-105 border-primary/50"
+                  : "bg-background/50 backdrop-blur-sm hover:bg-background-alt border-border/50 hover:border-primary/30 hover:scale-105 hover:shadow-lg"
               }`}
               onClick={() => onSelectDate(date)}
             >
+              {/* Dia da semana */}
               <span
-                className={`text-xs ${
-                  isSelected ? "text-white/70" : "text-foreground-muted"
+                className={`text-[10px] sm:text-xs font-medium uppercase tracking-wider mb-1 ${
+                  isSelected ? "text-white/80" : "text-foreground-muted"
                 }`}
               >
-                {format(date, "EEE", { locale: ptBR })}
+                {dayName}
               </span>
-              <span className="text-2xl font-bold my-1">
-                {format(date, "dd", { locale: ptBR })}
+              
+              {/* Número do dia */}
+              <span className="text-2xl sm:text-3xl font-bold my-1 sm:my-1.5">
+                {format(date, "dd")}
               </span>
+              
+              {/* Mês */}
               <span
-                className={`text-xs ${
-                  isSelected ? "text-white/70" : "text-foreground-muted"
+                className={`text-[10px] sm:text-xs font-medium capitalize ${
+                  isSelected ? "text-white/80" : "text-foreground-muted"
                 }`}
               >
                 {format(date, "MMM", { locale: ptBR })}
               </span>
-              {isToday && (
-                <Badge
-                  className={`mt-1 text-[10px] px-2 py-0.5 ${
+              
+              {/* Badge especial */}
+              {specialLabel && (
+                <div
+                  className={`mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     isSelected
-                      ? "bg-white/20 text-white border-white/30"
-                      : "bg-primary/20 text-primary border-primary/30"
+                      ? "bg-white/25 text-white"
+                      : "bg-primary/15 text-primary"
                   }`}
                 >
-                  Hoje
-                </Badge>
+                  {specialLabel}
+                </div>
               )}
-            </Button>
+            </button>
           );
         })}
       </div>
 
-      {/* Botão Direita - Visível apenas em desktop quando pode rolar */}
+      {/* Gradiente direita */}
       {canScrollRight && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={scrollRight}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm shadow-lg border-2 border-primary/20 hover:bg-primary hover:text-white hidden sm:flex"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </Button>
+        <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
       )}
 
+      {/* Botão Direita */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={scrollRight}
+        disabled={!canScrollRight}
+        className={`absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-full bg-background/95 backdrop-blur-md shadow-lg border-2 transition-all ${
+          canScrollRight
+            ? "border-primary/30 hover:bg-primary hover:text-white hover:border-primary opacity-100 hover:scale-110"
+            : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+      </Button>
+
       {/* Indicador de Scroll para Mobile */}
-      <div className="flex justify-center gap-1 mt-3 sm:hidden">
-        <div
-          className={`h-1 rounded-full transition-all ${
-            canScrollLeft ? "w-2 bg-primary" : "w-1 bg-muted-foreground/30"
-          }`}
-        />
-        <div
-          className={`h-1 rounded-full transition-all ${
-            canScrollLeft && canScrollRight
-              ? "w-4 bg-primary"
-              : "w-2 bg-muted-foreground/30"
-          }`}
-        />
-        <div
-          className={`h-1 rounded-full transition-all ${
-            canScrollRight ? "w-2 bg-primary" : "w-1 bg-muted-foreground/30"
-          }`}
-        />
+      <div className="flex justify-center gap-1.5 mt-3 sm:hidden">
+        {canScrollLeft && (
+          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+        )}
+        <div className="h-1.5 w-8 rounded-full bg-primary/80" />
+        {canScrollRight && (
+          <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+        )}
       </div>
+
+      {/* Dica de Scroll */}
+      {dates.length > 5 && (
+        <div className="hidden sm:flex items-center justify-center gap-2 mt-3 text-xs text-muted-foreground/60">
+          <Calendar className="h-3 w-3" />
+          <span>Deslize para ver mais datas</span>
+        </div>
+      )}
     </div>
   );
 }

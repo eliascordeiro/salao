@@ -915,86 +915,120 @@ export default function AgendarSalaoPage() {
               
               {/* Seletor de Horário */}
               {selectedDate && (
-                <div>
-                  <p className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
-                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-                    Selecione o horário
-                  </p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold flex items-center gap-2 text-sm sm:text-base">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                      Horários disponíveis
+                    </p>
+                    {availableSlots.length > 0 && (
+                      <span className="text-xs sm:text-sm text-muted-foreground bg-primary/5 px-2 sm:px-3 py-1 rounded-full">
+                        {availableSlots.filter(s => s.available && !s.isClientConflict).length} disponíveis
+                      </span>
+                    )}
+                  </div>
                   
                   {loadingSlots ? (
-                    <GlassCard className="p-6 sm:p-10">
-                      <div className="flex items-center justify-center">
-                        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-primary" />
+                    <div className="glass-card rounded-xl p-8 sm:p-12 backdrop-blur-sm">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                        <div className="relative">
+                          <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 animate-spin text-primary" />
+                          <div className="absolute inset-0 animate-ping">
+                            <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-primary/30" />
+                          </div>
+                        </div>
+                        <p className="text-sm sm:text-base text-muted-foreground animate-pulse">
+                          Carregando horários...
+                        </p>
                       </div>
-                    </GlassCard>
+                    </div>
                   ) : availableSlots.length > 0 ? (
-                    <>
-                      {/* Legenda Visual */}
-                      <div className="mb-3 sm:mb-4 flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-success/30 bg-success/5"></div>
-                          <span className="text-foreground-muted">Disponível</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-primary bg-primary/20"></div>
-                          <span className="text-foreground-muted">Selecionado</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-orange-500/40 bg-orange-500/10"></div>
-                          <span className="text-foreground-muted hidden xs:inline">Você já tem agendamento</span>
-                          <span className="text-foreground-muted xs:hidden">Seu agendamento</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded border-2 border-foreground-muted/20 bg-background-alt/30"></div>
-                          <span className="text-foreground-muted">Indisponível</span>
+                    <div className="space-y-4">
+                      {/* Legenda Visual Melhorada */}
+                      <div className="glass-card rounded-xl p-3 sm:p-4 backdrop-blur-sm">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 sm:mb-3 flex items-center gap-2">
+                          <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Legenda
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg border-2 border-success/40 bg-success/10 flex-shrink-0"></div>
+                            <span className="text-[10px] sm:text-xs text-foreground">Disponível</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg bg-gradient-primary flex-shrink-0"></div>
+                            <span className="text-[10px] sm:text-xs text-foreground">Selecionado</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg border-2 border-orange-500/50 bg-orange-500/15 flex-shrink-0"></div>
+                            <span className="text-[10px] sm:text-xs text-foreground">Conflito pessoal</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg border-2 border-border/30 bg-background-alt/50 flex-shrink-0 opacity-50"></div>
+                            <span className="text-[10px] sm:text-xs text-foreground">Ocupado</span>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">{availableSlots.map((slot) => {
+                      {/* Grid de Horários Melhorada */}
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
+                        {availableSlots.map((slot) => {
                           const isClientConflict = slot.isClientConflict === true;
                           const isDisabled = !slot.available || isClientConflict;
+                          const isSelected = selectedTime === slot.time;
                           
                           return (
                             <div key={slot.time} className="relative group">
-                              <Button
-                                variant={selectedTime === slot.time ? "default" : "outline"}
+                              <button
+                                type="button"
                                 disabled={isDisabled}
                                 onClick={() => !isDisabled && setSelectedTime(slot.time)}
-                                className={`h-auto py-4 w-full text-base font-semibold ${
-                                  selectedTime === slot.time 
-                                    ? "bg-gradient-primary text-white shadow-lg shadow-primary/30" 
+                                className={`relative w-full h-16 sm:h-18 rounded-xl font-semibold text-base sm:text-lg transition-all duration-200 ${
+                                  isSelected 
+                                    ? "bg-gradient-primary text-white shadow-xl shadow-primary/40 scale-105 border-2 border-primary/50" 
                                     : slot.available && !isClientConflict
-                                    ? "glass-card hover:bg-background-alt hover:border-primary/30"
+                                    ? "glass-card border-2 border-success/30 bg-success/5 hover:bg-success/10 hover:border-success/50 hover:scale-105 hover:shadow-lg text-foreground"
                                     : isClientConflict
-                                    ? "border-2 border-orange-500/40 bg-orange-500/10 text-orange-600/70 cursor-not-allowed"
-                                    : "opacity-50 cursor-not-allowed"
-                                }`}
+                                    ? "border-2 border-orange-500/50 bg-orange-500/15 text-orange-600/70 cursor-not-allowed"
+                                    : "border-2 border-border/20 bg-background-alt/30 text-muted-foreground/40 cursor-not-allowed opacity-60"
+                                } disabled:cursor-not-allowed`}
                               >
-                                {slot.time}
-                                {isClientConflict && <span className="ml-1">🟠</span>}
-                              </Button>
+                                <div className="flex flex-col items-center justify-center h-full">
+                                  <span>{slot.time}</span>
+                                  {isClientConflict && (
+                                    <span className="text-xs mt-0.5">🟠</span>
+                                  )}
+                                  {isSelected && (
+                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                      <Check className="h-3 w-3 text-primary" />
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
                               
-                              {/* Tooltip para conflito do cliente */}
+                              {/* Tooltip aprimorado para conflito */}
                               {isClientConflict && slot.conflictDetails && (
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-background border-2 border-orange-500/40 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
-                                  <div className="text-xs space-y-1">
-                                    <p className="font-bold text-orange-500 flex items-center gap-1">
-                                      <AlertCircle className="h-3 w-3" />
-                                      Você já tem agendamento
-                                    </p>
-                                    <p className="text-foreground-muted">
-                                      <strong className="text-foreground">Serviço:</strong> {slot.conflictDetails.serviceName}
-                                    </p>
-                                    <p className="text-foreground-muted">
-                                      <strong className="text-foreground">Profissional:</strong> {slot.conflictDetails.staffName}
-                                    </p>
-                                    <p className="text-foreground-muted">
-                                      <strong className="text-foreground">Duração:</strong> {slot.conflictDetails.duration} min
-                                    </p>
-                                  </div>
-                                  {/* Seta do tooltip */}
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-[2px]">
-                                    <div className="border-4 border-transparent border-t-orange-500/40"></div>
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                                  <div className="bg-background border-2 border-orange-500/50 rounded-lg shadow-2xl p-3 whitespace-nowrap backdrop-blur-md">
+                                    <div className="text-xs space-y-1.5">
+                                      <p className="font-bold text-orange-500 flex items-center gap-1.5 pb-1 border-b border-orange-500/30">
+                                        <AlertCircle className="h-3.5 w-3.5" />
+                                        Você já tem agendamento
+                                      </p>
+                                      <p className="text-foreground-muted">
+                                        <strong className="text-foreground">Serviço:</strong> {slot.conflictDetails.serviceName}
+                                      </p>
+                                      <p className="text-foreground-muted">
+                                        <strong className="text-foreground">Com:</strong> {slot.conflictDetails.staffName}
+                                      </p>
+                                      <p className="text-foreground-muted">
+                                        <strong className="text-foreground">Duração:</strong> {slot.conflictDetails.duration} min
+                                      </p>
+                                    </div>
+                                    {/* Seta do tooltip */}
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-[2px]">
+                                      <div className="border-[6px] border-transparent border-t-orange-500/50"></div>
+                                    </div>
                                   </div>
                                 </div>
                               )}
@@ -1002,16 +1036,30 @@ export default function AgendarSalaoPage() {
                           );
                         })}
                       </div>
-                    </>
+
+                      {/* Mensagem de ajuda se não selecionou horário */}
+                      {!selectedTime && availableSlots.some(s => s.available && !s.isClientConflict) && (
+                        <div className="glass-card rounded-xl p-4 bg-primary/5 border border-primary/20 animate-pulse">
+                          <p className="text-sm text-center text-foreground flex items-center justify-center gap-2">
+                            <Clock className="h-4 w-4 text-primary" />
+                            Toque em um horário para selecionar
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <GlassCard className="p-8 text-center space-y-3">
-                      <div className="w-16 h-16 rounded-full bg-foreground-muted/10 flex items-center justify-center mx-auto">
-                        <AlertCircle className="h-8 w-8 text-foreground-muted" />
+                    <div className="glass-card rounded-xl p-8 sm:p-12 text-center space-y-4 backdrop-blur-sm">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-foreground-muted/10 flex items-center justify-center mx-auto">
+                        <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-foreground-muted" />
                       </div>
-                      <p className="text-sm text-foreground-muted">
-                        Nenhum horário disponível para esta data
-                      </p>
-                    </GlassCard>
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-base sm:text-lg">Nenhum horário disponível</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto">
+                          Não há horários livres para <strong>{format(selectedDate, "dd/MM/yyyy")}</strong>.
+                          Tente selecionar outra data.
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
