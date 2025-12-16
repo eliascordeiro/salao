@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatDistance } from "@/lib/utils/distance";
 import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { DirectionsButton } from "@/components/maps/directions-button";
 
 interface SalonCardProps {
   salon: {
@@ -19,6 +20,8 @@ interface SalonCardProps {
     address?: string | null;
     city?: string | null;
     state?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     coverPhoto?: string | null;
     rating: number;
     reviewsCount: number;
@@ -58,17 +61,10 @@ export function SalonCard({ salon }: SalonCardProps) {
     }
   };
   
-  // Função para abrir no mapa
-  const handleOpenMap = (e: React.MouseEvent) => {
+  // Função para abrir rotas (usando DirectionsButton)
+  const handleOpenDirections = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const address = salon.address 
-      ? `${salon.address}, ${salon.city}, ${salon.state}`
-      : `${salon.name}, ${salon.city}, ${salon.state}`;
-    
-    const encodedAddress = encodeURIComponent(address);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, "_blank");
   };
   
   return (
@@ -97,15 +93,20 @@ export function SalonCard({ salon }: SalonCardProps) {
             </Button>
           )}
           
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
-            onClick={handleOpenMap}
-            title="Ver no mapa"
-          >
-            <Navigation className="h-4 w-4" />
-          </Button>
+          {salon.latitude && salon.longitude && (
+            <div onClick={handleOpenDirections}>
+              <DirectionsButton
+                latitude={salon.latitude}
+                longitude={salon.longitude}
+                salonName={salon.name}
+                address={salon.address || undefined}
+                variant="outline"
+                size="sm"
+                iconOnly={true}
+                className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
+              />
+            </div>
+          )}
           
           <Button
             size="sm"

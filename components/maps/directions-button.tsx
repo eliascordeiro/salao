@@ -8,9 +8,10 @@ interface DirectionsButtonProps {
   longitude: number;
   salonName: string;
   address?: string;
-  variant?: "default" | "outline" | "secondary";
+  variant?: "default" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg";
   className?: string;
+  iconOnly?: boolean; // Nova prop para mostrar apenas o ícone
 }
 
 export function DirectionsButton({
@@ -21,6 +22,7 @@ export function DirectionsButton({
   variant = "outline",
   size = "default",
   className = "",
+  iconOnly = false,
 }: DirectionsButtonProps) {
   const handleGetDirections = () => {
     // Detectar se é mobile e qual app de mapa está disponível
@@ -71,10 +73,15 @@ export function DirectionsButton({
       size={size}
       onClick={handleGetDirections}
       className={`gap-2 ${className}`}
+      title={iconOnly ? "Como Chegar" : undefined}
     >
       <Navigation className="h-4 w-4" />
-      <span className="hidden sm:inline">Como Chegar</span>
-      <span className="sm:hidden">Rotas</span>
+      {!iconOnly && (
+        <>
+          <span className="hidden sm:inline">Como Chegar</span>
+          <span className="sm:hidden">Rotas</span>
+        </>
+      )}
     </Button>
   );
 }
