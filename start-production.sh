@@ -50,8 +50,11 @@ wait_for_db() {
 
 # Aguardar banco estar pronto
 if wait_for_db; then
-  echo "🔄 Applying schema changes..."
-  npx prisma db push --accept-data-loss
+  echo "🔄 Running database migrations..."
+  npx prisma migrate deploy || echo "⚠️  Migration failed, trying db push..."
+  
+  echo "🔄 Applying schema changes (fallback)..."
+  npx prisma db push --accept-data-loss --skip-generate
   
   echo "🔄 Regenerating Prisma Client..."
   npx prisma generate
