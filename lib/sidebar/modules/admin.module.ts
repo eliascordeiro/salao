@@ -1,4 +1,4 @@
-import { UserCog, Settings, Headset } from "lucide-react"
+import { UserCog, Settings, Headset, MessageCircle } from "lucide-react"
 import { MenuModule } from "../types"
 
 /**
@@ -35,6 +35,15 @@ export const adminModule: MenuModule = {
       href: "/dashboard/configuracoes",
       permission: "settings.view",
       order: 3,
+      group: "admin",
+    },
+    {
+      id: "whatsapp",
+      label: "WhatsApp",
+      icon: MessageCircle,
+      href: "/dashboard/configuracoes/whatsapp",
+      permission: "settings.view",
+      order: 4,
       group: "admin",
     },
   ],
