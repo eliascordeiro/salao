@@ -61,12 +61,6 @@ export function SalonCard({ salon }: SalonCardProps) {
     }
   };
   
-  // Função para abrir rotas (usando DirectionsButton)
-  const handleOpenDirections = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  
   return (
     <Link href={`/salao/${salon.id}`} className="block h-full">
       <GlassCard className="group overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 cursor-pointer relative">
@@ -94,18 +88,16 @@ export function SalonCard({ salon }: SalonCardProps) {
           )}
           
           {salon.latitude && salon.longitude && (
-            <div onClick={handleOpenDirections}>
-              <DirectionsButton
-                latitude={salon.latitude}
-                longitude={salon.longitude}
-                salonName={salon.name}
-                address={salon.address || undefined}
-                variant="outline"
-                size="sm"
-                iconOnly={true}
-                className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
-              />
-            </div>
+            <DirectionsButton
+              latitude={salon.latitude}
+              longitude={salon.longitude}
+              salonName={salon.name}
+              address={salon.address || undefined}
+              variant="outline"
+              size="sm"
+              iconOnly={true}
+              className="h-10 w-10 p-0 rounded-full bg-background/90 backdrop-blur-sm border-2 border-primary/20 hover:bg-primary hover:text-white shadow-lg"
+            />
           )}
           
           <Button

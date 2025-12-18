@@ -27,7 +27,10 @@ export function DirectionsButton({
 }: DirectionsButtonProps) {
   const router = useRouter();
 
-  const handleGetDirections = () => {
+  const handleGetDirections = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     // Navegar para página interna de navegação com Mapbox
     const params = new URLSearchParams({
       lat: latitude.toString(),
