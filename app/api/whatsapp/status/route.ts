@@ -70,48 +70,80 @@ export async function GET() {
 // POST /api/whatsapp/status - Conectar/Reconectar WhatsApp
 export async function POST() {
   try {
+    console.log("🔄 [POST /api/whatsapp/status] Iniciando conexão WhatsApp...");
+    
     const session = await getServerSession(authOptions);
     if (!session) {
+      console.log("❌ Sessão não encontrada");
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
+    console.log("✅ Sessão OK:", session.user.email);
 
     const salon = await getSalonByUserId(session.user.id);
     if (!salon) {
+      console.log("❌ Salão não encontrado");
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
+    console.log("✅ Salão encontrado:", salon.name);
 
     // Verificar feature
     const hasWhatsApp = await hasFeature(salon.id, FEATURES.WHATSAPP_NOTIFICATIONS);
     if (!hasWhatsApp) {
+      console.log("❌ Feature WhatsApp não disponível no plano");
       return NextResponse.json(
         { error: "Feature WhatsApp não disponível no seu plano" },
         { status: 403 }
       );
     }
+    console.log("✅ Feature WhatsApp disponível");
 
+    console.log("🔑 Criando cliente WhatsApp...");
+    console.log("  - URL:", process.env.EVOLUTION_API_URL);
+    console.log("  - Instance:", process.env.EVOLUTION_INSTANCE_NAME);
+    console.log("  - Key presente:", !!process.env.EVOLUTION_API_KEY);
+    
     const whatsapp = getWhatsAppClient();
 
     try {
-      // Tentar obter QR Code existente
+      console.log("📱 Tentando obter QR Code existente...");
       const qrCode = await whatsapp.getQRCode();
-      return NextResponse.json({
-        success: true,
-        qrCode: qrCode.base64 || qrCode.qrcode,
-        message: "Escaneie o QR Code com seu WhatsApp",
-      });
-    } catch (error) {
-      // Se falhar, criar nova instância
-      await whatsapp.createInstance();
-      const qrCode = await whatsapp.getQRCode();
+      console.log("✅ QR Code obtido com sucesso");
+      console.log("  - Tipo:", typeof qrCode);
+      console.log("  - Keys:", Object.keys(qrCode));
       
       return NextResponse.json({
         success: true,
-        qrCode: qrCode.base64 || qrCode.qrcode,
-        message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
+        qrCode: qrCode.base64 || qrCode.qrcode || qrCode.code,
+        message: "Escaneie o QR Code com seu WhatsApp",
       });
+    } catch (error: any) {
+      console.log("⚠️ Erro ao obter QR Code, tentando criar instância...");
+      console.log("  - Erro:", error.message);
+      
+      try {
+        console.log("🆕 Criando nova instância...");
+        const createResult = await whatsapp.createInstance();
+        console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
+        
+        console.log("📱 Obtendo QR Code da nova instância...");
+        const qrCode = await whatsapp.getQRCode();
+        console.log("✅ QR Code obtido:", typeof qrCode);
+        console.log("  - Keys:", Object.keys(qrCode));
+        
+        return NextResponse.json({
+          success: true,
+          qrCode: qrCode.base64 || qrCode.qrcode || qrCode.code,
+          message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
+        });
+      } catch (createError: any) {
+        console.error("❌ Erro ao criar instância:", createError);
+        throw createError;
+      }
     }
   } catch (error: any) {
-    console.error("Erro ao conectar WhatsApp:", error);
+    console.error("❌ Erro fatal ao conectar WhatsApp:", error);
+    console.error("  - Message:", error.message);
+    console.error("  - Stack:", error.stack);
     return NextResponse.json(
       { error: error.message || "Erro ao conectar" },
       { status: 500 }

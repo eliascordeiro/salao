@@ -133,6 +133,10 @@ export class EvolutionWhatsAppClient {
    * Cria nova instância
    */
   async createInstance() {
+    console.log("🆕 [createInstance] Criando instância...");
+    console.log("  - URL:", `${this.config.baseUrl}/instance/create`);
+    console.log("  - Instance name:", this.config.instanceName);
+    
     const response = await fetch(`${this.config.baseUrl}/instance/create`, {
       method: "POST",
       headers: {
@@ -146,18 +150,35 @@ export class EvolutionWhatsAppClient {
       }),
     });
 
+    console.log("  - Response status:", response.status);
+    console.log("  - Response OK:", response.ok);
+
     if (!response.ok) {
-      const error = await response.json();
+      const errorText = await response.text();
+      console.error("❌ Erro na resposta:", errorText);
+      
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch {
+        error = { message: errorText };
+      }
+      
       throw new Error(`Erro ao criar instância: ${error.message || response.statusText}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log("✅ Instância criada com sucesso:", result);
+    return result;
   }
 
   /**
    * Obtém QR Code para conectar
    */
   async getQRCode() {
+    console.log("📱 [getQRCode] Obtendo QR Code...");
+    console.log("  - URL:", `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`);
+    
     const response = await fetch(
       `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`,
       {
@@ -167,11 +188,18 @@ export class EvolutionWhatsAppClient {
       }
     );
 
+    console.log("  - Response status:", response.status);
+    console.log("  - Response OK:", response.ok);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Erro ao obter QR Code:", errorText);
       throw new Error("Erro ao obter QR Code");
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log("✅ QR Code obtido:", Object.keys(result));
+    return result;
   }
 
   /**
