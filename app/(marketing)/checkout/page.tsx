@@ -192,15 +192,15 @@ function CheckoutContent() {
               <div className="border-t pt-4">
                 <h4 className="font-semibold text-sm mb-3">Incluído no plano:</h4>
                 <ul className="space-y-2">
-                  {plan.features.slice(0, 5).map((feature, index) => (
+                  {plan.featuresList?.slice(0, 5).map((feature, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                       <span>{feature}</span>
                     </li>
                   ))}
-                  {plan.features.length > 5 && (
+                  {(plan.featuresList?.length || 0) > 5 && (
                     <li className="text-sm text-muted-foreground">
-                      + {plan.features.length - 5} outros recursos
+                      + {(plan.featuresList?.length || 0) - 5} outros recursos
                     </li>
                   )}
                 </ul>
