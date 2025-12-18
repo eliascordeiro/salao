@@ -217,10 +217,13 @@ export class EvolutionWhatsAppClient {
     
     // Agora buscar o QR Code
     console.log("  - Buscando QR Code...");
-    const qrUrl = `${this.config.baseUrl}/instance/qrcode/${this.config.instanceName}`;
-    console.log("  - QR URL:", qrUrl);
     
-    const response = await fetch(qrUrl, {
+    // Endpoint correto: POST /instance/connect/:instanceName
+    const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
+    console.log("  - Connect URL:", connectUrl);
+    
+    const response = await fetch(connectUrl, {
+      method: "GET",
       headers: {
         apikey: this.config.apiKey,
       },
@@ -232,12 +235,46 @@ export class EvolutionWhatsAppClient {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Erro ao obter QR Code:", errorText);
+      
+      // Se 404, a instância precisa ser reiniciada
+      if (response.status === 404) {
+        console.log("  - Tentando restart da instância...");
+        const restartUrl = `${this.config.baseUrl}/instance/restart/${this.config.instanceName}`;
+        const restartResponse = await fetch(restartUrl, {
+          method: "PUT",
+          headers: {
+            apikey: this.config.apiKey,
+          },
+        });
+        
+        if (restartResponse.ok) {
+          console.log("  ✅ Instância reiniciada, aguardando...");
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Tentar buscar QR Code novamente
+          const retryResponse = await fetch(connectUrl, {
+            method: "GET",
+            headers: {
+              apikey: this.config.apiKey,
+            },
+          });
+          
+          if (!retryResponse.ok) {
+            throw new Error("Erro ao obter QR Code após restart");
+          }
+          
+          const retryResult = await retryResponse.json();
+          console.log("✅ QR Code obtido após restart:", Object.keys(retryResult));
+          return retryResult;
+        }
+      }
+      
       throw new Error("Erro ao obter QR Code");
     }
 
     const result = await response.json();
     console.log("✅ QR Code obtido:", Object.keys(result));
-    console.log("  - Dados:", JSON.stringify(result, null, 2));
+    console.log("  - Dados completos:", JSON.stringify(result, null, 2));
     return result;
   }
 
