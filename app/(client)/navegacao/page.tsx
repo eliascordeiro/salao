@@ -29,14 +29,31 @@ function NavegacaoContent() {
   const salonName = searchParams.get("name") || "Destino";
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    console.log("🗺️ NavegacaoContent montado");
+    console.log("📍 Destino:", { lat: destLat, lng: destLng, name: salonName });
+    console.log("🔑 Mapbox Token:", mapboxgl.accessToken ? "Configurado" : "AUSENTE!");
+    
+    if (!mapContainer.current) {
+      console.log("❌ mapContainer não disponível");
+      return;
+    }
+    
     if (!destLat || !destLng) {
+      console.log("❌ Coordenadas inválidas");
       setError("Coordenadas do destino inválidas");
       setLoading(false);
       return;
     }
 
+    if (!mapboxgl.accessToken) {
+      console.log("❌ Token Mapbox ausente");
+      setError("Token do Mapbox não configurado. Verifique NEXT_PUBLIC_MAPBOX_TOKEN.");
+      setLoading(false);
+      return;
+    }
+
     // Obter localização do usuário
+    console.log("📱 Solicitando localização do usuário...");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -44,16 +61,23 @@ function NavegacaoContent() {
             position.coords.longitude,
             position.coords.latitude,
           ];
+          console.log("✅ Localização obtida:", userCoords);
           setUserLocation(userCoords);
           initializeMap(userCoords);
         },
         (err) => {
-          console.error("Erro ao obter localização:", err);
-          setError("Não foi possível obter sua localização. Verifique as permissões.");
+          console.error("❌ Erro ao obter localização:", err);
+          setError(`Não foi possível obter sua localização: ${err.message}. Verifique as permissões.`);
           setLoading(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     } else {
+      console.log("❌ Geolocalização não suportada");
       setError("Geolocalização não suportada pelo navegador");
       setLoading(false);
     }
@@ -67,34 +91,63 @@ function NavegacaoContent() {
   }, [destLat, destLng]);
 
   const initializeMap = (userCoords: [number, number]) => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current) {
+      console.log("❌ initializeMap: mapContainer não disponível");
+      return;
+    }
 
-    // Criar mapa
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: userCoords,
-      zoom: 13,
-    });
+    console.log("🗺️ Inicializando mapa com coordenadas:", userCoords);
 
-    map.current.on("load", () => {
-      if (!map.current) return;
+    try {
+      // Criar mapa
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: userCoords,
+        zoom: 13,
+      });
 
-      // Adicionar marcador de origem (usuário)
-      new mapboxgl.Marker({ color: "#3b82f6" })
-        .setLngLat(userCoords)
-        .setPopup(new mapboxgl.Popup().setHTML("<strong>Você está aqui</strong>"))
-        .addTo(map.current);
+      console.log("✅ Mapa criado, aguardando evento 'load'...");
 
-      // Adicionar marcador de destino (salão)
-      new mapboxgl.Marker({ color: "#8b5cf6" })
-        .setLngLat([destLng, destLat])
-        .setPopup(new mapboxgl.Popup().setHTML(`<strong>${salonName}</strong>`))
-        .addTo(map.current);
+      map.current.on("load", () => {
+        console.log("✅ Mapa carregado");
+        if (!map.current) return;
 
-      // Obter rota
-      getRoute(userCoords, [destLng, destLat]);
-    });
+        // Adicionar marcador de origem (usuário)
+        new mapboxgl.Marker({ color: "#3b82f6" })
+          .setLngLat(userCoords)
+          .setPopup(new mapboxgl.Popup().setHTML("<strong>Você está aqui</strong>"))
+          .addTo(map.current);
+        console.log("✅ Marcador de origem adicionado");
+
+        // Adicionar marcador de destino (salão)
+  const getRoute = async (start: [number, number], end: [number, number]) => {
+    try {
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;
+      console.log("🚗 URL da API Directions:", url);
+      
+      const query = await fetch(url, { method: "GET" });
+      console.log("📡 Status da resposta:", query.status);
+
+      const json = await query.json();
+      console.log("📦 Resposta da API:", json);
+
+      if (json.code === "InvalidToken") {
+        throw new Error("Token do Mapbox inválido ou expirado");
+      }
+
+      if (!json.routes || json.routes.length === 0) {
+        throw new Error("Nenhuma rota encontrada");
+      }ap.current.on("error", (e) => {
+        console.error("❌ Erro no mapa:", e);
+        setError("Erro ao carregar o mapa. Verifique o token do Mapbox.");
+        setLoading(false);
+      });
+    } catch (err) {
+      console.error("❌ Erro ao criar mapa:", err);
+      setError("Erro ao inicializar o mapa.");
+      setLoading(false);
+    }
   };
 
   const getRoute = async (start: [number, number], end: [number, number]) => {
@@ -125,19 +178,21 @@ function NavegacaoContent() {
         };
 
         // Remover camada anterior se existir
-        if (map.current.getSource("route")) {
-          map.current.removeLayer("route");
-          map.current.removeSource("route");
-        }
+      // Calcular distância e tempo
+      const distanceKm = (data.distance / 1000).toFixed(1);
+      const durationMin = Math.round(data.duration / 60);
 
-        map.current.addLayer({
-          id: "route",
-          type: "line",
-          source: {
-            type: "geojson",
-            data: geojson,
-          },
-          layout: {
+      console.log(`✅ Rota calculada: ${distanceKm} km, ${durationMin} min`);
+      setDistance(`${distanceKm} km`);
+      setDuration(`${durationMin} min`);
+      setLoading(false);
+    } catch (err) {
+      console.error("❌ Erro ao obter rota:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      setError(`Erro ao calcular rota: ${errorMessage}`);
+      setLoading(false);
+    }
+  };      layout: {
             "line-join": "round",
             "line-cap": "round",
           },
