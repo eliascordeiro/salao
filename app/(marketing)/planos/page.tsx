@@ -97,7 +97,7 @@ export default function PlanosPage() {
                 </div>
 
                 <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, index) => (
+                  {plan.featuresList?.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <span className="text-sm">{feature}</span>
