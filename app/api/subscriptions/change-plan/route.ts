@@ -33,28 +33,21 @@ export async function POST(req: NextRequest) {
     const salon = await prisma.salon.findFirst({
       where: { userId: session.user.id },
       include: {
-        subscriptions: {
-          where: {
-            status: {
-              in: ["ACTIVE", "TRIALING"],
-            },
-          },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-        },
+        subscription: true, // Relação 1:1 (singular)
       },
     });
     console.log("[change-plan] salon:", salon?.name);
-    console.log("[change-plan] subscriptions count:", salon?.subscriptions?.length || 0);
+    console.log("[change-plan] subscription:", salon?.subscription ? "EXISTS" : "NULL");
 
     if (!salon) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
-    const activeSubscription = salon.subscriptions?.[0];
+    const activeSubscription = salon.subscription;
     console.log("[change-plan] activeSubscription:", activeSubscription ? "EXISTS" : "NULL");
 
-    if (!activeSubscription) {
+    // Verificar se a assinatura está ativa
+    if (!activeSubscription || !["ACTIVE", "TRIALING"].includes(activeSubscription.status)) {
       console.log("[change-plan] Sem assinatura ativa");
       // Sem assinatura ativa, pode criar nova normalmente
       return NextResponse.json({
