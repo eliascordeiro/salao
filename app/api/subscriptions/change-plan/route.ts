@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Buscar assinatura ativa do salão
     const salon = await prisma.salon.findFirst({
-      where: { userId: session.user.id },
+      where: { ownerId: session.user.id }, // Corrigido: ownerId, não userId
       include: {
         subscription: true, // Relação 1:1 (singular)
       },
