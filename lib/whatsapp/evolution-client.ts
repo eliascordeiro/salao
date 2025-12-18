@@ -198,13 +198,21 @@ export class EvolutionWhatsAppClient {
     console.log("  - Instâncias encontradas:", instances);
     
     const instanceExists = Array.isArray(instances) && 
-      instances.some((inst: any) => inst.instance?.instanceName === this.config.instanceName);
+      instances.some((inst: any) => inst.name === this.config.instanceName);
     
     console.log("  - Instância existe?", instanceExists);
     
     if (!instanceExists) {
       console.log("  - Instância não existe, precisa criar primeiro");
       throw new Error("Instância não encontrada");
+    }
+    
+    // Verificar se está conectada
+    const instance = instances.find((inst: any) => inst.name === this.config.instanceName);
+    console.log("  - Status da conexão:", instance?.connectionStatus);
+    
+    if (instance?.connectionStatus === 'close') {
+      console.log("  ⚠️ Instância existe mas está desconectada, gerando QR Code...");
     }
     
     // Agora buscar o QR Code
