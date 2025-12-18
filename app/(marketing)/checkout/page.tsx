@@ -85,6 +85,34 @@ function CheckoutContent() {
   const handleCheckout = async () => {
     if (!plan) return;
 
+    // Verificar se pode prosseguir com a mudança de plano
+    try {
+      const response = await fetch("/api/subscriptions/change-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planSlug: plan.slug }),
+      });
+
+      const result = await response.json();
+
+      if (!result.canProceed) {
+        alert(result.message);
+        return;
+      }
+
+      // Se for upgrade/downgrade, mostrar mensagem
+      if (result.action === "UPGRADE" || result.action === "DOWNGRADE") {
+        const confirmed = confirm(
+          `${result.message}\n\nDeseja continuar com o ${result.action === "UPGRADE" ? "upgrade" : "downgrade"}?`
+        );
+        if (!confirmed) return;
+      }
+    } catch (error) {
+      console.error("Erro ao verificar mudança de plano:", error);
+      alert("Erro ao processar. Tente novamente.");
+      return;
+    }
+
     if (paymentMethod === "credit_card") {
       // Mostrar formulário de cartão integrado
       setShowCardForm(true);
@@ -132,22 +160,17 @@ function CheckoutContent() {
 
         {/* Alerta de assinatura ativa */}
         {hasActiveSubscription && (
-          <Card className="p-6 mb-6 border-amber-500/50 bg-amber-500/10">
+          <Card className="p-6 mb-6 border-blue-500/50 bg-blue-500/10">
             <div className="flex items-start gap-3">
-              <div className="shrink-0 text-amber-500">⚠️</div>
+              <div className="shrink-0 text-blue-500">ℹ️</div>
               <div>
                 <h3 className="font-semibold mb-2">Você já possui uma assinatura ativa</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Para fazer upgrade ou alterar seu plano, entre em contato com o suporte ou cancele sua assinatura atual primeiro.
+                  Ao prosseguir, sua assinatura atual será cancelada automaticamente e você será migrado para o novo plano.
                 </p>
-                <div className="flex gap-3">
-                  <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/assinatura")}>
-                    Ver Minha Assinatura
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => router.push("/contato")}>
-                    Falar com Suporte
-                  </Button>
-                </div>
+                <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/assinatura/gerenciar")}>
+                  Ver Minha Assinatura Atual
+                </Button>
               </div>
             </div>
           </Card>
@@ -334,7 +357,7 @@ function CheckoutContent() {
                     size="lg"
                     className="w-full"
                     onClick={handleCheckout}
-                    disabled={processing || hasActiveSubscription}
+                    disabled={processing}
                   >
                     {processing ? (
                       <>
@@ -342,7 +365,9 @@ function CheckoutContent() {
                         Processando...
                       </>
                     ) : hasActiveSubscription ? (
-                      "Você já possui uma assinatura ativa"
+                      <>
+                        Mudar para {plan.name}
+                      </>
                     ) : (
                       <>
                         {paymentMethod === "pix" ? (
