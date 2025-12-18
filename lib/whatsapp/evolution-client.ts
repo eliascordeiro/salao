@@ -177,16 +177,46 @@ export class EvolutionWhatsAppClient {
    */
   async getQRCode() {
     console.log("📱 [getQRCode] Obtendo QR Code...");
-    console.log("  - URL:", `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`);
     
-    const response = await fetch(
-      `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`,
-      {
-        headers: {
-          apikey: this.config.apiKey,
-        },
-      }
-    );
+    // Primeiro, verificar se a instância existe
+    console.log("  - Verificando se instância existe...");
+    const fetchUrl = `${this.config.baseUrl}/instance/fetchInstances`;
+    console.log("  - Fetch URL:", fetchUrl);
+    
+    const fetchResponse = await fetch(fetchUrl, {
+      headers: {
+        apikey: this.config.apiKey,
+      },
+    });
+    
+    if (!fetchResponse.ok) {
+      console.error("❌ Erro ao buscar instâncias");
+      throw new Error("Erro ao buscar instâncias");
+    }
+    
+    const instances = await fetchResponse.json();
+    console.log("  - Instâncias encontradas:", instances);
+    
+    const instanceExists = Array.isArray(instances) && 
+      instances.some((inst: any) => inst.instance?.instanceName === this.config.instanceName);
+    
+    console.log("  - Instância existe?", instanceExists);
+    
+    if (!instanceExists) {
+      console.log("  - Instância não existe, precisa criar primeiro");
+      throw new Error("Instância não encontrada");
+    }
+    
+    // Agora buscar o QR Code
+    console.log("  - Buscando QR Code...");
+    const qrUrl = `${this.config.baseUrl}/instance/qrcode/${this.config.instanceName}`;
+    console.log("  - QR URL:", qrUrl);
+    
+    const response = await fetch(qrUrl, {
+      headers: {
+        apikey: this.config.apiKey,
+      },
+    });
 
     console.log("  - Response status:", response.status);
     console.log("  - Response OK:", response.ok);
@@ -199,6 +229,7 @@ export class EvolutionWhatsAppClient {
 
     const result = await response.json();
     console.log("✅ QR Code obtido:", Object.keys(result));
+    console.log("  - Dados:", JSON.stringify(result, null, 2));
     return result;
   }
 

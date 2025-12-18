@@ -111,9 +111,17 @@ export async function POST() {
       console.log("  - Tipo:", typeof qrCode);
       console.log("  - Keys:", Object.keys(qrCode));
       
+      // Evolution API retorna { pairingCode, code, base64, count }
+      const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
+      
+      if (!qrCodeData) {
+        console.log("⚠️ QR Code vazio, forçando criação de instância");
+        throw new Error("QR Code não disponível");
+      }
+      
       return NextResponse.json({
         success: true,
-        qrCode: qrCode.base64 || qrCode.qrcode || qrCode.code,
+        qrCode: qrCodeData,
         message: "Escaneie o QR Code com seu WhatsApp",
       });
     } catch (error: any) {
@@ -125,14 +133,25 @@ export async function POST() {
         const createResult = await whatsapp.createInstance();
         console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
         
+        // Aguardar 2 segundos para instância inicializar
+        console.log("⏳ Aguardando inicialização da instância...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
         console.log("📱 Obtendo QR Code da nova instância...");
         const qrCode = await whatsapp.getQRCode();
         console.log("✅ QR Code obtido:", typeof qrCode);
         console.log("  - Keys:", Object.keys(qrCode));
         
+        const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
+        
+        if (!qrCodeData) {
+          console.error("❌ QR Code ainda vazio após criação");
+          throw new Error("QR Code não foi gerado pela Evolution API");
+        }
+        
         return NextResponse.json({
           success: true,
-          qrCode: qrCode.base64 || qrCode.qrcode || qrCode.code,
+          qrCode: qrCodeData,
           message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
         });
       } catch (createError: any) {
