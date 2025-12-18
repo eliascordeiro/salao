@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Verificar se é upgrade ou downgrade
+    // Buscar o plano atual da assinatura ativa
     const currentPlan = await prisma.plan.findUnique({
       where: { id: activeSubscription.planId },
     });
