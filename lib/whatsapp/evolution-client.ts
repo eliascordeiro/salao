@@ -212,7 +212,25 @@ export class EvolutionWhatsAppClient {
     console.log("  - Status da conexão:", instance?.connectionStatus);
     
     if (instance?.connectionStatus === 'close') {
-      console.log("  ⚠️ Instância existe mas está desconectada, gerando QR Code...");
+      console.log("  ⚠️ Instância existe mas está desconectada, reiniciando...");
+      
+      // Restart da instância para forçar geração de QR code
+      const restartUrl = `${this.config.baseUrl}/instance/restart/${this.config.instanceName}`;
+      console.log("  - Restart URL:", restartUrl);
+      
+      const restartResponse = await fetch(restartUrl, {
+        method: "PUT",
+        headers: {
+          apikey: this.config.apiKey,
+        },
+      });
+      
+      console.log("  - Restart status:", restartResponse.status);
+      
+      if (restartResponse.ok) {
+        console.log("  ✅ Instância reiniciada, aguardando inicialização...");
+        await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos
+      }
     }
     
     // Agora buscar o QR Code
