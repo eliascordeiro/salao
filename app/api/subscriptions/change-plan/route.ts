@@ -6,12 +6,14 @@ import prisma from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    console.log("[change-plan] Session:", session?.user?.id);
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     const { planSlug } = await req.json();
+    console.log("[change-plan] planSlug:", planSlug);
 
     if (!planSlug) {
       return NextResponse.json({ error: "planSlug é obrigatório" }, { status: 400 });
@@ -21,6 +23,7 @@ export async function POST(req: NextRequest) {
     const newPlan = await prisma.plan.findUnique({
       where: { slug: planSlug },
     });
+    console.log("[change-plan] newPlan:", newPlan?.name);
 
     if (!newPlan) {
       return NextResponse.json({ error: "Plano não encontrado" }, { status: 404 });
@@ -41,14 +44,18 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+    console.log("[change-plan] salon:", salon?.name);
+    console.log("[change-plan] subscriptions count:", salon?.subscriptions?.length || 0);
 
     if (!salon) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
-    const activeSubscription = salon.subscriptions[0];
+    const activeSubscription = salon.subscriptions?.[0];
+    console.log("[change-plan] activeSubscription:", activeSubscription ? "EXISTS" : "NULL");
 
     if (!activeSubscription) {
+      console.log("[change-plan] Sem assinatura ativa");
       // Sem assinatura ativa, pode criar nova normalmente
       return NextResponse.json({
         canProceed: true,
@@ -58,16 +65,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Buscar o plano atual da assinatura ativa
+    console.log("[change-plan] Buscando plano atual com ID:", activeSubscription.planId);
     const currentPlan = await prisma.plan.findUnique({
       where: { id: activeSubscription.planId },
     });
+    console.log("[change-plan] currentPlan:", currentPlan?.name);
 
     if (!currentPlan) {
+      console.error("[change-plan] Plano atual não encontrado!");
       return NextResponse.json({ error: "Plano atual não encontrado" }, { status: 404 });
     }
 
     const isUpgrade = newPlan.price > currentPlan.price;
     const isSamePlan = newPlan.id === currentPlan.id;
+    console.log("[change-plan] isUpgrade:", isUpgrade, "isSamePlan:", isSamePlan);
 
     if (isSamePlan) {
       return NextResponse.json({
