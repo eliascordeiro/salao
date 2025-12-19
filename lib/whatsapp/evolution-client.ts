@@ -252,6 +252,27 @@ export class EvolutionWhatsAppClient {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       console.log(`  - 🔄 Tentativa ${attempt}/${maxRetries} de obter QR Code...`);
       
+      // Primeiro, tentar via connectionState que pode ter o QR Code
+      const stateUrl = `${this.config.baseUrl}/instance/connectionState/${this.config.instanceName}`;
+      const stateResponse = await fetch(stateUrl, {
+        headers: {
+          apikey: this.config.apiKey,
+        },
+      });
+      
+      if (stateResponse.ok) {
+        const stateData = await stateResponse.json();
+        console.log(`  - State data (tentativa ${attempt}):`, JSON.stringify(stateData, null, 2));
+        
+        // Verificar se tem QR Code no state
+        const stateQR = stateData.qrcode?.base64 || stateData.qrcode?.code || stateData.qr;
+        if (stateQR) {
+          console.log(`  ✅ QR Code encontrado via connectionState!`);
+          return { base64: stateQR, code: stateQR };
+        }
+      }
+      
+      // Tentar via connect endpoint
       const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
       
       const response = await fetch(connectUrl, {
@@ -283,7 +304,7 @@ export class EvolutionWhatsAppClient {
       console.log(`  - Dados:`, JSON.stringify(result, null, 2));
       
       // Se retornou QR Code válido, retornar
-      const qrCodeData = result.base64 || result.code || result.qrcode;
+      const qrCodeData = result.base64 || result.code || result.qrcode || result.pairingCode;
       if (qrCodeData) {
         console.log(`  ✅ QR Code válido obtido na tentativa ${attempt}!`);
         return result;

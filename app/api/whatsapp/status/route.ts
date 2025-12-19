@@ -135,7 +135,25 @@ export async function POST() {
           const createResult = await whatsapp.createInstance();
           console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
           
-          // Aguardar 5 segundos para instância inicializar completamente
+          // Verificar se o QR Code já veio na resposta de criação
+          if (createResult.qrcode) {
+            console.log("📱 QR Code encontrado na resposta de criação!");
+            const qrCodeData = createResult.qrcode.base64 || 
+                              createResult.qrcode.code || 
+                              createResult.qrcode.qrcode ||
+                              createResult.qrcode.pairingCode;
+            
+            if (qrCodeData) {
+              console.log("✅ QR Code válido na criação!");
+              return NextResponse.json({
+                success: true,
+                qrCode: qrCodeData,
+                message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
+              });
+            }
+          }
+          
+          // Se não veio QR Code, aguardar e buscar
           console.log("⏳ Aguardando inicialização da instância...");
           await new Promise(resolve => setTimeout(resolve, 5000));
           
