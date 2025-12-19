@@ -204,7 +204,7 @@ export class EvolutionWhatsAppClient {
     
     if (!instanceExists) {
       console.log("  - Instância não existe, precisa criar primeiro");
-      throw new Error("Instância não encontrada");
+      throw new Error("INSTANCE_NOT_FOUND");
     }
     
     // Verificar se está conectada
@@ -230,13 +230,15 @@ export class EvolutionWhatsAppClient {
       if (restartResponse.ok) {
         console.log("  ✅ Instância reiniciada, aguardando inicialização...");
         await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos
+      } else {
+        console.error("  ❌ Erro ao reiniciar instância");
       }
     }
     
     // Agora buscar o QR Code
     console.log("  - Buscando QR Code...");
     
-    // Endpoint correto: POST /instance/connect/:instanceName
+    // Endpoint correto: GET /instance/connect/:instanceName
     const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
     console.log("  - Connect URL:", connectUrl);
     
@@ -254,9 +256,9 @@ export class EvolutionWhatsAppClient {
       const errorText = await response.text();
       console.error("❌ Erro ao obter QR Code:", errorText);
       
-      // Se 404, a instância precisa ser reiniciada
+      // Se 404, tentar restart uma última vez
       if (response.status === 404) {
-        console.log("  - Tentando restart da instância...");
+        console.log("  - Tentando restart da instância (segunda tentativa)...");
         const restartUrl = `${this.config.baseUrl}/instance/restart/${this.config.instanceName}`;
         const restartResponse = await fetch(restartUrl, {
           method: "PUT",

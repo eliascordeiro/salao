@@ -115,7 +115,7 @@ export async function POST() {
       const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
       
       if (!qrCodeData) {
-        console.log("⚠️ QR Code vazio, forçando criação de instância");
+        console.log("⚠️ QR Code vazio, tentando criar instância...");
         throw new Error("QR Code não disponível");
       }
       
@@ -125,39 +125,70 @@ export async function POST() {
         message: "Escaneie o QR Code com seu WhatsApp",
       });
     } catch (error: any) {
-      console.log("⚠️ Erro ao obter QR Code, tentando criar instância...");
-      console.log("  - Erro:", error.message);
+      console.log("⚠️ Erro ao obter QR Code:", error.message);
       
-      try {
-        console.log("🆕 Criando nova instância...");
-        const createResult = await whatsapp.createInstance();
-        console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
+      // Se a instância não existe (INSTANCE_NOT_FOUND), criar nova
+      if (error.message === "INSTANCE_NOT_FOUND" || error.message.includes("não encontrada")) {
+        console.log("🆕 Criando nova instância (instância não existe)...");
         
-        // Aguardar 2 segundos para instância inicializar
-        console.log("⏳ Aguardando inicialização da instância...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        console.log("📱 Obtendo QR Code da nova instância...");
-        const qrCode = await whatsapp.getQRCode();
-        console.log("✅ QR Code obtido:", typeof qrCode);
-        console.log("  - Keys:", Object.keys(qrCode));
-        
-        const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
-        
-        if (!qrCodeData) {
-          console.error("❌ QR Code ainda vazio após criação");
-          throw new Error("QR Code não foi gerado pela Evolution API");
+        try {
+          const createResult = await whatsapp.createInstance();
+          console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
+          
+          // Aguardar 3 segundos para instância inicializar
+          console.log("⏳ Aguardando inicialização da instância...");
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          console.log("📱 Obtendo QR Code da nova instância...");
+          const qrCode = await whatsapp.getQRCode();
+          console.log("✅ QR Code obtido:", typeof qrCode);
+          console.log("  - Keys:", Object.keys(qrCode));
+          
+          const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
+          
+          if (!qrCodeData) {
+            console.error("❌ QR Code ainda vazio após criação");
+            throw new Error("QR Code não foi gerado pela Evolution API");
+          }
+          
+          return NextResponse.json({
+            success: true,
+            qrCode: qrCodeData,
+            message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
+          });
+        } catch (createError: any) {
+          console.error("❌ Erro ao criar instância:", createError);
+          console.error("  - Message:", createError.message);
+          
+          // Se erro de nome já existe, tentar obter QR Code novamente
+          if (createError.message.includes("already in use")) {
+            console.log("⚠️ Instância já existe (erro de criação), tentando reconectar...");
+            
+            // Aguardar 2 segundos e tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            try {
+              const qrCode = await whatsapp.getQRCode();
+              const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
+              
+              if (qrCodeData) {
+                return NextResponse.json({
+                  success: true,
+                  qrCode: qrCodeData,
+                  message: "Reconectando instância existente. Escaneie o QR Code.",
+                });
+              }
+            } catch (retryError: any) {
+              console.error("❌ Falha ao reconectar:", retryError.message);
+            }
+          }
+          
+          throw createError;
         }
-        
-        return NextResponse.json({
-          success: true,
-          qrCode: qrCodeData,
-          message: "Instância criada. Escaneie o QR Code com seu WhatsApp",
-        });
-      } catch (createError: any) {
-        console.error("❌ Erro ao criar instância:", createError);
-        throw createError;
       }
+      
+      // Outros erros, propagar
+      throw error;
     }
   } catch (error: any) {
     console.error("❌ Erro fatal ao conectar WhatsApp:", error);
