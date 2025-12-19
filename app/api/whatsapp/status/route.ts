@@ -139,8 +139,8 @@ export async function POST() {
           console.log("⏳ Aguardando inicialização da instância...");
           await new Promise(resolve => setTimeout(resolve, 5000));
           
-          console.log("📱 Obtendo QR Code da nova instância...");
-          const qrCode = await whatsapp.getQRCode(true); // Skip status check
+          console.log("📱 Obtendo QR Code da nova instância (com retry)...");
+          const qrCode = await whatsapp.getQRCode(true, 10); // Skip status check, 10 tentativas
           console.log("✅ QR Code obtido:", typeof qrCode);
           console.log("  - Keys:", Object.keys(qrCode));
           
@@ -183,35 +183,6 @@ export async function POST() {
             }
           }
           
-          throw createError;
-        }
-      }
-      
-      // Se QR Code não está pronto ainda (QR_CODE_NOT_READY)
-      if (error.message === "QR_CODE_NOT_READY") {
-        console.log("⚠️ QR Code não está pronto, deletando e recriando instância...");
-        
-        // A instância já foi deletada pelo getQRCode, só criar nova
-        try {
-          const createResult = await whatsapp.createInstance();
-          console.log("✅ Instância criada:", JSON.stringify(createResult, null, 2));
-          
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          
-          const qrCode = await whatsapp.getQRCode(true); // Skip status check
-          const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
-          
-          if (!qrCodeData) {
-            throw new Error("QR Code não foi gerado após recriar instância");
-          }
-          
-          return NextResponse.json({
-            success: true,
-            qrCode: qrCodeData,
-            message: "Instância recriada. Escaneie o QR Code com seu WhatsApp",
-          });
-        } catch (createError: any) {
-          console.error("❌ Erro ao recriar instância:", createError);
           throw createError;
         }
       }

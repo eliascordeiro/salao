@@ -175,10 +175,12 @@ export class EvolutionWhatsAppClient {
   /**
    * Obtém QR Code para conectar
    * @param skipStatusCheck - Se true, pula verificação de status (usado após criar instância)
+   * @param maxRetries - Número máximo de tentativas para obter QR Code
    */
-  async getQRCode(skipStatusCheck = false) {
+  async getQRCode(skipStatusCheck = false, maxRetries = 10) {
     console.log("📱 [getQRCode] Obtendo QR Code...");
     console.log("  - Skip status check:", skipStatusCheck);
+    console.log("  - Max retries:", maxRetries);
     
     if (!skipStatusCheck) {
       // Primeiro, verificar se a instância existe
@@ -246,74 +248,75 @@ export class EvolutionWhatsAppClient {
       console.log("  ⏭️ Pulando verificação de status (instância recém-criada)");
     }
     
-    // Agora buscar o QR Code
-    console.log("  - Buscando QR Code...");
-    
-    // Endpoint correto: GET /instance/connect/:instanceName
-    const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
-    console.log("  - Connect URL:", connectUrl);
-    
-    const response = await fetch(connectUrl, {
-      method: "GET",
-      headers: {
-        apikey: this.config.apiKey,
-      },
-    });
-
-    console.log("  - Response status:", response.status);
-    console.log("  - Response OK:", response.ok);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("❌ Erro ao obter QR Code:", errorText);
+    // Tentar obter QR Code com retry (polling)
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(`  - 🔄 Tentativa ${attempt}/${maxRetries} de obter QR Code...`);
       
-      // Se 404, tentar restart uma última vez
-      if (response.status === 404) {
-        console.log("  - Tentando restart da instância (segunda tentativa)...");
-        const restartUrl = `${this.config.baseUrl}/instance/restart/${this.config.instanceName}`;
-        const restartResponse = await fetch(restartUrl, {
-          method: "PUT",
-          headers: {
-            apikey: this.config.apiKey,
-          },
-        });
+      const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
+      
+      const response = await fetch(connectUrl, {
+        method: "GET",
+        headers: {
+          apikey: this.config.apiKey,
+        },
+      });
+
+      console.log(`  - Response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`  ❌ Erro ao obter QR Code (tentativa ${attempt}):`, errorText);
         
-        if (restartResponse.ok) {
-          console.log("  ✅ Instância reiniciada, aguardando...");
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          // Tentar buscar QR Code novamente
-          const retryResponse = await fetch(connectUrl, {
-            method: "GET",
-            headers: {
-              apikey: this.config.apiKey,
-            },
-          });
-          
-          if (!retryResponse.ok) {
-            throw new Error("Erro ao obter QR Code após restart");
-          }
-          
-          const retryResult = await retryResponse.json();
-          console.log("✅ QR Code obtido após restart:", Object.keys(retryResult));
-          return retryResult;
+        // Se última tentativa, lançar erro
+        if (attempt === maxRetries) {
+          throw new Error("Erro ao obter QR Code após todas tentativas");
         }
+        
+        // Aguardar 2 segundos antes de tentar novamente
+        console.log(`  ⏳ Aguardando 2s antes da próxima tentativa...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        continue;
+      }
+
+      const result = await response.json();
+      console.log(`  - QR Code response (tentativa ${attempt}):`, Object.keys(result));
+      console.log(`  - Dados:`, JSON.stringify(result, null, 2));
+      
+      // Se retornou QR Code válido, retornar
+      const qrCodeData = result.base64 || result.code || result.qrcode;
+      if (qrCodeData) {
+        console.log(`  ✅ QR Code válido obtido na tentativa ${attempt}!`);
+        return result;
       }
       
-      throw new Error("Erro ao obter QR Code");
+      // Se count > 0 mas sem QR Code, pode estar conectado
+      if (result.count > 0) {
+        console.log(`  ⚠️ Count > 0 mas sem QR Code (pode estar conectado)`);
+        return result;
+      }
+      
+      // Se count === 0, QR Code ainda não está pronto
+      if (result.count === 0 && !qrCodeData) {
+        console.log(`  ⏳ QR Code ainda não gerado (count: 0), aguardando...`);
+        
+        // Se última tentativa, lançar erro
+        if (attempt === maxRetries) {
+          console.error(`  ❌ QR Code não foi gerado após ${maxRetries} tentativas`);
+          throw new Error("QR_CODE_NOT_READY");
+        }
+        
+        // Aguardar 3 segundos antes de tentar novamente
+        console.log(`  ⏳ Aguardando 3s antes da próxima tentativa...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        continue;
+      }
+      
+      // Caso padrão: retornar o que veio
+      return result;
     }
-
-    const result = await response.json();
-    console.log("✅ QR Code obtido:", Object.keys(result));
-    console.log("  - Dados completos:", JSON.stringify(result, null, 2));
     
-    // Se retornou apenas {"count": 0}, significa que não há QR Code ainda
-    if (result.count === 0 && !result.base64 && !result.code && !result.qrcode) {
-      console.log("  ⚠️ QR Code ainda não gerado (count: 0)");
-      throw new Error("QR_CODE_NOT_READY");
-    }
-    
-    return result;
+    // Se chegou aqui, esgotou todas tentativas
+    throw new Error("QR_CODE_NOT_READY");
   }
 
   /**
