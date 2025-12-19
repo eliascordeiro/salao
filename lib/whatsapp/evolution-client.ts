@@ -174,70 +174,76 @@ export class EvolutionWhatsAppClient {
 
   /**
    * Obtém QR Code para conectar
+   * @param skipStatusCheck - Se true, pula verificação de status (usado após criar instância)
    */
-  async getQRCode() {
+  async getQRCode(skipStatusCheck = false) {
     console.log("📱 [getQRCode] Obtendo QR Code...");
+    console.log("  - Skip status check:", skipStatusCheck);
     
-    // Primeiro, verificar se a instância existe
-    console.log("  - Verificando se instância existe...");
-    const fetchUrl = `${this.config.baseUrl}/instance/fetchInstances`;
-    console.log("  - Fetch URL:", fetchUrl);
-    
-    const fetchResponse = await fetch(fetchUrl, {
-      headers: {
-        apikey: this.config.apiKey,
-      },
-    });
-    
-    if (!fetchResponse.ok) {
-      console.error("❌ Erro ao buscar instâncias");
-      throw new Error("Erro ao buscar instâncias");
-    }
-    
-    const instances = await fetchResponse.json();
-    console.log("  - Instâncias encontradas:", instances);
-    
-    const instanceExists = Array.isArray(instances) && 
-      instances.some((inst: any) => inst.name === this.config.instanceName);
-    
-    console.log("  - Instância existe?", instanceExists);
-    
-    if (!instanceExists) {
-      console.log("  - Instância não existe, precisa criar primeiro");
-      throw new Error("INSTANCE_NOT_FOUND");
-    }
-    
-    // Verificar se está conectada
-    const instance = instances.find((inst: any) => inst.name === this.config.instanceName);
-    console.log("  - Status da conexão:", instance?.connectionStatus);
-    
-    if (instance?.connectionStatus === 'close') {
-      console.log("  ⚠️ Instância existe mas está desconectada, deletando e recriando...");
+    if (!skipStatusCheck) {
+      // Primeiro, verificar se a instância existe
+      console.log("  - Verificando se instância existe...");
+      const fetchUrl = `${this.config.baseUrl}/instance/fetchInstances`;
+      console.log("  - Fetch URL:", fetchUrl);
       
-      // Deletar instância antiga
-      const deleteUrl = `${this.config.baseUrl}/instance/delete/${this.config.instanceName}`;
-      console.log("  - Delete URL:", deleteUrl);
-      
-      const deleteResponse = await fetch(deleteUrl, {
-        method: "DELETE",
+      const fetchResponse = await fetch(fetchUrl, {
         headers: {
           apikey: this.config.apiKey,
         },
       });
       
-      console.log("  - Delete status:", deleteResponse.status);
-      
-      if (deleteResponse.ok || deleteResponse.status === 404) {
-        console.log("  ✅ Instância antiga deletada");
-        console.log("  ⏳ Aguardando 2 segundos...");
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Agora a instância não existe mais, lançar erro para criar nova
-        console.log("  🔄 Forçando criação de nova instância...");
-        throw new Error("INSTANCE_NOT_FOUND");
-      } else {
-        console.error("  ❌ Erro ao deletar instância antiga");
+      if (!fetchResponse.ok) {
+        console.error("❌ Erro ao buscar instâncias");
+        throw new Error("Erro ao buscar instâncias");
       }
+      
+      const instances = await fetchResponse.json();
+      console.log("  - Instâncias encontradas:", instances);
+      
+      const instanceExists = Array.isArray(instances) && 
+        instances.some((inst: any) => inst.name === this.config.instanceName);
+      
+      console.log("  - Instância existe?", instanceExists);
+      
+      if (!instanceExists) {
+        console.log("  - Instância não existe, precisa criar primeiro");
+        throw new Error("INSTANCE_NOT_FOUND");
+      }
+      
+      // Verificar se está conectada
+      const instance = instances.find((inst: any) => inst.name === this.config.instanceName);
+      console.log("  - Status da conexão:", instance?.connectionStatus);
+      
+      if (instance?.connectionStatus === 'close') {
+        console.log("  ⚠️ Instância existe mas está desconectada, deletando e recriando...");
+        
+        // Deletar instância antiga
+        const deleteUrl = `${this.config.baseUrl}/instance/delete/${this.config.instanceName}`;
+        console.log("  - Delete URL:", deleteUrl);
+        
+        const deleteResponse = await fetch(deleteUrl, {
+          method: "DELETE",
+          headers: {
+            apikey: this.config.apiKey,
+          },
+        });
+        
+        console.log("  - Delete status:", deleteResponse.status);
+        
+        if (deleteResponse.ok || deleteResponse.status === 404) {
+          console.log("  ✅ Instância antiga deletada");
+          console.log("  ⏳ Aguardando 2 segundos...");
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Agora a instância não existe mais, lançar erro para criar nova
+          console.log("  🔄 Forçando criação de nova instância...");
+          throw new Error("INSTANCE_NOT_FOUND");
+        } else {
+          console.error("  ❌ Erro ao deletar instância antiga");
+        }
+      }
+    } else {
+      console.log("  ⏭️ Pulando verificação de status (instância recém-criada)");
     }
     
     // Agora buscar o QR Code

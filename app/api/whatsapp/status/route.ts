@@ -140,7 +140,7 @@ export async function POST() {
           await new Promise(resolve => setTimeout(resolve, 5000));
           
           console.log("📱 Obtendo QR Code da nova instância...");
-          const qrCode = await whatsapp.getQRCode();
+          const qrCode = await whatsapp.getQRCode(true); // Skip status check
           console.log("✅ QR Code obtido:", typeof qrCode);
           console.log("  - Keys:", Object.keys(qrCode));
           
@@ -198,7 +198,7 @@ export async function POST() {
           
           await new Promise(resolve => setTimeout(resolve, 5000));
           
-          const qrCode = await whatsapp.getQRCode();
+          const qrCode = await whatsapp.getQRCode(true); // Skip status check
           const qrCodeData = qrCode.base64 || qrCode.code || qrCode.qrcode;
           
           if (!qrCodeData) {
