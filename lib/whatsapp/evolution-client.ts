@@ -147,6 +147,9 @@ export class EvolutionWhatsAppClient {
         instanceName: this.config.instanceName,
         qrcode: true,
         integration: "WHATSAPP-BAILEYS",
+        // Forçar modo QR Code (não pairing code)
+        number: "",
+        mobile: false,
       }),
     });
 
@@ -252,7 +255,26 @@ export class EvolutionWhatsAppClient {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       console.log(`  - 🔄 Tentativa ${attempt}/${maxRetries} de obter QR Code...`);
       
-      // Primeiro, tentar via connectionState que pode ter o QR Code
+      // Primeiro, tentar via /instance/qrcode (endpoint direto)
+      const qrcodeUrl = `${this.config.baseUrl}/instance/qrcode/${this.config.instanceName}`;
+      const qrcodeResponse = await fetch(qrcodeUrl, {
+        headers: {
+          apikey: this.config.apiKey,
+        },
+      });
+      
+      if (qrcodeResponse.ok) {
+        const qrcodeData = await qrcodeResponse.json();
+        console.log(`  - QR Code endpoint data:`, JSON.stringify(qrcodeData, null, 2));
+        
+        const qr = qrcodeData.base64 || qrcodeData.code || qrcodeData.qrcode?.base64;
+        if (qr) {
+          console.log(`  ✅ QR Code encontrado via /qrcode endpoint!`);
+          return { base64: qr, code: qr };
+        }
+      }
+      
+      // Tentar via connectionState que pode ter o QR Code
       const stateUrl = `${this.config.baseUrl}/instance/connectionState/${this.config.instanceName}`;
       const stateResponse = await fetch(stateUrl, {
         headers: {
