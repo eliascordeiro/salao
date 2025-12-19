@@ -178,6 +178,29 @@ export async function POST() {
           console.error("❌ Erro ao criar instância:", createError);
           console.error("  - Message:", createError.message);
           
+          // Se QR Code não está pronto após 30s de tentativas
+          if (createError.message === "QR_CODE_NOT_READY") {
+            console.log("⚠️ QR Code não foi gerado pela Evolution API");
+            console.log("📋 Instruções: Usuário precisa acessar Evolution API diretamente");
+            
+            return NextResponse.json(
+              {
+                error: "QR Code não disponível automaticamente",
+                message: "Por favor, acesse o painel da Evolution API para conectar o WhatsApp manualmente.",
+                instructions: [
+                  `Acesse: ${process.env.EVOLUTION_API_URL}`,
+                  "Faça login com sua API Key",
+                  `Localize a instância: ${process.env.EVOLUTION_INSTANCE_NAME || 'salon-booking'}`,
+                  "Clique em 'Connect' e escaneie o QR Code com seu WhatsApp",
+                ],
+                evolutionUrl: process.env.EVOLUTION_API_URL,
+                instanceName: process.env.EVOLUTION_INSTANCE_NAME || 'salon-booking',
+                needsManualSetup: true,
+              },
+              { status: 503 }
+            );
+          }
+          
           // Se erro de nome já existe, tentar obter QR Code novamente
           if (createError.message.includes("already in use")) {
             console.log("⚠️ Instância já existe (erro de criação), tentando reconectar...");

@@ -63,7 +63,23 @@ export default function WhatsAppConfigPage() {
         toast.success(data.message || "QR Code gerado!");
         await fetchStatus();
       } else {
-        toast.error(data.error || "Erro ao conectar");
+        // Se precisa configuração manual
+        if (data.needsManualSetup) {
+          toast.error(data.error || "Configuração manual necessária", {
+            description: data.message,
+            duration: 10000,
+          });
+          
+          // Mostrar instruções em um alert
+          const instructions = data.instructions?.join('\n\n') || '';
+          alert(
+            `⚠️ Configuração Manual Necessária\n\n` +
+            `${data.message}\n\n` +
+            `Instruções:\n\n${instructions}`
+          );
+        } else {
+          toast.error(data.error || "Erro ao conectar");
+        }
       }
     } catch (error) {
       console.error("Erro ao conectar:", error);
