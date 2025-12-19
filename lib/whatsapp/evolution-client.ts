@@ -147,9 +147,6 @@ export class EvolutionWhatsAppClient {
         instanceName: this.config.instanceName,
         qrcode: true,
         integration: "WHATSAPP-BAILEYS",
-        // Forçar modo QR Code (não pairing code)
-        number: "",
-        mobile: false,
       }),
     });
 
