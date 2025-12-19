@@ -212,26 +212,31 @@ export class EvolutionWhatsAppClient {
     console.log("  - Status da conexão:", instance?.connectionStatus);
     
     if (instance?.connectionStatus === 'close') {
-      console.log("  ⚠️ Instância existe mas está desconectada, reiniciando...");
+      console.log("  ⚠️ Instância existe mas está desconectada, deletando e recriando...");
       
-      // Restart da instância para forçar geração de QR code
-      const restartUrl = `${this.config.baseUrl}/instance/restart/${this.config.instanceName}`;
-      console.log("  - Restart URL:", restartUrl);
+      // Deletar instância antiga
+      const deleteUrl = `${this.config.baseUrl}/instance/delete/${this.config.instanceName}`;
+      console.log("  - Delete URL:", deleteUrl);
       
-      const restartResponse = await fetch(restartUrl, {
-        method: "PUT",
+      const deleteResponse = await fetch(deleteUrl, {
+        method: "DELETE",
         headers: {
           apikey: this.config.apiKey,
         },
       });
       
-      console.log("  - Restart status:", restartResponse.status);
+      console.log("  - Delete status:", deleteResponse.status);
       
-      if (restartResponse.ok) {
-        console.log("  ✅ Instância reiniciada, aguardando inicialização...");
-        await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos
+      if (deleteResponse.ok || deleteResponse.status === 404) {
+        console.log("  ✅ Instância antiga deletada");
+        console.log("  ⏳ Aguardando 2 segundos...");
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Agora a instância não existe mais, lançar erro para criar nova
+        console.log("  🔄 Forçando criação de nova instância...");
+        throw new Error("INSTANCE_NOT_FOUND");
       } else {
-        console.error("  ❌ Erro ao reiniciar instância");
+        console.error("  ❌ Erro ao deletar instância antiga");
       }
     }
     
@@ -295,6 +300,13 @@ export class EvolutionWhatsAppClient {
     const result = await response.json();
     console.log("✅ QR Code obtido:", Object.keys(result));
     console.log("  - Dados completos:", JSON.stringify(result, null, 2));
+    
+    // Se retornou apenas {"count": 0}, significa que não há QR Code ainda
+    if (result.count === 0 && !result.base64 && !result.code && !result.qrcode) {
+      console.log("  ⚠️ QR Code ainda não gerado (count: 0)");
+      throw new Error("QR_CODE_NOT_READY");
+    }
+    
     return result;
   }
 
