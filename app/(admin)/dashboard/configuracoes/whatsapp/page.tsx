@@ -26,6 +26,47 @@ export default function WhatsAppConfigPage() {
   const [testMessage, setTestMessage] = useState("Olá! Esta é uma mensagem de teste do sistema de agendamentos. 🎉");
   const [sendingTest, setSendingTest] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
+  const [directQrCode, setDirectQrCode] = useState<string | null>(null);
+  const [loadingDirectQR, setLoadingDirectQR] = useState(false);
+
+  const fetchDirectQRCode = async () => {
+    setLoadingDirectQR(true);
+    try {
+      // Buscar o QR Code diretamente da Evolution API
+      const evolutionUrl = process.env.NEXT_PUBLIC_EVOLUTION_API_URL || 'https://evolution-api-production-1e60.up.railway.app';
+      const evolutionKey = process.env.NEXT_PUBLIC_EVOLUTION_API_KEY || 'bedb4e0217e8c56c614744381abfe24a569c71aba568764e3035db899901e224';
+      const instanceName = process.env.NEXT_PUBLIC_EVOLUTION_INSTANCE_NAME || 'salon-booking';
+
+      console.log('🔍 Buscando QR Code direto da Evolution API...');
+      console.log('URL:', `${evolutionUrl}/instance/connect/${instanceName}`);
+
+      const response = await fetch(`${evolutionUrl}/instance/connect/${instanceName}`, {
+        method: 'GET',
+        headers: {
+          'apikey': evolutionKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      console.log('📱 Resposta da Evolution API:', data);
+
+      if (data.base64 || data.code) {
+        const qrCodeData = data.base64 || data.code;
+        setDirectQrCode(qrCodeData.startsWith('data:') ? qrCodeData : `data:image/png;base64,${qrCodeData}`);
+        toast.success('QR Code carregado com sucesso!');
+      } else if (data.pairingCode) {
+        toast.info(`Código de pareamento: ${data.pairingCode}`);
+      } else {
+        toast.warning('QR Code ainda não disponível. Aguarde alguns segundos e tente novamente.');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao buscar QR Code direto:', error);
+      toast.error('Erro ao carregar QR Code. Verifique as configurações.');
+    } finally {
+      setLoadingDirectQR(false);
+    }
+  };
 
   const fetchStatus = async () => {
     try {
@@ -222,23 +263,43 @@ export default function WhatsAppConfigPage() {
 
             <div className="flex gap-2">
               {!status?.connected ? (
-                <Button
-                  onClick={handleConnect}
-                  disabled={connecting}
-                  className="w-full sm:w-auto"
-                >
-                  {connecting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Conectando...
-                    </>
-                  ) : (
-                    <>
-                      <QrCode className="mr-2 h-4 w-4" />
-                      Conectar WhatsApp
-                    </>
-                  )}
-                </Button>
+                <>
+                  <Button
+                    onClick={handleConnect}
+                    disabled={connecting}
+                    className="w-full sm:w-auto"
+                  >
+                    {connecting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Conectando...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Conectar WhatsApp
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={fetchDirectQRCode}
+                    disabled={loadingDirectQR}
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                  >
+                    {loadingDirectQR ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Ver QR Code Direto
+                      </>
+                    )}
+                  </Button>
+                </>
               ) : (
                 <Button
                   onClick={handleDisconnect}
@@ -272,7 +333,45 @@ export default function WhatsAppConfigPage() {
         </Card>
 
         {/* QR Code Card */}
-        {status?.qrCode && (
+        {(status?.qrCode || directQrCode) && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code de Conexão {directQrCode && '(Direto da Evolution API)'}
+              </CardTitle>
+              <CardDescription>
+                Escaneie este QR Code com o WhatsApp Business
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <div className="bg-white p-4 rounded-lg">
+                <img
+                  src={directQrCode || status.qrCode}
+                  alt="QR Code WhatsApp"
+                  className="w-64 h-64"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">
+                Abra o WhatsApp no seu celular → Menu (⋮) → Aparelhos conectados
+                → Conectar um aparelho → Escaneie este QR Code
+              </p>
+              {directQrCode && (
+                <Button
+                  onClick={fetchDirectQRCode}
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                >
+                  Atualizar QR Code
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* QR Code Card */}
+        {status?.qrCode && false && (
           <Card className="glass-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
