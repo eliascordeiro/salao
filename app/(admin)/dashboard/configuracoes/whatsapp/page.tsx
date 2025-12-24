@@ -25,7 +25,10 @@ export default function WhatsAppConfigPage() {
   const [testPhone, setTestPhone] = useState("");
   const [testMessage, setTestMessage] = useState("Olá! Esta é uma mensagem de teste do sistema de agendamentos. 🎉");
   const [sendingTest, setSendingTest] = useState(false);
-  const [hasAccess, setHasAccess] = useState(false);
+  // 🔧 DESENVOLVIMENTO: Sempre true em localhost
+  const [hasAccess, setHasAccess] = useState(
+    typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  );
   const [directQrCode, setDirectQrCode] = useState<string | null>(null);
   const [loadingDirectQR, setLoadingDirectQR] = useState(false);
   const [lastTestResult, setLastTestResult] = useState<any>(null);
@@ -63,7 +66,10 @@ export default function WhatsAppConfigPage() {
       const res = await fetch("/api/whatsapp/wppconnect");
       const data = await res.json();
 
-      if (res.status === 403) {
+      // 🔧 Em localhost, sempre permitir acesso (desenvolvimento)
+      const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
+      if (res.status === 403 && !isDev) {
         setHasAccess(false);
         return;
       }
