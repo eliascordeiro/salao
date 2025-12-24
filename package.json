@@ -31,7 +31,6 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
     "@stripe/stripe-js": "^8.2.0",
-    "@wppconnect-team/wppconnect": "^1.37.8",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.8.0",
