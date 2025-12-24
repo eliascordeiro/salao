@@ -36,14 +36,14 @@ export default function WhatsAppConfigPage() {
   const fetchDirectQRCode = async () => {
     setLoadingDirectQR(true);
     try {
-      console.log('🔍 Buscando QR Code do WPPConnect...');
+      console.log('🔍 Buscando QR Code do Evolution API...');
 
-      const response = await fetch('/api/whatsapp/wppconnect', {
+      const response = await fetch('/api/whatsapp/status', {
         method: 'GET',
       });
 
       const data = await response.json();
-      console.log('📱 Resposta do WPPConnect:', data);
+      console.log('📱 Resposta do Evolution API:', data);
 
       if (data.qrCode) {
         setDirectQrCode(data.qrCode);
@@ -63,7 +63,7 @@ export default function WhatsAppConfigPage() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch("/api/whatsapp/wppconnect");
+      const res = await fetch("/api/whatsapp/status");
       const data = await res.json();
 
       // 🔧 Em localhost, sempre permitir acesso (desenvolvimento)
@@ -91,9 +91,9 @@ export default function WhatsAppConfigPage() {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      toast.info("Inicializando WPPConnect...", { duration: 3000 });
+      toast.info("Inicializando Evolution API...", { duration: 3000 });
       
-      const res = await fetch("/api/whatsapp/wppconnect", {
+      const res = await fetch("/api/whatsapp/status", {
         method: "POST",
       });
       const data = await res.json();
@@ -105,7 +105,7 @@ export default function WhatsAppConfigPage() {
         // Se tem QR Code, recarregar a cada 2s para pegar atualizações
         if (data.qrCode) {
           const interval = setInterval(async () => {
-            const statusRes = await fetch("/api/whatsapp/wppconnect");
+            const statusRes = await fetch("/api/whatsapp/status");
             const statusData = await statusRes.json();
             
             if (statusData.connected) {
@@ -141,7 +141,7 @@ export default function WhatsAppConfigPage() {
 
     setDisconnecting(true);
     try {
-      const res = await fetch("/api/whatsapp/wppconnect", {
+      const res = await fetch("/api/whatsapp/status", {
         method: "DELETE",
       });
       const data = await res.json();
