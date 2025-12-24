@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, QrCode, Phone, Send, LogOut } from "lucide-react";
-import { FeatureGate, PremiumBadge } from "@/components/subscription/feature-gate";
+// import { FeatureGate, PremiumBadge } from "@/components/subscription/feature-gate";
 
 interface WhatsAppStatus {
   configured: boolean;
@@ -204,17 +204,19 @@ export default function WhatsAppConfigPage() {
     );
   }
 
+  // 🔧 DESENVOLVIMENTO: FeatureGate desabilitado para testes
+  // Em produção, reabilite o FeatureGate para bloquear por plano
   return (
-    <FeatureGate
-      hasAccess={hasAccess}
-      featureName="Notificações WhatsApp"
-      showUpgrade={true}
-    >
+    // <FeatureGate
+    //   hasAccess={hasAccess}
+    //   featureName="Notificações WhatsApp"
+    //   showUpgrade={true}
+    // >
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold">Configuração WhatsApp</h1>
-            <PremiumBadge />
+            {/* <PremiumBadge /> */}
           </div>
           <p className="text-muted-foreground mt-1">
             Conecte o WhatsApp para enviar notificações automáticas aos clientes
@@ -519,6 +521,6 @@ export default function WhatsAppConfigPage() {
           </CardContent>
         </Card>
       </div>
-    </FeatureGate>
+    // </FeatureGate>
   );
 }
