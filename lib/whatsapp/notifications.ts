@@ -1,5 +1,5 @@
 import { hasFeature, FEATURES } from "@/lib/subscription-features";
-import { sendWhatsAppMessage, isWhatsAppConnected } from "./wppconnect-client";
+import { sendWhatsAppMessage, isWhatsAppConfigured } from "./whatsapp-official-client";
 import {
   whatsappBookingCreated,
   whatsappBookingConfirmed,
@@ -37,11 +37,13 @@ type NotificationType = "created" | "confirmed" | "reminder" | "cancelled" | "co
  * 
  * LÓGICA DOS PLANOS:
  * - Plano ESSENCIAL: Apenas Email
- * - Plano PROFISSIONAL: WhatsApp + Email
+ * - Plano PROFISSIONAL: WhatsApp (API Oficial) + Email
  * 
- * IMPORTANTE: A instância do WhatsApp (WPPConnect) é criada e mantida
- * pelo DONO/ADMIN do salão via Dashboard → Configurações → WhatsApp.
- * Uma vez conectada, persiste entre reinicializações do servidor.
+ * WHATSAPP BUSINESS API OFICIAL:
+ * - 1.000 conversas grátis/mês
+ * - Não precisa de QR Code
+ * - Funciona em produção (Railway)
+ * - Templates precisam ser aprovados pela Meta
  */
 export async function sendBookingNotification(
   data: BookingNotificationData,
@@ -61,12 +63,12 @@ export async function sendBookingNotification(
   // 2. Tentar enviar WhatsApp (APENAS se Plano Profissional + telefone disponível)
   if (hasWhatsAppFeature && data.clientPhone) {
     try {
-      // Verificar se WhatsApp está conectado
-      const isConnected = await isWhatsAppConnected();
+      // Verificar se WhatsApp está configurado
+      const isConfigured = isWhatsAppConfigured();
       
-      if (!isConnected) {
-        console.warn('⚠️ WhatsApp não está conectado. Admin precisa conectar via Dashboard.');
-        results.whatsapp.error = 'WhatsApp não conectado. Configure em Dashboard → WhatsApp.';
+      if (!isConfigured) {
+        console.warn('⚠️ WhatsApp não está configurado. Configure WHATSAPP_PHONE_NUMBER_ID e WHATSAPP_ACCESS_TOKEN.');
+        results.whatsapp.error = 'WhatsApp não configurado. Configure as credenciais da API.';
       } else {
         let message = "";
 
@@ -88,11 +90,16 @@ export async function sendBookingNotification(
             break;
         }
 
-        // Enviar via WPPConnect
-        await sendWhatsAppMessage(data.clientPhone, message);
+        // Enviar via WhatsApp Business API Oficial
+        const result = await sendWhatsAppMessage(data.clientPhone, message);
 
-        results.whatsapp.sent = true;
-        console.log(`✅ WhatsApp enviado para ${data.clientPhone}`);
+        if (result.success) {
+          results.whatsapp.sent = true;
+          console.log(`✅ WhatsApp enviado para ${data.clientPhone} (ID: ${result.messageId})`);
+        } else {
+          results.whatsapp.error = result.error || 'Erro ao enviar mensagem';
+          console.error(`❌ Falha ao enviar WhatsApp:`, result.error);
+        }
       }
     } catch (error: any) {
       results.whatsapp.error = error.message;
