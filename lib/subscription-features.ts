@@ -85,6 +85,12 @@ export async function hasFeature(
   feature: string
 ): Promise<boolean> {
   try {
+    // 🔧 DESENVOLVIMENTO: Permitir todas as features em dev
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[DEV] Feature "${feature}" liberada para desenvolvimento`);
+      return true;
+    }
+    
     const salon = await prisma.salon.findUnique({
       where: { id: salonId },
       include: {

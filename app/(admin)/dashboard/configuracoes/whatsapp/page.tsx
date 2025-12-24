@@ -28,41 +28,31 @@ export default function WhatsAppConfigPage() {
   const [hasAccess, setHasAccess] = useState(false);
   const [directQrCode, setDirectQrCode] = useState<string | null>(null);
   const [loadingDirectQR, setLoadingDirectQR] = useState(false);
+  const [lastTestResult, setLastTestResult] = useState<any>(null);
 
   const fetchDirectQRCode = async () => {
     setLoadingDirectQR(true);
     try {
-      // Buscar o QR Code diretamente da Evolution API
-      const evolutionUrl = process.env.NEXT_PUBLIC_EVOLUTION_API_URL || 'https://evolution-api-production-1e60.up.railway.app';
-      const evolutionKey = process.env.NEXT_PUBLIC_EVOLUTION_API_KEY || 'bedb4e0217e8c56c614744381abfe24a569c71aba568764e3035db899901e224';
-      const instanceName = process.env.NEXT_PUBLIC_EVOLUTION_INSTANCE_NAME || 'salon-booking';
+      console.log('🔍 Buscando QR Code do WPPConnect...');
 
-      console.log('🔍 Buscando QR Code direto da Evolution API...');
-      console.log('URL:', `${evolutionUrl}/instance/connect/${instanceName}`);
-
-      const response = await fetch(`${evolutionUrl}/instance/connect/${instanceName}`, {
+      const response = await fetch('/api/whatsapp/wppconnect', {
         method: 'GET',
-        headers: {
-          'apikey': evolutionKey,
-          'Content-Type': 'application/json',
-        },
       });
 
       const data = await response.json();
-      console.log('📱 Resposta da Evolution API:', data);
+      console.log('📱 Resposta do WPPConnect:', data);
 
-      if (data.base64 || data.code) {
-        const qrCodeData = data.base64 || data.code;
-        setDirectQrCode(qrCodeData.startsWith('data:') ? qrCodeData : `data:image/png;base64,${qrCodeData}`);
+      if (data.qrCode) {
+        setDirectQrCode(data.qrCode);
         toast.success('QR Code carregado com sucesso!');
-      } else if (data.pairingCode) {
-        toast.info(`Código de pareamento: ${data.pairingCode}`);
+      } else if (data.connected) {
+        toast.success('WhatsApp já está conectado!');
       } else {
-        toast.warning('QR Code ainda não disponível. Aguarde alguns segundos e tente novamente.');
+        toast.warning('QR Code ainda não disponível. Clique em "Conectar WhatsApp" primeiro.');
       }
     } catch (error) {
-      console.error('❌ Erro ao buscar QR Code direto:', error);
-      toast.error('Erro ao carregar QR Code. Verifique as configurações.');
+      console.error('❌ Erro ao buscar QR Code:', error);
+      toast.error('Erro ao carregar QR Code. Tente conectar novamente.');
     } finally {
       setLoadingDirectQR(false);
     }
@@ -70,7 +60,7 @@ export default function WhatsAppConfigPage() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch("/api/whatsapp/status");
+      const res = await fetch("/api/whatsapp/wppconnect");
       const data = await res.json();
 
       if (res.status === 403) {
@@ -95,7 +85,9 @@ export default function WhatsAppConfigPage() {
   const handleConnect = async () => {
     setConnecting(true);
     try {
-      const res = await fetch("/api/whatsapp/status", {
+      toast.info("Inicializando WPPConnect...", { duration: 3000 });
+      
+      const res = await fetch("/api/whatsapp/wppconnect", {
         method: "POST",
       });
       const data = await res.json();
@@ -103,21 +95,29 @@ export default function WhatsAppConfigPage() {
       if (res.ok) {
         toast.success(data.message || "QR Code gerado!");
         await fetchStatus();
+        
+        // Se tem QR Code, recarregar a cada 2s para pegar atualizações
+        if (data.qrCode) {
+          const interval = setInterval(async () => {
+            const statusRes = await fetch("/api/whatsapp/wppconnect");
+            const statusData = await statusRes.json();
+            
+            if (statusData.connected) {
+              clearInterval(interval);
+              toast.success("WhatsApp conectado com sucesso!");
+              await fetchStatus();
+            }
+          }, 2000);
+          
+          // Limpar após 60s
+          setTimeout(() => clearInterval(interval), 60000);
+        }
       } else {
-        // Se precisa configuração manual
-        if (data.needsManualSetup) {
-          toast.error(data.error || "Configuração manual necessária", {
-            description: data.message,
+        if (data.upgrade) {
+          toast.error("Feature WhatsApp não disponível no seu plano", {
+            description: "Faça upgrade para usar notificações WhatsApp",
             duration: 10000,
           });
-          
-          // Mostrar instruções em um alert
-          const instructions = data.instructions?.join('\n\n') || '';
-          alert(
-            `⚠️ Configuração Manual Necessária\n\n` +
-            `${data.message}\n\n` +
-            `Instruções:\n\n${instructions}`
-          );
         } else {
           toast.error(data.error || "Erro ao conectar");
         }
@@ -135,13 +135,14 @@ export default function WhatsAppConfigPage() {
 
     setDisconnecting(true);
     try {
-      const res = await fetch("/api/whatsapp/status", {
+      const res = await fetch("/api/whatsapp/wppconnect", {
         method: "DELETE",
       });
       const data = await res.json();
 
       if (res.ok) {
         toast.success(data.message || "Desconectado com sucesso!");
+        setDirectQrCode(null);
         await fetchStatus();
       } else {
         toast.error(data.error || "Erro ao desconectar");
@@ -174,10 +175,12 @@ export default function WhatsAppConfigPage() {
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("Mensagem enviada com sucesso!");
+        toast.success(`Mensagem enviada! Status: ${data.deliveryMessage}`);
+        setLastTestResult(data);
         setTestPhone("");
       } else {
         toast.error(data.error || "Erro ao enviar mensagem");
+        setLastTestResult(null);
       }
     } catch (error) {
       console.error("Erro ao enviar teste:", error);
@@ -452,6 +455,39 @@ export default function WhatsAppConfigPage() {
                   </>
                 )}
               </Button>
+
+              {/* Exibir resultado do último envio */}
+              {lastTestResult && (
+                <div className="mt-4 p-4 rounded-lg border border-green-500/30 bg-green-500/10">
+                  <p className="font-semibold text-green-700 dark:text-green-300 mb-2">
+                    ✅ Última mensagem enviada com sucesso!
+                  </p>
+                  <div className="text-sm space-y-1">
+                    <p>
+                      <strong>Status:</strong> {lastTestResult.deliveryMessage}
+                    </p>
+                    <p>
+                      <strong>ACK:</strong> {lastTestResult.ack}
+                    </p>
+                    {lastTestResult.messageId && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        <strong>ID:</strong> {lastTestResult.messageId}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3 p-2 bg-background/50 rounded text-xs">
+                    <p className="font-mono">
+                      <strong>Legendas:</strong>
+                    </p>
+                    <ul className="mt-1 space-y-0.5 ml-4">
+                      <li>1 = Enviada (1 check ✓)</li>
+                      <li>2 = Recebida pelo servidor (2 checks ✓✓)</li>
+                      <li>3 = Entregue ao destinatário (azul ✓✓)</li>
+                      <li>4 = Lida pelo destinatário (azul ✓✓)</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

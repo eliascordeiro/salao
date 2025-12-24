@@ -1,5 +1,5 @@
 import { hasFeature, FEATURES } from "@/lib/subscription-features";
-import { getWhatsAppClient } from "./evolution-client";
+import { sendWhatsAppMessage, isWhatsAppConnected } from "./wppconnect-client";
 import {
   whatsappBookingCreated,
   whatsappBookingConfirmed,
@@ -34,8 +34,14 @@ type NotificationType = "created" | "confirmed" | "reminder" | "cancelled" | "co
 
 /**
  * Envia notificação híbrida (WhatsApp + Email)
- * Tenta WhatsApp primeiro se o salão tiver a feature
- * Sempre envia Email como backup
+ * 
+ * LÓGICA DOS PLANOS:
+ * - Plano ESSENCIAL: Apenas Email
+ * - Plano PROFISSIONAL: WhatsApp + Email
+ * 
+ * IMPORTANTE: A instância do WhatsApp (WPPConnect) é criada e mantida
+ * pelo DONO/ADMIN do salão via Dashboard → Configurações → WhatsApp.
+ * Uma vez conectada, persiste entre reinicializações do servidor.
  */
 export async function sendBookingNotification(
   data: BookingNotificationData,
@@ -46,48 +52,60 @@ export async function sendBookingNotification(
     email: { sent: false, error: null as string | null },
   };
 
-  // 1. Verificar se salão tem feature WhatsApp
-  const hasWhatsApp = await hasFeature(data.salonId, FEATURES.WHATSAPP_NOTIFICATIONS);
+  // 1. Verificar se salão tem plano PROFISSIONAL (feature WhatsApp)
+  const hasWhatsAppFeature = await hasFeature(data.salonId, FEATURES.WHATSAPP_NOTIFICATIONS);
 
-  // 2. Tentar enviar WhatsApp (se tiver feature E telefone)
-  if (hasWhatsApp && data.clientPhone) {
+  console.log(`📊 Enviando notificação de ${type} para ${data.clientName}`);
+  console.log(`📱 Plano tem WhatsApp: ${hasWhatsAppFeature ? 'SIM (Profissional)' : 'NÃO (Essencial)'}`);
+
+  // 2. Tentar enviar WhatsApp (APENAS se Plano Profissional + telefone disponível)
+  if (hasWhatsAppFeature && data.clientPhone) {
     try {
-      const whatsapp = getWhatsAppClient();
-      let message = "";
+      // Verificar se WhatsApp está conectado
+      const isConnected = await isWhatsAppConnected();
+      
+      if (!isConnected) {
+        console.warn('⚠️ WhatsApp não está conectado. Admin precisa conectar via Dashboard.');
+        results.whatsapp.error = 'WhatsApp não conectado. Configure em Dashboard → WhatsApp.';
+      } else {
+        let message = "";
 
-      switch (type) {
-        case "created":
-          message = whatsappBookingCreated(data);
-          break;
-        case "confirmed":
-          message = whatsappBookingConfirmed(data);
-          break;
-        case "reminder":
-          message = whatsappBookingReminder(data);
-          break;
-        case "cancelled":
-          message = whatsappBookingCancelled(data);
-          break;
-        case "completed":
-          message = whatsappBookingCompleted(data);
-          break;
+        switch (type) {
+          case "created":
+            message = whatsappBookingCreated(data);
+            break;
+          case "confirmed":
+            message = whatsappBookingConfirmed(data);
+            break;
+          case "reminder":
+            message = whatsappBookingReminder(data);
+            break;
+          case "cancelled":
+            message = whatsappBookingCancelled(data);
+            break;
+          case "completed":
+            message = whatsappBookingCompleted(data);
+            break;
+        }
+
+        // Enviar via WPPConnect
+        await sendWhatsAppMessage(data.clientPhone, message);
+
+        results.whatsapp.sent = true;
+        console.log(`✅ WhatsApp enviado para ${data.clientPhone}`);
       }
-
-      await whatsapp.sendText({
-        number: data.clientPhone,
-        text: message,
-        delay: 1200, // Simular digitação
-      });
-
-      results.whatsapp.sent = true;
-      console.log(`✅ WhatsApp enviado para ${data.clientPhone}`);
     } catch (error: any) {
       results.whatsapp.error = error.message;
       console.error(`❌ Erro ao enviar WhatsApp:`, error);
+      console.log('📧 Continuando com envio de email (backup)...');
     }
+  } else if (!hasWhatsAppFeature) {
+    console.log('📧 Plano Essencial: Enviando apenas email (sem WhatsApp)');
+  } else if (!data.clientPhone) {
+    console.log('⚠️ Cliente não tem telefone cadastrado. Enviando apenas email.');
   }
 
-  // 3. Sempre enviar Email (backup ou principal)
+  // 3. SEMPRE enviar Email (principal no Essencial, backup no Profissional)
   try {
     switch (type) {
       case "created":
@@ -148,6 +166,12 @@ export async function sendBookingNotification(
     results.email.error = error.message;
     console.error(`❌ Erro ao enviar email:`, error);
   }
+
+  // 4. Log do resultado final
+  console.log('📊 Resultado do envio:', {
+    whatsapp: results.whatsapp.sent ? '✅ Enviado' : (results.whatsapp.error || '❌ Não enviado'),
+    email: results.email.sent ? '✅ Enviado' : '❌ Falhou',
+  });
 
   return results;
 }

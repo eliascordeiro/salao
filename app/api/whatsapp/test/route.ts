@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getWhatsAppClient } from "@/lib/whatsapp/evolution-client";
+import { sendWhatsAppMessage } from "@/lib/whatsapp/wppconnect-client";
 import { hasFeature, FEATURES } from "@/lib/subscription-features";
 import { getSalonByUserId } from "@/lib/salon-helper";
 
-// POST /api/whatsapp/test - Enviar mensagem de teste
+// POST /api/whatsapp/test - Enviar mensagem de teste via WPPConnect
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -41,16 +41,39 @@ export async function POST(request: Request) {
       );
     }
 
-    const whatsapp = getWhatsAppClient();
-    const result = await whatsapp.sendText({
-      number: phone,
-      text: message,
-      delay: 1000,
-    });
+    console.log(`📤 Tentando enviar mensagem de teste para ${phone}`);
+    
+    // Usar WPPConnect para enviar mensagem
+    const result = await sendWhatsAppMessage(phone, message);
+
+    // Interpretar status de entrega
+    let deliveryStatus = 'unknown';
+    let deliveryMessage = 'Status desconhecido';
+    
+    if (result?.ack === 0) {
+      deliveryStatus = 'error';
+      deliveryMessage = 'Erro ao enviar';
+    } else if (result?.ack === 1) {
+      deliveryStatus = 'sent';
+      deliveryMessage = 'Enviada (1 check ✓)';
+    } else if (result?.ack === 2) {
+      deliveryStatus = 'received';
+      deliveryMessage = 'Recebida pelo servidor (2 checks ✓✓)';
+    } else if (result?.ack === 3) {
+      deliveryStatus = 'delivered';
+      deliveryMessage = 'Entregue ao destinatário (azul ✓✓)';
+    } else if (result?.ack === 4) {
+      deliveryStatus = 'read';
+      deliveryMessage = 'Lida pelo destinatário (azul ✓✓)';
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Mensagem enviada com sucesso!",
+      message: "Mensagem enviada com sucesso via WPPConnect!",
+      deliveryStatus,
+      deliveryMessage,
+      ack: result?.ack,
+      messageId: result?.id,
       result,
     });
   } catch (error: any) {
@@ -58,7 +81,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: error.message || "Erro ao enviar mensagem",
-        details: error.response?.data || null,
+        details: error.toString(),
       },
       { status: 500 }
     );
