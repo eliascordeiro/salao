@@ -169,6 +169,28 @@ export class EvolutionWhatsAppClient {
 
     const result = await response.json();
     console.log("✅ Instância criada com sucesso:", result);
+    
+    // 🔧 NOVO: Forçar conexão imediatamente após criar
+    console.log("🔌 Forçando conexão para gerar QR Code...");
+    try {
+      const connectUrl = `${this.config.baseUrl}/instance/connect/${this.config.instanceName}`;
+      const connectResponse = await fetch(connectUrl, {
+        method: "GET",
+        headers: {
+          apikey: this.config.apiKey,
+        },
+      });
+      
+      if (connectResponse.ok) {
+        const connectData = await connectResponse.json();
+        console.log("✅ Conexão forçada:", connectData);
+      } else {
+        console.log("⚠️ Erro ao forçar conexão (não crítico):", connectResponse.status);
+      }
+    } catch (err) {
+      console.log("⚠️ Erro ao forçar conexão (não crítico):", err);
+    }
+    
     return result;
   }
 
