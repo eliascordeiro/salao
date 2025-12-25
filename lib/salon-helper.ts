@@ -148,6 +148,25 @@ export async function getSalonByUserId(userId: string) {
 }
 
 /**
+ * Obtém o salão de um proprietário pelo ID do owner
+ */
+export async function getSalonByOwnerId(ownerId: string) {
+  try {
+    const salon = await prisma.salon.findFirst({
+      where: {
+        ownerId,
+        active: true
+      }
+    })
+    
+    return salon
+  } catch (error) {
+    console.error('[getSalonByOwnerId] Erro:', error)
+    return null
+  }
+}
+
+/**
  * Verifica se o usuário tem acesso a um salão específico
  */
 export async function canAccessSalon(salonId: string): Promise<boolean> {
