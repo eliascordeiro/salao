@@ -139,11 +139,15 @@ export async function connectWhatsApp(config: BaileysConfig): Promise<WASocket> 
 
       // Limpar auth em casos específicos:
       // - 401 (Connection Failure) = auth inválido
-      // - 515 (Stream Error) = credenciais corrompidas
+      // - 515 (Stream Error) = credenciais corrompidas (mas pode tentar reconectar)
       // - loggedOut (403) = usuário deslogou
-      if (!shouldReconnect || statusCode === 515 || statusCode === 401) {
-        console.log(`🗑️ Limpando auth corrompido (salonId: ${salonId}, statusCode: ${statusCode})`)
+      if (statusCode === 401 || statusCode === DisconnectReason.loggedOut) {
+        console.log(`🗑️ Limpando auth (salonId: ${salonId}, statusCode: ${statusCode})`)
         await clearAuthState(salonId)
+      } else if (statusCode === 515) {
+        console.log(`⚠️ Erro 515 detectado (salonId: ${salonId}) - QR Code será regenerado na próxima tentativa`)
+        // Não limpar auth imediatamente - deixar usuário tentar reconectar
+        // Auth será limpo automaticamente se parse JSON falhar
       }
     }
   })
