@@ -31,11 +31,18 @@ export async function GET(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         console.log(`📡 SSE iniciado (salonId: ${salonId})`)
+        let isClosed = false
 
-        // Função para enviar dados
+        // Função para enviar dados (com verificação)
         const sendEvent = (event: string, data: any) => {
-          const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
-          controller.enqueue(encoder.encode(message))
+          if (isClosed) return
+          try {
+            const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+            controller.enqueue(encoder.encode(message))
+          } catch (error) {
+            // Controller já fechado, ignorar
+            isClosed = true
+          }
         }
 
         // Polling a cada 2 segundos
@@ -87,16 +94,19 @@ export async function GET(req: NextRequest) {
         req.signal.addEventListener('abort', () => {
           console.log(`📡 SSE encerrado (salonId: ${salonId})`)
           clearInterval(interval)
-          controller.close()
+          isClosed = true
+          if (!isClosed) controller.close()
         })
 
         // Timeout de 5 minutos
         setTimeout(() => {
+          if (isClosed) return
           console.log(`⏱️ SSE timeout (salonId: ${salonId})`)
           clearInterval(interval)
           sendEvent('timeout', { 
             message: 'Tempo limite excedido. Tente novamente.'
           })
+          isClosed = true
           controller.close()
         }, 5 * 60 * 1000)
       }

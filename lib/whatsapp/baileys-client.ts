@@ -117,11 +117,12 @@ export async function connectWhatsApp(config: BaileysConfig): Promise<WASocket> 
 
     // Desconectado
     if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
+      const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut
       
       console.log(`❌ WhatsApp desconectado (salonId: ${salonId})`, {
         shouldReconnect,
-        statusCode: (lastDisconnect?.error as Boom)?.output?.statusCode
+        statusCode
       })
 
       // Atualizar status no banco
@@ -136,9 +137,12 @@ export async function connectWhatsApp(config: BaileysConfig): Promise<WASocket> 
         onDisconnected()
       }
 
-      // Se foi logout, limpar auth
-      if (!shouldReconnect) {
-        console.log(`🗑️ Logout detectado, limpando auth (salonId: ${salonId})`)
+      // Limpar auth em casos específicos:
+      // - 401 (Connection Failure) = auth inválido
+      // - 515 (Stream Error) = credenciais corrompidas
+      // - loggedOut (403) = usuário deslogou
+      if (!shouldReconnect || statusCode === 515 || statusCode === 401) {
+        console.log(`🗑️ Limpando auth corrompido (salonId: ${salonId}, statusCode: ${statusCode})`)
         await clearAuthState(salonId)
       }
     }
