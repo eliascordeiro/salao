@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -7,6 +9,7 @@ import {
   sendBookingCancelledEmail,
   formatBookingDataForEmail,
 } from "@/lib/email";
+import { sendBookingNotification } from "@/lib/whatsapp/notifications";
 
 export async function GET(
   request: NextRequest,
@@ -202,6 +205,7 @@ export async function PUT(
           select: {
             name: true,
             email: true,
+            phone: true,
           },
         },
         service: {
@@ -220,6 +224,7 @@ export async function PUT(
           select: {
             name: true,
             address: true,
+            phone: true,
           },
         },
       },
@@ -300,17 +305,35 @@ export async function PUT(
       }
     }
 
-    // Enviar emails baseado na mudança de status (sem aguardar)
+    // Enviar notificações híbridas (WhatsApp + Email) baseadas no plano
     if (status && previousBooking && status !== previousBooking.status) {
-      const emailData = formatBookingDataForEmail(booking);
+      const notificationData = {
+        salonId: booking.salonId,
+        clientName: booking.client.name,
+        clientEmail: booking.client.email,
+        clientPhone: booking.client.phone || null,
+        serviceName: booking.service.name,
+        staffName: booking.staff.name,
+        date: booking.date,
+        time: format(booking.date, 'HH:mm'),
+        salonName: booking.salon.name,
+        salonAddress: booking.salon.address,
+        salonPhone: booking.salon.phone,
+        price: booking.service.price,
+        bookingId: booking.id,
+      };
 
       if (status === "CONFIRMED") {
-        sendBookingConfirmedEmail(emailData, booking.id).catch((error) =>
-          console.error("Erro ao enviar email de confirmação:", error)
+        sendBookingNotification(notificationData, 'confirmed').catch((error) =>
+          console.error("Erro ao enviar notificação de confirmação:", error)
         );
       } else if (status === "CANCELLED") {
-        sendBookingCancelledEmail(emailData, "admin", booking.id).catch(
-          (error) => console.error("Erro ao enviar email de cancelamento:", error)
+        sendBookingNotification(notificationData, 'cancelled').catch(
+          (error) => console.error("Erro ao enviar notificação de cancelamento:", error)
+        );
+      } else if (status === "COMPLETED") {
+        sendBookingNotification(notificationData, 'completed').catch(
+          (error) => console.error("Erro ao enviar notificação de conclusão:", error)
         );
       }
     }

@@ -40,32 +40,20 @@ export class WhatsGWClient {
 
   /**
    * Verificar status do número WhatsApp
-   * Faz uma requisição de teste para verificar se está conectado
+   * Retorna se está configurado corretamente (sem enviar mensagem de teste)
    */
   async getStatus(): Promise<{ connected: boolean; phone: string }> {
     try {
-      // Fazer uma requisição de teste
-      const formData = new URLSearchParams({
-        apikey: this.config.apiKey,
-        phone_number: this.config.phoneNumber,
-        contact_phone_number: this.config.phoneNumber,
-        message_custom_id: `status-check-${Date.now()}`,
-        message_type: 'text',
-        message_body: '🔍 Status check',
-      })
-
-      const response = await fetch(`${this.config.baseUrl}/api/WhatsGw/Send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData.toString(),
-      })
-
-      const data: WhatsGWResponse = await response.json()
+      // Verificar apenas se as credenciais estão configuradas
+      // NÃO envia mensagem de teste para evitar spam
+      const isConfigured = !!(
+        this.config.apiKey && 
+        this.config.phoneNumber && 
+        this.config.baseUrl
+      )
 
       return {
-        connected: data.phone_state === 'Conectado',
+        connected: isConfigured,
         phone: this.config.phoneNumber,
       }
     } catch (error) {

@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,6 +8,7 @@ import {
   sendBookingCreatedEmail,
   formatBookingDataForEmail,
 } from "@/lib/email";
+import { sendBookingNotification } from "@/lib/whatsapp/notifications";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getUserSalon } from "@/lib/salon-helper";
 
@@ -372,12 +375,14 @@ export async function POST(request: NextRequest) {
           select: {
             name: true,
             email: true,
+            phone: true,
           },
         },
         service: {
           select: {
             name: true,
             duration: true,
+            price: true,
           },
         },
         staff: {
@@ -389,15 +394,31 @@ export async function POST(request: NextRequest) {
           select: {
             name: true,
             address: true,
+            phone: true,
           },
         },
       },
     });
 
-    // Enviar email de confirmação de criação (sem aguardar)
-    sendBookingCreatedEmail(formatBookingDataForEmail(booking), booking.id).catch(
-      (error) => console.error("Erro ao enviar email de criação:", error)
-    );
+    // Enviar notificação híbrida (WhatsApp + Email) baseada no plano
+    sendBookingNotification(
+      {
+        salonId: booking.salonId,
+        clientName: booking.client.name,
+        clientEmail: booking.client.email,
+        clientPhone: booking.client.phone,
+        serviceName: booking.service.name,
+        staffName: booking.staff.name,
+        date: booking.date,
+        time: format(booking.date, 'HH:mm'),
+        salonName: booking.salon.name,
+        salonAddress: booking.salon.address,
+        salonPhone: booking.salon.phone,
+        price: booking.service.price,
+        bookingId: booking.id,
+      },
+      'created'
+    ).catch((error) => console.error("Erro ao enviar notificação:", error));
 
     console.log("[bookings POST] Booking criado com sucesso:", booking.id);
     return NextResponse.json(booking, { status: 201 });
