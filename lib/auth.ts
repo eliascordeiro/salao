@@ -60,7 +60,8 @@ export const authOptions: NextAuthOptions = {
           roleType: user.roleType,
           permissions: user.permissions,
           createdAt: user.createdAt,
-          image: user.image
+          image: user.image,
+          phone: user.phone
         }
       }
     })
@@ -112,6 +113,7 @@ export const authOptions: NextAuthOptions = {
             ;(user as any).roleType = existingUser.roleType
             ;(user as any).permissions = existingUser.permissions
             ;(user as any).createdAt = existingUser.createdAt
+            ;(user as any).phone = existingUser.phone
           } else {
             // Criar novo usuário
             console.log("✅ Criando novo usuário Google:", user.email)
@@ -148,6 +150,7 @@ export const authOptions: NextAuthOptions = {
         token.roleType = (user as any).roleType
         token.permissions = (user as any).permissions || []
         token.createdAt = (user as any).createdAt
+        token.phone = (user as any).phone
       }
       return token
     },
@@ -158,6 +161,7 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as any).roleType = token.roleType
         ;(session.user as any).permissions = token.permissions || []
         ;(session.user as any).createdAt = token.createdAt
+        ;(session.user as any).phone = token.phone
       }
       return session
     }

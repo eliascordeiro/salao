@@ -23,6 +23,7 @@ function PerfilContent() {
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
+    phone: "",
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -33,11 +34,31 @@ function PerfilContent() {
 
   const [message, setMessage] = useState({ type: "", text: "" })
 
+  // Função para formatar telefone
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const numericValue = value.replace(/\D/g, '')
+    let formattedValue = numericValue
+
+    if (numericValue.length <= 11) {
+      if (numericValue.length <= 2) {
+        formattedValue = numericValue
+      } else if (numericValue.length <= 7) {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`
+      } else {
+        formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`
+      }
+    }
+
+    setProfileData({ ...profileData, phone: formattedValue })
+  }
+
   useEffect(() => {
     if (session?.user) {
       setProfileData({
         name: session.user.name || "",
         email: session.user.email || "",
+        phone: (session.user as any).phone || "",
       })
     }
   }, [session])
@@ -60,11 +81,28 @@ function PerfilContent() {
     setLoading(true)
     setMessage({ type: "", text: "" })
 
+    // Validar telefone
+    if (!profileData.phone || profileData.phone.trim() === '') {
+      setMessage({ type: "error", text: "Telefone é obrigatório para receber notificações WhatsApp" })
+      setLoading(false)
+      return
+    }
+
+    const phoneNumbers = profileData.phone.replace(/\D/g, '')
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      setMessage({ type: "error", text: "Telefone inválido. Digite um número com DDD" })
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: profileData.name }),
+        body: JSON.stringify({ 
+          name: profileData.name,
+          phone: phoneNumbers, // Envia apenas números
+        }),
       })
 
       const data = await res.json()
@@ -193,6 +231,25 @@ function PerfilContent() {
                   placeholder="Seu nome completo"
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-foreground">
+                  Telefone <span className="text-xs text-accent">(obrigatório para WhatsApp)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="(41) 99999-9999"
+                  value={profileData.phone}
+                  onChange={handlePhoneChange}
+                  required
+                  maxLength={15}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Digite com DDD para receber notificações via WhatsApp
+                </p>
               </div>
 
               <div className="space-y-2">

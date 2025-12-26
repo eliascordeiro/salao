@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         email: true,
+        phone: true,
         role: true,
         roleType: true,
         permissions: true,
@@ -52,7 +53,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name } = body
+    const { name, phone } = body
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json(
@@ -61,13 +62,33 @@ export async function PUT(req: NextRequest) {
       )
     }
 
+    // Validar telefone
+    if (!phone || phone.trim() === '') {
+      return NextResponse.json(
+        { error: "Telefone é obrigatório para receber notificações WhatsApp" },
+        { status: 400 }
+      )
+    }
+
+    const phoneNumbers = phone.replace(/\D/g, '')
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      return NextResponse.json(
+        { error: "Telefone inválido. Digite um número válido com DDD" },
+        { status: 400 }
+      )
+    }
+
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
-      data: { name: name.trim() },
+      data: { 
+        name: name.trim(),
+        phone: phoneNumbers, // Salva apenas números
+      },
       select: {
         id: true,
         name: true,
         email: true,
+        phone: true,
         role: true,
         roleType: true,
       },
