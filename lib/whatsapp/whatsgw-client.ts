@@ -2,7 +2,7 @@
  * WhatsGW Client - HTTP API para WhatsApp
  * Documentação oficial: https://github.com/whatsgw/whatsgw
  * API: https://app.whatsgw.com.br/api/WhatsGw/Send
- * Método: POST application/x-www-form-urlencoded
+ * Método: POST application/json (testado e validado com notificações push)
  */
 
 export interface WhatsGWConfig {
@@ -67,7 +67,7 @@ export class WhatsGWClient {
 
   /**
    * Enviar mensagem de texto
-   * Método oficial: POST application/x-www-form-urlencoded
+   * Método: POST application/json (igual ao Python que funciona)
    */
   async sendMessage(params: SendMessageParams): Promise<SendMessageResult> {
     try {
@@ -77,16 +77,15 @@ export class WhatsGWClient {
       // Gerar ID único para a mensagem
       const messageCustomId = `msg-${Date.now()}-${Math.random().toString(36).substring(7)}`
 
-      // Montar parâmetros URL-encoded (padrão oficial WhatsGW)
-      const formData = new URLSearchParams({
+      // Montar payload JSON (mesmo formato do Python que funciona)
+      const payload = {
         apikey: this.config.apiKey,
         phone_number: this.config.phoneNumber,
         contact_phone_number: phone,
         message_custom_id: messageCustomId,
         message_type: 'text',
         message_body: params.message,
-        message_caption: params.message, // Alguns serviços usam caption para forçar notificação
-      })
+      }
 
       console.log('📤 Sending WhatsGW message:', {
         phone,
@@ -94,13 +93,13 @@ export class WhatsGWClient {
         messageId: messageCustomId,
       })
 
-      // POST com application/x-www-form-urlencoded (padrão oficial)
+      // POST com application/json (igual ao Python que funciona com notificação)
       const response = await fetch(`${this.config.baseUrl}/api/WhatsGw/Send`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: formData.toString(),
+        body: JSON.stringify(payload),
       })
 
       const data: WhatsGWResponse = await response.json()
