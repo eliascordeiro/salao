@@ -123,9 +123,17 @@ export async function clearAuthState(salonId: string) {
  */
 export async function updateConnectionStatus(salonId: string, connected: boolean, phone?: string) {
   try {
-    await prisma.whatsAppSession.update({
+    await prisma.whatsAppSession.upsert({
       where: { salonId },
-      data: {
+      create: {
+        salonId,
+        creds: '{}',
+        keys: '{}',
+        connected,
+        phone,
+        lastConnected: connected ? new Date() : undefined
+      },
+      update: {
         connected,
         phone,
         lastConnected: connected ? new Date() : undefined
@@ -142,9 +150,16 @@ export async function updateConnectionStatus(salonId: string, connected: boolean
  */
 export async function saveQRCode(salonId: string, qrCode: string) {
   try {
-    await prisma.whatsAppSession.update({
+    await prisma.whatsAppSession.upsert({
       where: { salonId },
-      data: { qrCode }
+      create: {
+        salonId,
+        creds: '{}',
+        keys: '{}',
+        qrCode,
+        connected: false
+      },
+      update: { qrCode }
     })
     console.log(`📱 QR Code salvo (salonId: ${salonId})`)
   } catch (error) {
