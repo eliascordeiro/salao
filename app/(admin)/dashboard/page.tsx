@@ -489,10 +489,7 @@ export default async function DashboardPage() {
                           {new Date(booking.date).toLocaleDateString("pt-BR")}
                         </p>
                         <p className="text-sm text-foreground-muted">
-                          {new Date(booking.date).toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
+                          {new Date(booking.date).getUTCHours().toString().padStart(2, '0')}:{new Date(booking.date).getUTCMinutes().toString().padStart(2, '0')}
                         </p>
                       </div>
                       <span className={`text-xs px-3 py-1 rounded-full font-medium ${

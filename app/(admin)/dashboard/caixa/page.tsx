@@ -789,7 +789,7 @@ export default function CaixaPage() {
                       )}
                       {clientData.paidAt && (
                         <div className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap ml-auto lg:ml-0">
-                          {format(new Date(clientData.paidAt), "HH:mm", { locale: ptBR })}
+                          {new Date(clientData.paidAt).getUTCHours().toString().padStart(2, '0')}:{new Date(clientData.paidAt).getUTCMinutes().toString().padStart(2, '0')}
                         </div>
                       )}
                     </div>

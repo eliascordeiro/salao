@@ -466,7 +466,7 @@ export default function AgendamentosPage() {
     setEditingBooking(booking);
     const bookingDate = new Date(booking.date);
     
-    // Preencher form com dados do booking
+    // Preencher form com dados do booking usando UTC
     setFormData({
       clientId: booking.client.id,
       clientName: booking.client.name,
@@ -474,8 +474,8 @@ export default function AgendamentosPage() {
       clientPhone: booking.client.phone || "",
       serviceId: booking.service.id,
       staffId: booking.staff.id,
-      date: format(bookingDate, "yyyy-MM-dd"),
-      time: format(bookingDate, "HH:mm"),
+      date: `${bookingDate.getUTCFullYear()}-${String(bookingDate.getUTCMonth() + 1).padStart(2, '0')}-${String(bookingDate.getUTCDate()).padStart(2, '0')}`,
+      time: `${String(bookingDate.getUTCHours()).padStart(2, '0')}:${String(bookingDate.getUTCMinutes()).padStart(2, '0')}`,
       notes: booking.notes || "",
     });
     
@@ -579,8 +579,15 @@ export default function AgendamentosPage() {
         }
       }
       
-      // Combinar data e hora (SEM o Z para usar timezone local)
-      const dateTime = new Date(`${formData.date}T${formData.time}:00`);
+      // Combinar data e hora usando UTC para evitar problema de timezone
+      const [year, month, day] = formData.date.split('-').map(Number);
+      const [hours, minutes] = formData.time.split(':').map(Number);
+      
+      const dateTime = new Date();
+      dateTime.setUTCFullYear(year);
+      dateTime.setUTCMonth(month - 1); // Mês começa em 0
+      dateTime.setUTCDate(day);
+      dateTime.setUTCHours(hours, minutes, 0, 0);
       
       // Validar se a data é válida
       if (isNaN(dateTime.getTime())) {
@@ -674,8 +681,15 @@ export default function AgendamentosPage() {
         return;
       }
       
-      // Combinar data e hora (SEM o Z para usar timezone local)
-      const dateTime = new Date(`${formData.date}T${formData.time}:00`);
+      // Combinar data e hora usando UTC para evitar problema de timezone
+      const [year, month, day] = formData.date.split('-').map(Number);
+      const [hours, minutes] = formData.time.split(':').map(Number);
+      
+      const dateTime = new Date();
+      dateTime.setUTCFullYear(year);
+      dateTime.setUTCMonth(month - 1); // Mês começa em 0
+      dateTime.setUTCDate(day);
+      dateTime.setUTCHours(hours, minutes, 0, 0);
       
       // Validar se a data é válida
       if (isNaN(dateTime.getTime())) {
@@ -1006,7 +1020,7 @@ export default function AgendamentosPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4 text-accent" />
-                          {format(new Date(booking.date), "HH:mm")} (
+                          {new Date(booking.date).getUTCHours().toString().padStart(2, '0')}:{new Date(booking.date).getUTCMinutes().toString().padStart(2, '0')} (
                           {booking.service.duration}min)
                         </div>
                       </div>

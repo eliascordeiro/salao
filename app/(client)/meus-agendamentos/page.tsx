@@ -436,7 +436,7 @@ function MyBookingsContent() {
                           <div className="min-w-0">
                             <p className="text-[10px] sm:text-xs text-foreground-muted uppercase tracking-wide">Horário</p>
                             <p className="text-sm sm:text-base text-foreground font-medium truncate">
-                              {format(new Date(booking.date), "HH:mm")} • {booking.service.duration} min
+                              {new Date(booking.date).getUTCHours().toString().padStart(2, '0')}:{new Date(booking.date).getUTCMinutes().toString().padStart(2, '0')} • {booking.service.duration} min
                             </p>
                           </div>
                         </div>

@@ -315,7 +315,7 @@ export async function PUT(
         serviceName: booking.service.name,
         staffName: booking.staff.name,
         date: booking.date,
-        time: format(booking.date, 'HH:mm'),
+        time: `${booking.date.getUTCHours().toString().padStart(2, '0')}:${booking.date.getUTCMinutes().toString().padStart(2, '0')}`,
         salonName: booking.salon.name,
         salonAddress: booking.salon.address,
         salonPhone: booking.salon.phone,
