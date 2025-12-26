@@ -1,22 +1,25 @@
 /**
  * WhatsGW Client - HTTP API para WhatsApp
- * Documentação: https://documenter.getpostman.com/view/3741041/SztBa7ku
+ * API: https://app.whatsgw.com.br/api/WhatsGw/Send
  */
 
 export interface WhatsGWConfig {
-  baseUrl: string // URL do servidor WhatsGW (ex: http://localhost:3000)
-  token?: string  // Token de autenticação (se configurado)
+  baseUrl: string      // URL base (ex: https://app.whatsgw.com.br)
+  apiKey: string       // API Key do WhatsGW
+  phoneNumber: string  // Seu número WhatsApp (ex: 5541996123839)
 }
 
 export interface SendMessageParams {
-  phone: string   // Número com DDI (ex: 5541999999999)
+  phone: string   // Número destinatário com DDI (ex: 5541999999999)
   message: string // Texto da mensagem
 }
 
-export interface WhatsGWStatus {
-  connected: boolean
-  phone?: string
-  qrCode?: string
+export interface WhatsGWResponse {
+  result: 'success' | 'error'
+  message_id?: number
+  contact_phone_number?: string
+  phone_state?: string
+  error?: string
 }
 
 export class WhatsGWClient {
@@ -27,69 +30,49 @@ export class WhatsGWClient {
   }
 
   /**
-   * Headers para requisições
+   * Constrói URL da API com parâmetros
    */
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-
-    if (this.config.token) {
-      headers['Authorization'] = `Bearer ${this.config.token}`
-    }
-
-    return headers
+  private buildUrl(params: Record<string, string>): string {
+    const url = new URL('/api/WhatsGw/Send', this.config.baseUrl)
+    
+    // Adicionar apikey e phone_number em todos requests
+    url.searchParams.set('apikey', this.config.apiKey)
+    url.searchParams.set('phone_number', this.config.phoneNumber)
+    
+    // Adicionar demais parâmetros
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.set(key, value)
+    })
+    
+    return url.toString()
   }
 
   /**
-   * Iniciar sessão WhatsApp (gera QR Code)
+   * Verificar status do número WhatsApp
    */
-  async startSession(): Promise<{ qrCode?: string; connected: boolean }> {
+  async getStatus(): Promise<{ connected: boolean; phone: string }> {
     try {
-      const response = await fetch(`${this.config.baseUrl}/session/start`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify({ sessionName: 'default' }),
+      // Fazer uma requisição de teste para verificar status
+      const url = this.buildUrl({
+        contact_phone_number: this.config.phoneNumber,
+        message_custom_id: 'status_check',
+        message_type: 'text',
+        message_body: 'status', // Não será enviado, apenas verifica conexão
       })
 
-      if (!response.ok) {
-        throw new Error(`Erro ao iniciar sessão: ${response.statusText}`)
-      }
+      const response = await fetch(url)
+      const data: WhatsGWResponse = await response.json()
 
-      const data = await response.json()
       return {
-        qrCode: data.qrCode,
-        connected: data.connected || false,
-      }
-    } catch (error) {
-      console.error('❌ Erro ao iniciar sessão WhatsGW:', error)
-      throw error
-    }
-  }
-
-  /**
-   * Verificar status da sessão
-   */
-  async getStatus(): Promise<WhatsGWStatus> {
-    try {
-      const response = await fetch(`${this.config.baseUrl}/session/status/default`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      })
-
-      if (!response.ok) {
-        return { connected: false }
-      }
-
-      const data = await response.json()
-      return {
-        connected: data.connected || data.status === 'connected',
-        phone: data.phone || data.me?.user,
-        qrCode: data.qrCode,
+        connected: data.phone_state === 'Conectado',
+        phone: this.config.phoneNumber,
       }
     } catch (error) {
       console.error('❌ Erro ao verificar status WhatsGW:', error)
-      return { connected: false }
+      return { 
+        connected: false,
+        phone: this.config.phoneNumber
+      }
     }
   }
 
@@ -116,18 +99,41 @@ export class WhatsGWClient {
         }),
       })
 
-      const data = await response.json()
+  /**
+   * Enviar mensagem de texto
+   * URL: https://app.whatsgw.com.br/api/WhatsGw/Send
+   */
+  async sendMessage(params: SendMessageParams): Promise<{ success: boolean; messageId?: number; error?: string; phoneState?: string }> {
+    try {
+      // Garantir que número está no formato correto (apenas dígitos)
+      const phone = params.phone.replace(/\D/g, '')
+      
+      // Construir URL com parâmetros
+      const url = this.buildUrl({
+        contact_phone_number: phone,
+        message_custom_id: `msg_${Date.now()}`,
+        message_type: 'text',
+        message_body: params.message,
+      })
 
-      if (!response.ok) {
+      console.log('📤 Enviando mensagem WhatsGW:', { phone, preview: params.message.substring(0, 50) })
+
+      const response = await fetch(url)
+      const data: WhatsGWResponse = await response.json()
+
+      console.log('📥 Resposta WhatsGW:', data)
+
+      if (data.result === 'success') {
+        return {
+          success: true,
+          messageId: data.message_id,
+          phoneState: data.phone_state,
+        }
+      } else {
         return {
           success: false,
-          error: data.error || data.message || 'Erro ao enviar mensagem',
+          error: data.error || 'Erro ao enviar mensagem',
         }
-      }
-
-      return {
-        success: true,
-        messageId: data.messageId || data.id,
       }
     } catch (error) {
       console.error('❌ Erro ao enviar mensagem WhatsGW:', error)
@@ -139,52 +145,10 @@ export class WhatsGWClient {
   }
 
   /**
-   * Desconectar sessão (logout)
-   */
-  async logout(): Promise<{ success: boolean }> {
-    try {
-      const response = await fetch(`${this.config.baseUrl}/session/logout/default`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-      })
-
-      return { success: response.ok }
-    } catch (error) {
-      console.error('❌ Erro ao desconectar WhatsGW:', error)
-      return { success: false }
-    }
-  }
-
-  /**
    * Verificar se sessão está ativa
    */
   async isConnected(): Promise<boolean> {
     const status = await this.getStatus()
     return status.connected
   }
-
-  /**
-   * Aguardar QR Code ser escaneado (polling)
-   */
-  async waitForConnection(maxAttempts = 30, intervalMs = 2000): Promise<boolean> {
-    for (let i = 0; i < maxAttempts; i++) {
-      const status = await this.getStatus()
-      
-      if (status.connected) {
-        return true
-      }
-
-      // Aguardar antes de próxima tentativa
-      await new Promise(resolve => setTimeout(resolve, intervalMs))
-    }
-
-    return false
-  }
-}
-
-/**
- * Criar instância do cliente WhatsGW
- */
-export function createWhatsGWClient(config: WhatsGWConfig): WhatsGWClient {
-  return new WhatsGWClient(config)
 }

@@ -23,21 +23,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const baseUrl = process.env.WHATSGW_URL || 'http://localhost:3000'
-    const token = process.env.WHATSGW_TOKEN
+    const baseUrl = process.env.WHATSGW_URL || 'https://app.whatsgw.com.br'
+    const apiKey = process.env.WHATSGW_API_KEY
+    const phoneNumber = process.env.WHATSGW_PHONE_NUMBER
 
-    const client = createWhatsGWClient({ baseUrl, token })
-    
-    // Verificar se está conectado
-    const isConnected = await client.isConnected()
-    if (!isConnected) {
-      return NextResponse.json(
-        { error: 'WhatsApp não está conectado' },
-        { status: 400 }
-      )
+    if (!apiKey || !phoneNumber) {
+      return NextResponse.json({
+        error: 'Configuração incompleta',
+        details: 'Configure WHATSGW_API_KEY e WHATSGW_PHONE_NUMBER no .env',
+      }, { status: 400 })
     }
 
-    // Enviar mensagem
+    const client = createWhatsGWClient({ baseUrl, apiKey, phoneNumber })
+    
+    // Enviar mensagem (WhatsGW não precisa verificar conexão prévia)
     const result = await client.sendMessage({ phone, message })
 
     if (!result.success) {
@@ -50,6 +49,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       messageId: result.messageId,
+      phoneState: result.phoneState,
       message: 'Mensagem enviada com sucesso',
     })
   } catch (error) {

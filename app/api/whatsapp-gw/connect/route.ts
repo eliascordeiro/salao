@@ -13,16 +13,23 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const baseUrl = process.env.WHATSGW_URL || 'http://localhost:3000'
-    const token = process.env.WHATSGW_TOKEN
+    const baseUrl = process.env.WHATSGW_URL || 'https://app.whatsgw.com.br'
+    const apiKey = process.env.WHATSGW_API_KEY
+    const phoneNumber = process.env.WHATSGW_PHONE_NUMBER
 
-    const client = createWhatsGWClient({ baseUrl, token })
+    if (!apiKey || !phoneNumber) {
+      return NextResponse.json({
+        error: 'Configuração incompleta',
+        details: 'Configure WHATSGW_API_KEY e WHATSGW_PHONE_NUMBER no .env',
+      }, { status: 400 })
+    }
+
+    const client = createWhatsGWClient({ baseUrl, apiKey, phoneNumber })
     const status = await client.getStatus()
 
     return NextResponse.json({
       connected: status.connected,
       phone: status.phone,
-      qrCode: status.qrCode,
     })
   } catch (error) {
     console.error('❌ Erro ao verificar status WhatsGW:', error)
@@ -34,32 +41,9 @@ export async function GET() {
 }
 
 /**
- * POST - Iniciar sessão WhatsGW (gera QR Code)
+ * POST - Não necessário para WhatsGW (sempre conectado se configurado)
  */
 export async function POST() {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    }
-
-    const baseUrl = process.env.WHATSGW_URL || 'http://localhost:3000'
-    const token = process.env.WHATSGW_TOKEN
-
-    const client = createWhatsGWClient({ baseUrl, token })
-    const result = await client.startSession()
-
-    return NextResponse.json({
-      success: true,
-      qrCode: result.qrCode,
-      connected: result.connected,
-      message: result.connected ? 'Já conectado' : 'QR Code gerado',
-    })
-  } catch (error) {
-    console.error('❌ Erro ao iniciar sessão WhatsGW:', error)
-    return NextResponse.json(
-      { error: 'Erro ao iniciar sessão' },
-      { status: 500 }
-    )
-  }
+  // WhatsGW não precisa de "iniciar sessão" - basta estar configurado
+  return GET()
 }

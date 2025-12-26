@@ -9,21 +9,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { 
   MessageSquare, 
-  QrCode, 
-  Power, 
   Loader2, 
   CheckCircle2,
   XCircle,
-  AlertCircle,
-  Phone
+  Phone,
+  RefreshCw
 } from 'lucide-react'
-import Image from 'next/image'
 
 export default function WhatsGWPage() {
   const [loading, setLoading] = useState(false)
   const [connected, setConnected] = useState(false)
   const [phone, setPhone] = useState('')
-  const [qrCode, setQrCode] = useState<string | null>(null)
   const [testPhone, setTestPhone] = useState('')
   const [testMessage, setTestMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -31,7 +27,7 @@ export default function WhatsGWPage() {
   // Verificar status ao carregar
   useEffect(() => {
     checkStatus()
-    const interval = setInterval(checkStatus, 5000) // Polling a cada 5s
+    const interval = setInterval(checkStatus, 10000) // Polling a cada 10s
     return () => clearInterval(interval)
   }, [])
 
@@ -45,86 +41,8 @@ export default function WhatsGWPage() {
 
       setConnected(data.connected || false)
       setPhone(data.phone || '')
-      
-      if (data.qrCode && !data.connected) {
-        setQrCode(data.qrCode)
-      } else {
-        setQrCode(null)
-      }
     } catch (error) {
       console.error('Erro ao verificar status:', error)
-    }
-  }
-
-  /**
-   * Conectar (gerar QR Code)
-   */
-  const handleConnect = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/whatsapp-gw/connect', {
-        method: 'POST',
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        if (data.connected) {
-          toast.success('WhatsApp já está conectado!')
-          setConnected(true)
-        } else if (data.qrCode) {
-          toast.success('QR Code gerado! Escaneie com seu WhatsApp')
-          setQrCode(data.qrCode)
-          // Polling mais rápido após gerar QR
-          const interval = setInterval(async () => {
-            await checkStatus()
-            const statusRes = await fetch('/api/whatsapp-gw/connect')
-            const statusData = await statusRes.json()
-            if (statusData.connected) {
-              clearInterval(interval)
-              toast.success('✅ WhatsApp conectado com sucesso!')
-            }
-          }, 2000)
-          
-          // Parar polling após 60s
-          setTimeout(() => clearInterval(interval), 60000)
-        }
-      } else {
-        toast.error(data.error || 'Erro ao conectar')
-      }
-    } catch (error) {
-      console.error('Erro ao conectar:', error)
-      toast.error('Erro ao conectar WhatsApp')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  /**
-   * Desconectar (logout)
-   */
-  const handleDisconnect = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/whatsapp-gw/disconnect', {
-        method: 'POST',
-      })
-
-      const data = await res.json()
-
-      if (res.ok && data.success) {
-        toast.success('Desconectado com sucesso')
-        setConnected(false)
-        setQrCode(null)
-        setPhone('')
-      } else {
-        toast.error(data.error || 'Erro ao desconectar')
-      }
-    } catch (error) {
-      console.error('Erro ao desconectar:', error)
-      toast.error('Erro ao desconectar')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -133,7 +51,7 @@ export default function WhatsGWPage() {
    */
   const handleSendTest = async () => {
     if (!testPhone || !testMessage) {
-      toast.error('Preencha telefone e mensagem')
+      toast.error('Preencha o número e a mensagem')
       return
     }
 
@@ -151,7 +69,7 @@ export default function WhatsGWPage() {
       const data = await res.json()
 
       if (res.ok && data.success) {
-        toast.success('✅ Mensagem enviada com sucesso!')
+        toast.success(`✅ Mensagem enviada com sucesso! ID: ${data.messageId}`)
         setTestMessage('')
       } else {
         toast.error(data.error || 'Erro ao enviar mensagem')
@@ -197,142 +115,109 @@ export default function WhatsGWPage() {
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Botões Conectar/Desconectar */}
+          {/* Botão Atualizar Status */}
           <div className="flex gap-2">
-            {!connected ? (
-              <Button onClick={handleConnect} disabled={loading} className="flex-1">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando QR Code...
-                  </>
-                ) : (
-                  <>
-                    <QrCode className="mr-2 h-4 w-4" />
-                    Conectar WhatsApp
-                  </>
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleDisconnect} disabled={loading} variant="destructive" className="flex-1">
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Desconectando...
-                  </>
-                ) : (
-                  <>
-                    <Power className="mr-2 h-4 w-4" />
-                    Desconectar
-                  </>
-                )}
-              </Button>
-            )}
+            <Button onClick={checkStatus} disabled={loading} className="flex-1">
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verificando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Atualizar Status
+                </>
+              )}
+            </Button>
           </div>
 
-          {/* QR Code */}
-          {qrCode && !connected && (
-            <div className="border rounded-lg p-6 bg-white flex flex-col items-center gap-4">
-              <div className="text-center">
-                <h3 className="font-semibold mb-2">Escaneie o QR Code</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Abra o WhatsApp no celular e escaneie este código
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg border">
-                <Image
-                  src={qrCode}
-                  alt="QR Code WhatsApp"
-                  width={256}
-                  height={256}
-                  className="w-64 h-64"
-                />
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Aguardando conexão...
-              </div>
+          {/* Mensagem de configuração se não conectado */}
+          {!connected && (
+            <div className="border border-orange-200 bg-orange-50 dark:bg-orange-950/20 rounded-lg p-4">
+              <p className="text-sm text-orange-700 dark:text-orange-400">
+                ⚠️ Configure as variáveis WHATSGW_API_KEY e WHATSGW_PHONE_NUMBER no arquivo .env
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Enviar Mensagem de Teste */}
-      {connected && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Enviar Mensagem de Teste</CardTitle>
-            <CardDescription>
-              Teste o envio de mensagens via WhatsGW
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="testPhone">Número do Destinatário</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="testPhone"
-                  type="tel"
-                  placeholder="5541996123839"
-                  value={testPhone}
-                  onChange={(e) => setTestPhone(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Formato: DDI + DDD + Número (ex: 5541996123839)
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="testMessage">Mensagem</Label>
-              <Textarea
-                id="testMessage"
-                placeholder="Digite sua mensagem de teste..."
-                value={testMessage}
-                onChange={(e) => setTestMessage(e.target.value)}
-                rows={4}
+      <Card>
+        <CardHeader>
+          <CardTitle>Enviar Mensagem de Teste</CardTitle>
+          <CardDescription>
+            Teste o envio de mensagens via WhatsGW
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="testPhone">Número do Destinatário</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="testPhone"
+                type="tel"
+                placeholder="5541996123839"
+                value={testPhone}
+                onChange={(e) => setTestPhone(e.target.value)}
+                className="pl-10"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Formato: DDI + DDD + Número (ex: 5541996123839)
+            </p>
+          </div>
 
-            <Button onClick={handleSendTest} disabled={sending || !connected} className="w-full">
-              {sending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Enviar Mensagem
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          <div className="space-y-2">
+            <Label htmlFor="testMessage">Mensagem</Label>
+            <Textarea
+              id="testMessage"
+              placeholder="Digite sua mensagem de teste..."
+              value={testMessage}
+              onChange={(e) => setTestMessage(e.target.value)}
+              rows={4}
+            />
+          </div>
+
+          <Button onClick={handleSendTest} disabled={sending || !connected} className="w-full">
+            {sending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Enviar Mensagem
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Info WhatsGW */}
       <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-            <AlertCircle className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5" />
             Configuração WhatsGW
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-blue-600 dark:text-blue-300">
           <p>📌 Configure as variáveis de ambiente no arquivo <code>.env</code>:</p>
           <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded font-mono text-xs space-y-1">
-            <div>WHATSGW_URL=http://localhost:3000</div>
-            <div>WHATSGW_TOKEN=seu_token_aqui (opcional)</div>
+            <div>WHATSGW_URL=https://app.whatsgw.com.br</div>
+            <div>WHATSGW_API_KEY=seu_api_key_aqui</div>
+            <div>WHATSGW_PHONE_NUMBER=5541996123839</div>
           </div>
           <p className="pt-2">
-            💡 Certifique-se de que o servidor WhatsGW está rodando antes de conectar
+            💡 O telefone deve estar previamente conectado no painel WhatsGW
           </p>
           <p>
-            📚 <a href="https://documenter.getpostman.com/view/3741041/SztBa7ku" target="_blank" rel="noopener noreferrer" className="underline">
-              Documentação WhatsGW
+            📚 <a href="https://app.whatsgw.com.br" target="_blank" rel="noopener noreferrer" className="underline">
+              Painel WhatsGW
             </a>
           </p>
         </CardContent>
