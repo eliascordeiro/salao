@@ -85,6 +85,7 @@ export class WhatsGWClient {
         message_custom_id: messageCustomId,
         message_type: 'text',
         message_body: params.message,
+        message_caption: params.message, // Alguns serviços usam caption para forçar notificação
       })
 
       console.log('📤 Sending WhatsGW message:', {
