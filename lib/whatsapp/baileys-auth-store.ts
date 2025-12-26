@@ -33,8 +33,12 @@ export async function usePrismaAuthState(salonId: string): Promise<BaileysAuthSt
       keys = JSON.parse(session.keys, BufferJSON.reviver)
       console.log(`✅ Auth carregado do banco (salonId: ${salonId})`)
     } catch (error) {
-      console.error('❌ Erro ao parsear auth do banco, criando novo:', error)
+      console.error('❌ Erro ao parsear auth do banco, deletando sessão corrompida:', error)
+      // Deletar sessão corrompida
+      await prisma.whatsAppSession.delete({ where: { salonId } }).catch(() => {})
+      // Criar novas credenciais
       creds = initAuthCreds()
+      console.log(`🆕 Novas credenciais criadas após limpeza (salonId: ${salonId})`)
     }
   } else {
     // Criar novas credenciais
