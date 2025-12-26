@@ -25,10 +25,33 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+    const { name, value } = e.target
+    
+    // Máscara de telefone
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, '')
+      let formattedValue = numericValue
+      
+      if (numericValue.length <= 11) {
+        if (numericValue.length <= 2) {
+          formattedValue = numericValue
+        } else if (numericValue.length <= 7) {
+          formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`
+        } else {
+          formattedValue = `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`
+        }
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +60,19 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     // Validações
+    if (!formData.phone || formData.phone.trim() === '') {
+      setError("Telefone é obrigatório para receber notificações WhatsApp")
+      setIsLoading(false)
+      return
+    }
+
+    const phoneNumbers = formData.phone.replace(/\D/g, '')
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      setError("Telefone inválido. Digite um número com DDD")
+      setIsLoading(false)
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("As senhas não coincidem")
       setIsLoading(false)
@@ -194,19 +230,24 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-foreground">Email</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-foreground">
+                    Telefone <span className="text-xs text-accent">(obrigatório para WhatsApp)</span>
+                  </Label>
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="joao@exemplo.com"
-                    value={formData.email}
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="(41) 99999-9999"
+                    value={formData.phone}
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    maxLength={15}
                     className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
+                  <p className="text-xs text-foreground-muted">Digite com DDD para receber notificações</p>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-foreground-muted">Telefone <span className="text-xs">(opcional)</span></Label>
                   <Input

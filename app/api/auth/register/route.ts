@@ -16,6 +16,22 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!phone || phone.trim() === '') {
+      return NextResponse.json(
+        { error: "Telefone é obrigatório para receber notificações WhatsApp" },
+        { status: 400 }
+      )
+    }
+
+    // Validar formato do telefone (apenas números, deve ter 10 ou 11 dígitos)
+    const phoneNumbers = phone.replace(/\D/g, '')
+    if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+      return NextResponse.json(
+        { error: "Telefone inválido. Digite um número válido com DDD" },
+        { status: 400 }
+      )
+    }
+
     // Verificar se o email já existe
     const existingUser = await prisma.user.findUnique({
       where: { email }
@@ -47,7 +63,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
-        phone: phone || null,
+        phone: phoneNumbers, // Salvar apenas números (sem formatação)
         password: hashedPassword,
         role: userRole
       }
