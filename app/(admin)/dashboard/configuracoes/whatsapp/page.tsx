@@ -1,264 +1,646 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { MessageSquare, ExternalLink, Phone, CheckCircle2, Clock, Calendar, User } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { useEffect, useState, useRef } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Loader2, CheckCircle, XCircle, QrCode, Phone, Send, LogOut, Wifi } from "lucide-react";
+import Image from "next/image";
 
-/**
- * Página de Envio Manual de WhatsApp
- * Usa links wa.me para abrir WhatsApp com mensagem pré-pronta
- */
-export default function WhatsAppPage() {
-  const [phone, setPhone] = useState('')
-  const [customMessage, setCustomMessage] = useState('')
+interface WhatsAppStatus {
+  connected: boolean;
+  qrCode?: string;
+  phone?: string;
+  message?: string;
+}
 
-  // Templates de mensagens pré-prontas
-  const templates = [
-    {
-      id: 'confirmacao',
-      title: 'Confirmação de Agendamento',
-      icon: CheckCircle2,
-      color: 'text-green-600',
-      message: `Olá! ✅
+export default function WhatsAppConfigPage() {
+  const [status, setStatus] = useState<WhatsAppStatus>({ connected: false });
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [testPhone, setTestPhone] = useState("");
+  const [testMessage, setTestMessage] = useState("Olá! Esta é uma mensagem de teste do sistema de agendamentos. 🎉");
+  const [sendingTest, setSendingTest] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-Seu agendamento foi confirmado:
-
-📅 Data: [DATA]
-🕐 Horário: [HORARIO]
-💇 Serviço: [SERVICO]
-👤 Profissional: [PROFISSIONAL]
-
-Endereço: [ENDERECO]
-
-Aguardamos você!`
-    },
-    {
-      id: 'lembrete',
-      title: 'Lembrete 24h Antes',
-      icon: Clock,
-      color: 'text-blue-600',
-      message: `Olá! ⏰
-
-Lembrando que você tem um agendamento amanhã:
-
-📅 Data: [DATA]
-🕐 Horário: [HORARIO]
-💇 Serviço: [SERVICO]
-👤 Profissional: [PROFISSIONAL]
-
-Confirme sua presença respondendo esta mensagem.
-
-Até breve!`
-    },
-    {
-      id: 'cancelamento',
-      title: 'Aviso de Cancelamento',
-      icon: Calendar,
-      color: 'text-red-600',
-      message: `Olá! ❌
-
-Informamos que seu agendamento foi cancelado:
-
-📅 Data: [DATA]
-🕐 Horário: [HORARIO]
-💇 Serviço: [SERVICO]
-
-Entre em contato para remarcar.`
-    },
-    {
-      id: 'boas-vindas',
-      title: 'Boas-vindas Cliente Novo',
-      icon: User,
-      color: 'text-purple-600',
-      message: `Olá! 👋
-
-Bem-vindo(a) ao nosso salão!
-
-Estamos muito felizes em ter você como cliente. 
-
-Ficou com alguma dúvida? É só responder esta mensagem.
-
-Até breve! ✨`
+  // Fetch status inicial
+  const fetchStatus = async () => {
+    try {
+      const res = await fetch("/api/whatsapp/connect");
+      const data = await res.json();
+      setStatus(data);
+      
+      if (data.qrCode) {
+        setQrCode(data.qrCode);
+      }
+    } catch (error) {
+      console.error("❌ Erro ao buscar status:", error);
+      toast.error("Erro ao carregar status do WhatsApp");
+    } finally {
+      setLoading(false);
     }
-  ]
+  };
 
-  /**
-   * Formata número de telefone para formato internacional
-   * Remove caracteres especiais e adiciona 55 se necessário
-   */
-  const formatPhone = (phoneNumber: string): string => {
-    // Remove tudo exceto números
-    let cleaned = phoneNumber.replace(/\D/g, '')
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  // Conectar ao WhatsApp com SSE
+  const handleConnect = async () => {
+    setConnecting(true);
+    setQrCode(null);
     
-    // Adiciona código do Brasil se não tiver
-    if (!cleaned.startsWith('55')) {
-      cleaned = '55' + cleaned
+    try {
+      toast.info("🔌 Iniciando conexão WhatsApp...");
+      
+      // Iniciar conexão
+      const res = await fetch("/api/whatsapp/connect", {
+        method: "POST",
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao conectar");
+      }
+
+      if (data.connected) {
+        toast.success("✅ WhatsApp já está conectado!");
+        setStatus({ connected: true, phone: data.phone });
+        setConnecting(false);
+        return;
+      }
+
+      if (data.qrCode) {
+        setQrCode(data.qrCode);
+        toast.success("📱 QR Code gerado!");
+      }
+
+      // Iniciar SSE para receber atualizações em tempo real
+      console.log("📡 Iniciando SSE...");
+      const eventSource = new EventSource('/api/whatsapp/qrcode-stream');
+      eventSourceRef.current = eventSource;
+
+      eventSource.addEventListener('qrcode', (event) => {
+        const data = JSON.parse(event.data);
+        console.log("📱 QR Code recebido via SSE:", data);
+        setQrCode(data.qrCode);
+        toast.success("📱 QR Code atualizado!");
+      });
+
+      eventSource.addEventListener('connected', (event) => {
+        const data = JSON.parse(event.data);
+        console.log("✅ WhatsApp conectado via SSE:", data);
+        toast.success("✅ WhatsApp conectado com sucesso!");
+        setStatus({ connected: true });
+        setQrCode(null);
+        setConnecting(false);
+        eventSource.close();
+        fetchStatus(); // Atualizar status
+      });
+
+      eventSource.addEventListener('waiting', (event) => {
+        const data = JSON.parse(event.data);
+        console.log("⏳ Aguardando QR Code:", data);
+      });
+
+      eventSource.addEventListener('error', (event) => {
+        const data = JSON.parse(event.data);
+        console.error("❌ Erro no SSE:", data);
+        toast.error(data.error || "Erro na conexão");
+      });
+
+      eventSource.addEventListener('timeout', (event) => {
+        const data = JSON.parse(event.data);
+        console.log("⏱️ Timeout:", data);
+        toast.error("⏱️ Tempo limite excedido. Tente novamente.");
+        setConnecting(false);
+        eventSource.close();
+      });
+
+      eventSource.onerror = () => {
+        console.error("❌ Erro na conexão SSE");
+        eventSource.close();
+        setConnecting(false);
+      };
+
+    } catch (error) {
+      console.error("❌ Erro ao conectar:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao conectar WhatsApp");
+      setConnecting(false);
     }
-    
-    return cleaned
-  }
+  };
 
-  /**
-   * Abre WhatsApp Web/App com mensagem pré-pronta
-   */
-  const sendWhatsApp = (message: string) => {
-    if (!phone) {
-      alert('Por favor, digite o número do telefone')
-      return
+  // Desconectar
+  const handleDisconnect = async () => {
+    try {
+      toast.info("🔌 Desconectando...");
+      
+      const res = await fetch("/api/whatsapp/disconnect", {
+        method: "DELETE",
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao desconectar");
+      }
+
+      toast.success("✅ WhatsApp desconectado!");
+      setStatus({ connected: false });
+      setQrCode(null);
+      
+      // Fechar SSE se estiver aberto
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+      
+    } catch (error) {
+      console.error("❌ Erro ao desconectar:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao desconectar");
+    }
+  };
+
+  // Enviar mensagem de teste
+  const handleSendTest = async () => {
+    if (!testPhone || !testMessage) {
+      toast.error("Preencha o telefone e a mensagem");
+      return;
     }
 
-    const formattedPhone = formatPhone(phone)
-    const encodedMessage = encodeURIComponent(message)
-    const url = `https://wa.me/${formattedPhone}?text=${encodedMessage}`
-    
-    // Abre em nova aba
-    window.open(url, '_blank')
+    setSendingTest(true);
+    try {
+      const res = await fetch("/api/whatsapp/send-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: testPhone,
+          message: testMessage,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao enviar mensagem");
+      }
+
+      toast.success("✅ Mensagem enviada com sucesso!");
+      setTestPhone("");
+    } catch (error) {
+      console.error("❌ Erro ao enviar mensagem:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar mensagem");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  // Cleanup SSE
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">WhatsApp</h1>
-        <p className="text-muted-foreground mt-2">
-          Envie mensagens para seus clientes via WhatsApp Web/App
-        </p>
+    <div className="container mx-auto p-6 max-w-4xl">'
+
+      if (res.ok) {
+        toast.success(data.message || "QR Code gerado!");
+        await fetchStatus();
+        
+        // Se tem QR Code, recarregar a cada 2s para pegar atualizações
+        if (data.qrCode) {
+          const interval = setInterval(async () => {
+            const statusRes = await fetch("/api/whatsapp/status");
+            const statusData = await statusRes.json();
+            
+            if (statusData.connected) {
+              clearInterval(interval);
+              toast.success("WhatsApp conectado com sucesso!");
+              await fetchStatus();
+            }
+          }, 2000);
+          
+          // Limpar após 60s
+          setTimeout(() => clearInterval(interval), 60000);
+        }
+      } else {
+        if (data.upgrade) {
+          toast.error("Feature WhatsApp não disponível no seu plano", {
+            description: "Faça upgrade para usar notificações WhatsApp",
+            duration: 10000,
+          });
+        } else {
+          toast.error(data.error || "Erro ao conectar");
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao conectar:", error);
+      toast.error("Erro ao gerar QR Code");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!confirm("Deseja realmente desconectar o WhatsApp?")) return;
+
+    setDisconnecting(true);
+    try {
+      const res = await fetch("/api/whatsapp/status", {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(data.message || "Desconectado com sucesso!");
+        setDirectQrCode(null);
+        await fetchStatus();
+      } else {
+        toast.error(data.error || "Erro ao desconectar");
+      }
+    } catch (error) {
+      console.error("Erro ao desconectar:", error);
+      toast.error("Erro ao desconectar WhatsApp");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
+  const handleSendTest = async () => {
+    if (!testPhone || !testMessage) {
+      toast.error("Preencha o telefone e a mensagem");
+      return;
+    }
+
+    setSendingTest(true);
+    try {
+      const res = await fetch("/api/whatsapp/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: testPhone,
+          message: testMessage,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(`Mensagem enviada! Status: ${data.deliveryMessage}`);
+        setLastTestResult(data);
+        setTestPhone("");
+      } else {
+        toast.error(data.error || "Erro ao enviar mensagem");
+        setLastTestResult(null);
+      }
+    } catch (error) {
+      console.error("Erro ao enviar teste:", error);
+      toast.error("Erro ao enviar mensagem de teste");
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
 
-      {/* Info Card */}
-      <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-            <MessageSquare className="h-5 w-5" />
-            Como Funciona
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-blue-600 dark:text-blue-300">
-          <p>✅ Digite o número do cliente</p>
-          <p>✅ Escolha um template ou escreva uma mensagem personalizada</p>
-          <p>✅ Clique em "Enviar WhatsApp"</p>
-          <p>✅ O WhatsApp abrirá com a mensagem pré-pronta - só clicar Enviar!</p>
-        </CardContent>
-      </Card>
-
-      {/* Formulário de Envio */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Enviar Mensagem</CardTitle>
-          <CardDescription>
-            Digite o número e escolha uma mensagem
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Número */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">Número do Cliente</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="(41) 99999-9999"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Exemplo: 41999999999 ou (41) 99999-9999
-            </p>
+  // 🔧 DESENVOLVIMENTO: FeatureGate desabilitado para testes
+  // Em produção, reabilite o FeatureGate para bloquear por plano
+  return (
+    // <FeatureGate
+    //   hasAccess={hasAccess}
+    //   featureName="Notificações WhatsApp"
+    //   showUpgrade={true}
+    // >
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Configuração WhatsApp</h1>
+            {/* <PremiumBadge /> */}
           </div>
-
-          {/* Templates Pré-prontos */}
-          <div className="space-y-3">
-            <Label>Templates Pré-prontos</Label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {templates.map((template) => (
-                <Card
-                  key={template.id}
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary"
-                  onClick={() => sendWhatsApp(template.message)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className={`rounded-lg bg-gray-100 dark:bg-gray-800 p-2`}>
-                        <template.icon className={`h-5 w-5 ${template.color}`} />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <h3 className="font-semibold text-sm">{template.title}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {template.message.split('\n')[0]}
-                        </p>
-                      </div>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Mensagem Personalizada */}
-          <div className="space-y-2">
-            <Label htmlFor="message">Mensagem Personalizada</Label>
-            <Textarea
-              id="message"
-              placeholder="Digite sua mensagem aqui..."
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              rows={6}
-            />
-          </div>
-
-          {/* Botão Enviar */}
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={() => sendWhatsApp(customMessage || templates[0].message)}
-            disabled={!phone}
-          >
-            <MessageSquare className="mr-2 h-5 w-5" />
-            Enviar WhatsApp
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Dicas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">💡 Dicas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• Substitua [DATA], [HORARIO], [SERVICO], etc. pelos dados reais antes de enviar</p>
-          <p>• Use emojis para deixar as mensagens mais amigáveis ✨</p>
-          <p>• Salve mensagens que você usa com frequência como favoritos no WhatsApp</p>
-          <p>• O WhatsApp abrirá automaticamente - você só precisa clicar em Enviar</p>
-        </CardContent>
-      </Card>
-
-      {/* Integração Futura */}
-      <Card className="border-dashed">
-        <CardHeader>
-          <CardTitle className="text-base">🚀 Quer Automação Total?</CardTitle>
-          <CardDescription>
-            Para envio automático de mensagens, considere integrar a WhatsApp Business API oficial
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>✅ Envio automático de confirmações</p>
-          <p>✅ Lembretes 24h antes</p>
-          <p>✅ Templates aprovados pelo WhatsApp</p>
-          <p>✅ Webhooks e callbacks</p>
-          <p className="text-xs pt-2">
-            <strong>Custo:</strong> ~R$0,15 por mensagem | 
-            <strong> Setup:</strong> Requer conta WhatsApp Business
+          <p className="text-muted-foreground mt-1">
+            Conecte o WhatsApp para enviar notificações automáticas aos clientes
           </p>
-        </CardContent>
-      </Card>
-    </div>
-  )
+        </div>
+
+        {/* Status Card */}
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              Status da Conexão
+            </CardTitle>
+            <CardDescription>
+              Acompanhe o status da conexão com o WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                {status?.configured ? (
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-500" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">Configurado</p>
+                  <p className="text-xs text-muted-foreground">
+                    {status?.configured ? "Sim" : "Não"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {status?.connected ? (
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-500" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">Conectado</p>
+                  <p className="text-xs text-muted-foreground">
+                    {status?.connected ? "Sim" : "Não"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {status?.status && (
+              <div>
+                <p className="text-sm font-medium">Status da Instância:</p>
+                <p className="text-sm text-muted-foreground">{status.status}</p>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              {!status?.connected ? (
+                <>
+                  <Button
+                    onClick={handleConnect}
+                    disabled={connecting}
+                    className="w-full sm:w-auto"
+                  >
+                    {connecting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Conectando...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Conectar WhatsApp
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={fetchDirectQRCode}
+                    disabled={loadingDirectQR}
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                  >
+                    {loadingDirectQR ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Ver QR Code Direto
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={handleDisconnect}
+                  disabled={disconnecting}
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                >
+                  {disconnecting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Desconectando...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Desconectar
+                    </>
+                  )}
+                </Button>
+              )}
+
+              <Button
+                onClick={fetchStatus}
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                Atualizar Status
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* QR Code Card */}
+        {(status?.qrCode || directQrCode) && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code de Conexão {directQrCode && '(Direto da Evolution API)'}
+              </CardTitle>
+              <CardDescription>
+                Escaneie este QR Code com o WhatsApp Business
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <div className="bg-white p-4 rounded-lg">
+                <img
+                  src={directQrCode || status.qrCode}
+                  alt="QR Code WhatsApp"
+                  className="w-64 h-64"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">
+                Abra o WhatsApp no seu celular → Menu (⋮) → Aparelhos conectados
+                → Conectar um aparelho → Escaneie este QR Code
+              </p>
+              {directQrCode && (
+                <Button
+                  onClick={fetchDirectQRCode}
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                >
+                  Atualizar QR Code
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* QR Code Card */}
+        {status?.qrCode && false && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code de Conexão
+              </CardTitle>
+              <CardDescription>
+                Escaneie este QR Code com o WhatsApp Business
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
+              <div className="bg-white p-4 rounded-lg">
+                <img
+                  src={status.qrCode}
+                  alt="QR Code WhatsApp"
+                  className="w-64 h-64"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 text-center max-w-md">
+                Abra o WhatsApp no seu celular → Menu (⋮) → Aparelhos conectados
+                → Conectar um aparelho → Escaneie este QR Code
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Test Message Card */}
+        {status?.connected && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                Enviar Mensagem de Teste
+              </CardTitle>
+              <CardDescription>
+                Teste o envio de mensagens WhatsApp
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="testPhone">Telefone (com DDD)</Label>
+                <Input
+                  id="testPhone"
+                  placeholder="11999999999"
+                  value={testPhone}
+                  onChange={(e) => setTestPhone(e.target.value)}
+                  className="glass-card"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Digite apenas números (DDD + telefone)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="testMessage">Mensagem</Label>
+                <textarea
+                  id="testMessage"
+                  className="glass-card w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-primary/20 bg-background-alt/50 focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm resize-none"
+                  value={testMessage}
+                  onChange={(e) => setTestMessage(e.target.value)}
+                />
+              </div>
+
+              <Button
+                onClick={handleSendTest}
+                disabled={sendingTest}
+                className="w-full sm:w-auto"
+              >
+                {sendingTest ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Enviar Mensagem Teste
+                  </>
+                )}
+              </Button>
+
+              {/* Exibir resultado do último envio */}
+              {lastTestResult && (
+                <div className="mt-4 p-4 rounded-lg border border-green-500/30 bg-green-500/10">
+                  <p className="font-semibold text-green-700 dark:text-green-300 mb-2">
+                    ✅ Última mensagem enviada com sucesso!
+                  </p>
+                  <div className="text-sm space-y-1">
+                    <p>
+                      <strong>Status:</strong> {lastTestResult.deliveryMessage}
+                    </p>
+                    <p>
+                      <strong>ACK:</strong> {lastTestResult.ack}
+                    </p>
+                    {lastTestResult.messageId && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        <strong>ID:</strong> {lastTestResult.messageId}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3 p-2 bg-background/50 rounded text-xs">
+                    <p className="font-mono">
+                      <strong>Legendas:</strong>
+                    </p>
+                    <ul className="mt-1 space-y-0.5 ml-4">
+                      <li>1 = Enviada (1 check ✓)</li>
+                      <li>2 = Recebida pelo servidor (2 checks ✓✓)</li>
+                      <li>3 = Entregue ao destinatário (azul ✓✓)</li>
+                      <li>4 = Lida pelo destinatário (azul ✓✓)</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Info Card */}
+        <Card className="glass-card border-primary/30">
+          <CardHeader>
+            <CardTitle>ℹ️ Informações Importantes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>• As notificações são enviadas automaticamente nos seguintes momentos:</p>
+            <ul className="list-disc list-inside ml-4 space-y-1">
+              <li>Novo agendamento criado</li>
+              <li>Agendamento confirmado</li>
+              <li>Lembrete 24h antes do horário</li>
+              <li>Agendamento cancelado</li>
+              <li>Agendamento concluído (pedido de avaliação)</li>
+            </ul>
+            <p className="mt-4">
+              • O email sempre é enviado como backup, mesmo com WhatsApp ativo
+            </p>
+            <p>• Use um número com WhatsApp Business para melhor experiência</p>
+          </CardContent>
+        </Card>
+      </div>
+    // </FeatureGate>
+  );
 }
