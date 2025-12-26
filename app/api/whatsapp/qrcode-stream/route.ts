@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
           console.log(`📡 SSE encerrado (salonId: ${salonId})`)
           clearInterval(interval)
           isClosed = true
-          if (!isClosed) controller.close()
+          controller.close()
         })
 
         // Timeout de 5 minutos
