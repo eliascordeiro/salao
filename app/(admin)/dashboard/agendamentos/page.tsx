@@ -10,6 +10,7 @@ import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -125,6 +126,8 @@ export default function AgendamentosPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [saving, setSaving] = useState(false);
+  const [notifyClient, setNotifyClient] = useState(true);
+  const [notifyClient, setNotifyClient] = useState(true);
 
   // Evitar hydration error
   useEffect(() => {
@@ -466,6 +469,9 @@ export default function AgendamentosPage() {
     setEditingBooking(booking);
     const bookingDate = new Date(booking.date);
     
+    // Resetar checkbox de notificação (marcado por padrão)
+    setNotifyClient(true);
+    
     // Preencher form com dados do booking usando UTC
     setFormData({
       clientId: booking.client.id,
@@ -716,26 +722,34 @@ export default function AgendamentosPage() {
 
       const result = await response.json();
       
-      // Enviar email de notificação sobre a alteração
-      try {
-        await fetch("/api/email/booking-notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bookingId: editingBooking.id,
-            isUpdate: true,
-          }),
-        });
-        console.log("Email de alteração enviado");
-      } catch (emailError) {
-        console.error("Erro ao enviar email:", emailError);
-        // Não bloquear o fluxo se email falhar
+      // Enviar notificação sobre a alteração (somente se marcado)
+      if (notifyClient) {
+        try {
+          await fetch("/api/email/booking-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingId: editingBooking.id,
+              isUpdate: true,
+            }),
+          });
+          console.log("✅ Notificação de alteração enviada ao cliente");
+        } catch (emailError) {
+          console.error("❌ Erro ao enviar notificação:", emailError);
+          // Não bloquear o fluxo se notificação falhar
+        }
+      } else {
+        console.log("ℹ️ Notificação ao cliente desabilitada pelo admin");
       }
 
       setShowEditModal(false);
       setEditingBooking(null);
       fetchBookings();
-      alert("Agendamento atualizado com sucesso!");
+      
+      const notificationMsg = notifyClient 
+        ? "Agendamento atualizado e cliente notificado!" 
+        : "Agendamento atualizado (cliente não foi notificado)";
+      alert(notificationMsg);
     } catch (error: any) {
       console.error("Erro ao atualizar agendamento:", error);
       alert(error.message || "Erro ao atualizar agendamento");
@@ -1716,6 +1730,30 @@ export default function AgendamentosPage() {
                   placeholder="Observações adicionais (opcional)"
                   className="h-12"
                 />
+              </div>
+            </div>
+
+            {/* Notificação ao Cliente */}
+            <div className="p-5 glass-card rounded-xl border border-accent/20 bg-accent/5">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="notify-client"
+                  checked={notifyClient}
+                  onCheckedChange={(checked) => setNotifyClient(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="notify-client"
+                    className="text-base font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4 text-accent" />
+                    Notificar cliente sobre as alterações
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Se marcado, o cliente receberá um email/WhatsApp informando sobre a mudança no agendamento (horário, profissional, etc.)
+                  </p>
+                </div>
               </div>
             </div>
 
