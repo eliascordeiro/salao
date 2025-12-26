@@ -230,6 +230,19 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-foreground">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={isLoading}
+                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-foreground">
                     Telefone <span className="text-xs text-accent">(obrigatório para WhatsApp)</span>
@@ -247,19 +260,6 @@ export default function RegisterPage() {
                     className="bg-background-alt border-border-hover focus:border-accent transition-colors"
                   />
                   <p className="text-xs text-foreground-muted">Digite com DDD para receber notificações</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-foreground-muted">Telefone <span className="text-xs">(opcional)</span></Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="(11) 99999-9999"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    disabled={isLoading}
-                    className="bg-background-alt border-border-hover focus:border-accent transition-colors"
-                  />
                 </div>
 
                 <div className="space-y-2">
