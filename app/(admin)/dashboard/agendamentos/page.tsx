@@ -1227,7 +1227,7 @@ export default function AgendamentosPage() {
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[92vh] overflow-y-auto">
           <DialogHeader className="pb-3 md:pb-4">
-            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3 text-foreground">
               <Plus className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary" />
               Novo Agendamento
             </DialogTitle>
@@ -1626,7 +1626,7 @@ export default function AgendamentosPage() {
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
         <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[95vh] overflow-y-auto">
           <DialogHeader className="pb-4 md:pb-6 border-b border-primary/10">
-            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
+            <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3 text-foreground">
               <Edit2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               Editar Agendamento
             </DialogTitle>
