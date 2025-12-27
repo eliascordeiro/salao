@@ -23,7 +23,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           collapsed ? "lg:ml-16" : "lg:ml-64"
         )}
       >
-        <div className="p-4 lg:p-8 pt-16 lg:pt-8">
+        <div className="p-4 md:p-6 lg:p-8 xl:px-12 pt-16 lg:pt-8">
           {children}
         </div>
       </main>
