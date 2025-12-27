@@ -40,17 +40,15 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  const theme = localStorage.getItem('theme') || 'system';
-                  let resolved = 'dark';
+                  const savedTheme = localStorage.getItem('display-mode');
+                  const theme = savedTheme || 'dark';
                   
-                  if (theme === 'system') {
-                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                  } else {
-                    resolved = theme;
-                  }
-                  
-                  document.documentElement.classList.add(resolved);
-                } catch (e) {}
+                  // Aplicar tema salvo (light, twilight ou dark)
+                  document.documentElement.classList.add(theme);
+                } catch (e) {
+                  // Fallback para dark se houver erro
+                  document.documentElement.classList.add('dark');
+                }
               })();
             `,
           }}

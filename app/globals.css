@@ -41,6 +41,44 @@
     --info: 217 91% 60%;             /* #3B82F6 */
   }
 
+  /* Twilight Theme - Intermediário entre Light e Dark */
+  .twilight {
+    /* Twilight Background - Cinza azulado suave */
+    --background: 220 20% 18%;       /* #252b36 - Cinza azulado escuro */
+    --background-alt: 220 18% 22%;   /* #2e3440 - Cinza azulado médio */
+    
+    /* Foreground */
+    --foreground: 220 15% 92%;       /* #e5e9f0 - Off-white suave */
+    --foreground-muted: 220 10% 65%; /* #9ca3af - Cinza claro */
+    
+    /* Borders */
+    --border: 220 15% 28%;           /* #3b4252 - Borda média */
+    --border-hover: 220 12% 38%;     /* #4c566a - Hover mais claro */
+    
+    /* Primary - Roxo/Índigo médio */
+    --primary: 250 65% 58%;          /* #6d70f0 */
+    --primary-light: 250 75% 68%;
+    --primary-dark: 250 65% 48%;
+    --primary-foreground: 0 0% 100%; /* #ffffff */
+    
+    /* Secondary - Roxo médio */
+    --secondary: 280 65% 62%;        /* #a765f2 */
+    --secondary-light: 280 75% 72%;
+    --secondary-dark: 280 65% 52%;
+    
+    /* Accent - Ciano médio */
+    --accent: 193 75% 38%;           /* #22b8cf */
+    --accent-light: 193 80% 48%;
+    --accent-dark: 193 70% 28%;
+    --accent-foreground: 0 0% 100%;  /* #ffffff */
+    
+    /* Status colors */
+    --success: 142 70% 40%;          /* #20c997 */
+    --error: 0 80% 62%;              /* #ef5350 */
+    --warning: 38 88% 55%;           /* #ffa726 */
+    --info: 217 85% 62%;             /* #42a5f5 */
+  }
+
   /* Light Theme */
   .light {
     /* Light Background */
@@ -101,8 +139,14 @@
   }
   
   /* Dark theme shadows */
-  :root .glass-card {
+  :root .glass-card,
+  .dark .glass-card {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 1px rgba(168, 85, 247, 0.1);
+  }
+  
+  /* Twilight theme shadows */
+  .twilight .glass-card {
+    box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.25), 0 0 1px rgba(109, 112, 240, 0.15);
   }
   
   /* Light theme shadows */
@@ -118,8 +162,13 @@
     @apply border-primary/50 shadow-2xl;
   }
   
-  :root .glass-card-hover:hover {
+  :root .glass-card-hover:hover,
+  .dark .glass-card-hover:hover {
     box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2);
+  }
+  
+  .twilight .glass-card-hover:hover {
+    box-shadow: 0 6px 24px 0 rgba(109, 112, 240, 0.25);
   }
   
   .light .glass-card-hover:hover {

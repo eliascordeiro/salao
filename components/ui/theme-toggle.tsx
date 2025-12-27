@@ -1,28 +1,76 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Sunset } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
+type Theme = "light" | "twilight" | "dark";
+
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    // Detectar tema atual no mount
+    const root = document.documentElement;
+    if (root.classList.contains('light')) {
+      setTheme('light');
+    } else if (root.classList.contains('twilight')) {
+      setTheme('twilight');
+    } else {
+      setTheme('dark');
+    }
   }, []);
 
-  const toggleTheme = () => {
+  const cycleTheme = () => {
     const root = document.documentElement;
-    if (root.classList.contains('dark')) {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      localStorage.setItem('display-mode', 'light');
-      setIsDark(false);
+    let nextTheme: Theme;
+
+    // Ciclo: light → twilight → dark → light
+    if (theme === 'light') {
+      nextTheme = 'twilight';
+    } else if (theme === 'twilight') {
+      nextTheme = 'dark';
     } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
-      localStorage.setItem('display-mode', 'dark');
-      setIsDark(true);
+      nextTheme = 'light';
+    }
+
+    // Remover todos os temas e aplicar o novo
+    root.classList.remove('light', 'twilight', 'dark');
+    root.classList.add(nextTheme);
+    localStorage.setItem('display-mode', nextTheme);
+    setTheme(nextTheme);
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-4 w-4 text-primary" />;
+      case 'twilight':
+        return <Sunset className="h-4 w-4 text-primary" />;
+      case 'dark':
+        return <Moon className="h-4 w-4 text-primary" />;
+    }
+  };
+
+  const getThemeLabel = () => {
+    switch (theme) {
+      case 'light':
+        return 'Claro';
+      case 'twilight':
+        return 'Twilight';
+      case 'dark':
+        return 'Escuro';
+    }
+  };
+
+  const getThemeTitle = () => {
+    switch (theme) {
+      case 'light':
+        return 'Mudar para tema Twilight';
+      case 'twilight':
+        return 'Mudar para tema escuro';
+      case 'dark':
+        return 'Mudar para tema claro';
     }
   };
 
@@ -30,21 +78,12 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="sm"
-      onClick={toggleTheme}
+      onClick={cycleTheme}
       className="gap-2 border border-border/50 hover:bg-background-alt/80"
-      title={isDark ? "Mudar para tema claro" : "Mudar para tema escuro"}
+      title={getThemeTitle()}
     >
-      {isDark ? (
-        <>
-          <Sun className="h-4 w-4 text-primary" />
-          <span className="hidden md:inline text-foreground">Claro</span>
-        </>
-      ) : (
-        <>
-          <Moon className="h-4 w-4 text-primary" />
-          <span className="hidden md:inline text-foreground">Escuro</span>
-        </>
-      )}
+      {getThemeIcon()}
+      <span className="hidden md:inline text-foreground">{getThemeLabel()}</span>
     </Button>
   );
 }
