@@ -157,7 +157,7 @@ export function Sidebar() {
           "h-[calc(100vh-100px)]",
           // Desktop: altura normal
           "lg:h-[calc(100vh-120px)]",
-          collapsed ? "p-2" : "p-4"
+          collapsed ? "p-2" : "px-3 py-4"
         )}>
           {visibleMenuItems.map((item, index) => {
             // Renderizar separador
@@ -197,8 +197,8 @@ export function Sidebar() {
                     "shadow-lg shadow-primary/5"
                   ],
                   !isActive && "text-foreground/70 hover:text-primary border border-transparent",
-                  // Espaçamento condicional
-                  collapsed ? "justify-center p-3" : "gap-3 px-4 py-3.5"
+                  // Espaçamento condicional - aumentar padding horizontal
+                  collapsed ? "justify-center p-3" : "gap-3 px-3 py-3.5"
                 )}
               >
                 {/* Efeito de brilho ao hover */}
