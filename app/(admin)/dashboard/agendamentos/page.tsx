@@ -132,6 +132,11 @@ export default function AgendamentosPage() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
   const [notifyCancelClient, setNotifyCancelClient] = useState(true);
+  
+  // Estados para confirmação
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmingBooking, setConfirmingBooking] = useState<Booking | null>(null);
+  const [notifyConfirmClient, setNotifyConfirmClient] = useState(true);
 
   // Evitar hydration error
   useEffect(() => {
@@ -796,11 +801,16 @@ export default function AgendamentosPage() {
       // Recarregar lista
       fetchBookings();
       
-      // Mensagem personalizada para cancelamento
+      // Mensagem personalizada para cancelamento e confirmação
       if (newStatus === "CANCELLED") {
         const notificationMsg = shouldNotify
           ? "Agendamento cancelado e cliente notificado!"
           : "Agendamento cancelado (cliente não foi notificado)";
+        alert(notificationMsg);
+      } else if (newStatus === "CONFIRMED") {
+        const notificationMsg = shouldNotify
+          ? "Agendamento confirmado e cliente notificado!"
+          : "Agendamento confirmado (cliente não foi notificado)";
         alert(notificationMsg);
       }
     } catch (error) {
@@ -823,6 +833,22 @@ export default function AgendamentosPage() {
     await handleStatusChange(cancellingBooking.id, "CANCELLED", notifyCancelClient);
     setShowCancelDialog(false);
     setCancellingBooking(null);
+  };
+
+  // Abrir dialog de confirmação de agendamento
+  const handleOpenConfirmDialog = (booking: Booking) => {
+    setConfirmingBooking(booking);
+    setNotifyConfirmClient(true); // Reset para true (notificar por padrão)
+    setShowConfirmDialog(true);
+  };
+
+  // Confirmar agendamento
+  const handleConfirmBooking = async () => {
+    if (!confirmingBooking) return;
+    
+    await handleStatusChange(confirmingBooking.id, "CONFIRMED", notifyConfirmClient);
+    setShowConfirmDialog(false);
+    setConfirmingBooking(null);
   };
 
   // Filtrar por busca de texto
@@ -1138,7 +1164,7 @@ export default function AgendamentosPage() {
                           <GradientButton
                             variant="success"
                             onClick={() =>
-                              handleStatusChange(booking.id, "CONFIRMED")
+                              handleOpenConfirmDialog(booking)
                             }
                             className="w-full py-2 min-h-[44px]"
                           >
@@ -1851,6 +1877,87 @@ export default function AgendamentosPage() {
                     Salvar Alterações
                   </>
                 )}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Agendamento */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="glass-card w-[95vw] max-w-md">
+          <DialogHeader className="pb-4 border-b border-primary/10">
+            <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
+              <CheckCircle className="h-6 w-6" />
+              Confirmar Agendamento
+            </DialogTitle>
+            <DialogDescription className="text-base mt-3">
+              Tem certeza que deseja confirmar este agendamento?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-6 pb-4">
+            {/* Informações do agendamento */}
+            {confirmingBooking && (
+              <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Cliente:</span> {confirmingBooking.client.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Serviço:</span> {confirmingBooking.service.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Profissional:</span> {confirmingBooking.staff.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Data/Hora:</span>{" "}
+                  {format(new Date(confirmingBooking.date), "dd/MM/yyyy", { locale: ptBR })} às{" "}
+                  {new Date(confirmingBooking.date).getUTCHours().toString().padStart(2, "0")}:
+                  {new Date(confirmingBooking.date).getUTCMinutes().toString().padStart(2, "0")}
+                </p>
+              </div>
+            )}
+
+            {/* Opção de Notificação */}
+            <div className="p-5 glass-card rounded-xl border border-accent/20 bg-accent/5">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="notify-confirm-client"
+                  checked={notifyConfirmClient}
+                  onCheckedChange={(checked) => setNotifyConfirmClient(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="notify-confirm-client"
+                    className="text-base font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4 text-accent" />
+                    Notificar cliente sobre a confirmação
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Se marcado, o cliente receberá um email/WhatsApp confirmando o agendamento
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+              >
+                Voltar
+              </Button>
+              <GradientButton
+                variant="success"
+                onClick={handleConfirmBooking}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+              >
+                <CheckCircle className="h-5 w-5 mr-2" />
+                Confirmar Agendamento
               </GradientButton>
             </div>
           </div>
