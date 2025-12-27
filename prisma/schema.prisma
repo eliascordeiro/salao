@@ -139,6 +139,7 @@ model Booking {
   status        String         @default("PENDING")
   notes         String?
   totalPrice    Float
+  reminderSent  Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   clientId      String
