@@ -3,8 +3,10 @@
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { LogOut, User, Sun, Moon, UserCircle, KeyRound } from "lucide-react"
+import { LogOut, User, Sun, Moon, Sunset, UserCircle, KeyRound } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
+
+type Theme = "light" | "twilight" | "dark";
 
 interface DashboardHeaderProps {
   user: {
@@ -16,26 +18,39 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [isDark, setIsDark] = useState(true)
+  const [theme, setTheme] = useState<Theme>("dark")
   const userMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'))
+    // Detectar tema atual no mount
+    const root = document.documentElement
+    if (root.classList.contains('light')) {
+      setTheme('light')
+    } else if (root.classList.contains('twilight')) {
+      setTheme('twilight')
+    } else {
+      setTheme('dark')
+    }
   }, [])
 
-  const toggleTheme = () => {
+  const cycleTheme = () => {
     const root = document.documentElement
-    if (root.classList.contains('dark')) {
-      root.classList.remove('dark')
-      root.classList.add('light')
-      localStorage.setItem('display-mode', 'light')
-      setIsDark(false)
+    let nextTheme: Theme
+
+    // Ciclo: light → twilight → dark → light
+    if (theme === 'light') {
+      nextTheme = 'twilight'
+    } else if (theme === 'twilight') {
+      nextTheme = 'dark'
     } else {
-      root.classList.remove('light')
-      root.classList.add('dark')
-      localStorage.setItem('display-mode', 'dark')
-      setIsDark(true)
+      nextTheme = 'light'
     }
+
+    // Remover todos os temas e aplicar o novo
+    root.classList.remove('light', 'twilight', 'dark')
+    root.classList.add(nextTheme)
+    localStorage.setItem('display-mode', nextTheme)
+    setTheme(nextTheme)
   }
 
   // Fechar menu ao clicar fora
@@ -73,12 +88,20 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={toggleTheme}
+                onClick={cycleTheme}
                 className="hover:bg-background-alt hover:text-primary transition-colors"
-                title={isDark ? "Ativar modo claro" : "Ativar modo escuro"}
+                title={
+                  theme === 'light' 
+                    ? "Mudar para tema Twilight" 
+                    : theme === 'twilight'
+                    ? "Mudar para tema escuro"
+                    : "Mudar para tema claro"
+                }
               >
-                {isDark ? (
+                {theme === 'light' ? (
                   <Sun className="h-4 w-4 text-foreground" />
+                ) : theme === 'twilight' ? (
+                  <Sunset className="h-4 w-4 text-foreground" />
                 ) : (
                   <Moon className="h-4 w-4 text-foreground" />
                 )}
