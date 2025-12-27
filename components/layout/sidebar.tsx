@@ -116,7 +116,7 @@ export function Sidebar() {
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <span className="text-lg font-bold text-foreground">
                   AgendaSalão
                 </span>
                 <span className="text-xs text-muted-foreground">Gestão Profissional</span>
