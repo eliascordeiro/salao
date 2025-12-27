@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DashboardHeader } from "@/components/dashboard/header";
 import {
   Dialog,
   DialogContent,
@@ -305,42 +306,52 @@ export default function CaixaPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <DashboardHeader user={session?.user || { name: null, email: null, role: "ADMIN" }} />
+        <main className="container mx-auto px-4 py-6 md:py-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </main>
       </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Frente de Caixa</h1>
-          <p className="text-muted-foreground mt-1">
-            Gerencie o fechamento de contas dos clientes
-          </p>
-        </div>
-        <GlassCard className="p-8 text-center">
-          <div className="text-red-500 mb-4">
-            <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-semibold">Erro ao carregar dados</p>
-            <p className="text-sm text-muted-foreground mt-2">{error}</p>
+      <div className="min-h-screen bg-background">
+        <DashboardHeader user={session?.user || { name: null, email: null, role: "ADMIN" }} />
+        <main className="container mx-auto px-4 py-6 md:py-8">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Frente de Caixa</h1>
+              <p className="text-muted-foreground mt-1">
+                Gerencie o fechamento de contas dos clientes
+              </p>
+            </div>
+            <GlassCard className="p-8 text-center">
+              <div className="text-red-500 mb-4">
+                <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-semibold">Erro ao carregar dados</p>
+                <p className="text-sm text-muted-foreground mt-2">{error}</p>
+              </div>
+              <Button onClick={() => loadAllData(selectedDate)} variant="outline">
+                Tentar Novamente
+              </Button>
+            </GlassCard>
           </div>
-          <Button onClick={() => loadAllData(selectedDate)} variant="outline">
-            Tentar Novamente
-          </Button>
-        </GlassCard>
-        </div>
-      </>
+        </main>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="space-y-6">
-      {/* Header com Controles */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="min-h-screen bg-background">
+      <DashboardHeader user={session?.user || { name: null, email: null, role: "ADMIN" }} />
+      <main className="container mx-auto px-4 py-6 md:py-8">
+        <div className="space-y-6">
+          {/* Header com Controles */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Button
             variant="ghost"
@@ -1004,7 +1015,8 @@ export default function CaixaPage() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   );
 }
