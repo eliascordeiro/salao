@@ -127,6 +127,11 @@ export default function AgendamentosPage() {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [saving, setSaving] = useState(false);
   const [notifyClient, setNotifyClient] = useState(true);
+  
+  // Estados para cancelamento
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
+  const [notifyCancelClient, setNotifyCancelClient] = useState(true);
 
   // Evitar hydration error
   useEffect(() => {
@@ -638,25 +643,33 @@ export default function AgendamentosPage() {
       const result = await response.json();
       console.log("Agendamento criado:", result);
 
-      // Enviar email de notificação para o cliente
-      try {
-        await fetch("/api/email/booking-notification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            bookingId: result.id,
-            isNewClient: isNewClient,
-          }),
-        });
-        console.log("Email de notificação enviado");
-      } catch (emailError) {
-        console.error("Erro ao enviar email:", emailError);
-        // Não bloquear o fluxo se email falhar
+      // Enviar notificação se solicitado
+      if (notifyClient) {
+        try {
+          await fetch("/api/email/booking-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingId: result.id,
+              isNewClient: isNewClient,
+            }),
+          });
+          console.log("✅ Notificação de novo agendamento enviada ao cliente");
+        } catch (emailError) {
+          console.error("❌ Erro ao enviar notificação:", emailError);
+          // Não bloquear o fluxo se email falhar
+        }
+      } else {
+        console.log("ℹ️ Notificação ao cliente desabilitada pelo admin");
       }
 
       setShowCreateModal(false);
       fetchBookings();
-      alert("Agendamento criado com sucesso!");
+      
+      const notificationMsg = notifyClient
+        ? "Agendamento criado e cliente notificado!"
+        : "Agendamento criado (cliente não foi notificado)";
+      alert(notificationMsg);
     } catch (error: any) {
       console.error("Erro ao criar agendamento:", error);
       alert(error.message || "Erro ao criar agendamento");
@@ -763,14 +776,17 @@ export default function AgendamentosPage() {
   }, [filters.status, filters.staffId, filters.startDate, filters.endDate]);
 
   // Atualizar status do agendamento
-  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+  const handleStatusChange = async (bookingId: string, newStatus: string, shouldNotify: boolean = true) => {
     try {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ 
+          status: newStatus,
+          shouldNotify: shouldNotify 
+        }),
       });
 
       if (!response.ok) {
@@ -779,10 +795,34 @@ export default function AgendamentosPage() {
 
       // Recarregar lista
       fetchBookings();
+      
+      // Mensagem personalizada para cancelamento
+      if (newStatus === "CANCELLED") {
+        const notificationMsg = shouldNotify
+          ? "Agendamento cancelado e cliente notificado!"
+          : "Agendamento cancelado (cliente não foi notificado)";
+        alert(notificationMsg);
+      }
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
       alert("Erro ao atualizar status do agendamento");
     }
+  };
+
+  // Abrir dialog de confirmação de cancelamento
+  const handleOpenCancelDialog = (booking: Booking) => {
+    setCancellingBooking(booking);
+    setNotifyCancelClient(true); // Reset para true (notificar por padrão)
+    setShowCancelDialog(true);
+  };
+
+  // Confirmar cancelamento
+  const handleConfirmCancel = async () => {
+    if (!cancellingBooking) return;
+    
+    await handleStatusChange(cancellingBooking.id, "CANCELLED", notifyCancelClient);
+    setShowCancelDialog(false);
+    setCancellingBooking(null);
   };
 
   // Filtrar por busca de texto
@@ -1108,7 +1148,7 @@ export default function AgendamentosPage() {
                           <GradientButton
                             variant="accent"
                             onClick={() =>
-                              handleStatusChange(booking.id, "CANCELLED")
+                              handleOpenCancelDialog(booking)
                             }
                             className="w-full py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive min-h-[44px]"
                           >
@@ -1498,6 +1538,30 @@ export default function AgendamentosPage() {
               </div>
             </div>
 
+            {/* Opção de Notificação */}
+            <div className="p-5 glass-card rounded-xl border border-accent/20 bg-accent/5">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="notify-client-create"
+                  checked={notifyClient}
+                  onCheckedChange={(checked) => setNotifyClient(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="notify-client-create"
+                    className="text-base font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4 text-accent" />
+                    Notificar cliente sobre o novo agendamento
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Se marcado, o cliente receberá um email/WhatsApp confirmando o agendamento criado
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Botões */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <Button
@@ -1787,6 +1851,87 @@ export default function AgendamentosPage() {
                     Salvar Alterações
                   </>
                 )}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Cancelamento */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent className="glass-card w-[95vw] max-w-md">
+          <DialogHeader className="pb-4 border-b border-primary/10">
+            <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-destructive">
+              <XCircle className="h-6 w-6" />
+              Confirmar Cancelamento
+            </DialogTitle>
+            <DialogDescription className="text-base mt-3">
+              Tem certeza que deseja cancelar este agendamento?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-6 pb-4">
+            {/* Informações do agendamento */}
+            {cancellingBooking && (
+              <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Cliente:</span> {cancellingBooking.client.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Serviço:</span> {cancellingBooking.service.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Profissional:</span> {cancellingBooking.staff.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Data/Hora:</span>{" "}
+                  {format(new Date(cancellingBooking.date), "dd/MM/yyyy", { locale: ptBR })} às{" "}
+                  {new Date(cancellingBooking.date).getUTCHours().toString().padStart(2, "0")}:
+                  {new Date(cancellingBooking.date).getUTCMinutes().toString().padStart(2, "0")}
+                </p>
+              </div>
+            )}
+
+            {/* Opção de Notificação */}
+            <div className="p-5 glass-card rounded-xl border border-accent/20 bg-accent/5">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="notify-cancel-client"
+                  checked={notifyCancelClient}
+                  onCheckedChange={(checked) => setNotifyCancelClient(checked as boolean)}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="notify-cancel-client"
+                    className="text-base font-medium cursor-pointer flex items-center gap-2"
+                  >
+                    <Mail className="h-4 w-4 text-accent" />
+                    Notificar cliente sobre o cancelamento
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Se marcado, o cliente receberá um email/WhatsApp informando sobre o cancelamento
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelDialog(false)}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+              >
+                Voltar
+              </Button>
+              <GradientButton
+                variant="accent"
+                onClick={handleConfirmCancel}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px] bg-destructive/80 hover:bg-destructive text-destructive-foreground"
+              >
+                <XCircle className="h-5 w-5 mr-2" />
+                Confirmar Cancelamento
               </GradientButton>
             </div>
           </div>
