@@ -127,7 +127,6 @@ export default function AgendamentosPage() {
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [saving, setSaving] = useState(false);
   const [notifyClient, setNotifyClient] = useState(true);
-  const [notifyClient, setNotifyClient] = useState(true);
 
   // Evitar hydration error
   useEffect(() => {
