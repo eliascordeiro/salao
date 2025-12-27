@@ -485,7 +485,7 @@ export default function CaixaPage() {
       </div>
 
       {/* Stats do Dia */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         <GlassCard className="p-5">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -705,9 +705,9 @@ export default function CaixaPage() {
                 {filteredClients.map((clientData: any) => (
                 <GlassCard
                   key={clientData.sessionId}
-                  className="p-4 sm:p-5"
+                  className="p-4 md:p-5"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     {/* Info do Cliente */}
                     <div className="flex-1 space-y-3">
                       <div className="flex items-start gap-3">
@@ -728,7 +728,7 @@ export default function CaixaPage() {
                       </div>
 
                       {/* Lista de Serviços */}
-                      <div className="space-y-2 pl-0 sm:pl-13">
+                      <div className="space-y-2 pl-0 sm:pl-8 md:pl-12">
                         {clientData.bookings.map((booking: Booking) => (
                           <div
                             key={booking.id}
@@ -774,7 +774,7 @@ export default function CaixaPage() {
                     </div>
 
                     {/* Badge e Info de Pagamento */}
-                    <div className="flex flex-row lg:flex-col gap-2 lg:items-end w-full lg:w-auto">
+                    <div className="flex flex-row md:flex-col gap-2 md:items-end w-full md:w-auto">
                       <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 whitespace-nowrap flex-shrink-0">
                         <CheckCircle2 className="h-4 w-4 mr-1" />
                         Pago
@@ -804,7 +804,7 @@ export default function CaixaPage() {
 
       {/* Modal de Checkout */}
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
-        <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[92vh] sm:max-h-[90vh] flex flex-col p-4 sm:p-6">
+        <DialogContent className="w-[95vw] sm:w-[90vw] md:max-w-[500px] max-h-[92vh] sm:max-h-[90vh] flex flex-col p-4 md:p-6">
           <DialogHeader className="pb-3 sm:pb-4">
             <DialogTitle className="text-xl sm:text-2xl">Fechar Conta</DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
@@ -828,20 +828,20 @@ export default function CaixaPage() {
                           new Set(selectedClient.bookings.map((b) => b.id))
                         )
                       }
-                      className="flex-1 sm:flex-initial min-h-[40px]"
+                      className="flex-1 md:flex-initial min-h-[40px]"
                     >
-                      <Check className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden xs:inline">Todos</span>
+                      <Check className="h-4 w-4 md:mr-1" />
+                      <span className="hidden md:inline">Todos</span>
                     </Button>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedBookings(new Set())}
-                      className="flex-1 sm:flex-initial min-h-[40px]"
+                      className="flex-1 md:flex-initial min-h-[40px]"
                     >
-                      <X className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden xs:inline">Nenhum</span>
+                      <X className="h-4 w-4 md:mr-1" />
+                      <span className="hidden md:inline">Nenhum</span>
                     </Button>
                   </div>
                 </div>
