@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { sendEmailViaResend } from "@/lib/email/resend";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,17 +38,6 @@ export async function POST(request: NextRequest) {
       data: {
         resetToken,
         resetTokenExpiry,
-      },
-    });
-
-    // Configurar email
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
       },
     });
 
@@ -150,18 +139,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Erro ao enviar email. Verifique as configurações SMTP." },
         { status: 500 }
+      </html>
+    `;
+
+    // Enviar email via Resend
+    try {
+      await sendEmailViaResend({
+        to: user.email,
+        subject: "🔐 Redefinição de Senha - AgendaSalão",
+        html: htmlContent,
+        from: process.env.SMTP_FROM,
+      });
+    } catch (emailError) {
+      console.error("Erro ao enviar email:", emailError);
+      return NextResponse.json(
+        { error: "Erro ao enviar email. Verifique as configurações de email." },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      message: "Se o email existir, você receberá instruções para redefinir sua senha.",
-    });
-  } catch (error) {
-    console.error("Erro ao processar solicitação:", error);
-    return NextResponse.json(
-      { error: "Erro ao processar solicitação" },
-      { status: 500 }
-    );
-  }
-}
