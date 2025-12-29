@@ -31,7 +31,14 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
+          include: {
+            owner: {
+              select: {
+                name: true
+              }
+            }
+          }
         })
 
         if (!user) {
@@ -61,7 +68,8 @@ export const authOptions: NextAuthOptions = {
           permissions: user.permissions,
           createdAt: user.createdAt,
           image: user.image,
-          phone: user.phone
+          phone: user.phone,
+          ownerName: user.owner?.name || null
         }
       }
     })
@@ -79,10 +87,17 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Login com Google OAuth
       if (account?.provider === "google") {
-        try {
           // Verificar se usuário já existe
           let existingUser = await prisma.user.findUnique({
-            where: { email: user.email! }
+            where: { email: user.email! },
+            include: {
+              owner: {
+                select: {
+                  name: true
+                }
+              }
+            }
+          })where: { email: user.email! }
           })
 
           if (existingUser) {
@@ -100,13 +115,14 @@ export const authOptions: NextAuthOptions = {
                 }
               })
             } else if (user.image && !existingUser.image) {
-              // Atualizar apenas imagem se usuário já está ativo
-              existingUser = await prisma.user.update({
-                where: { email: user.email! },
-                data: { image: user.image }
-              })
-            }
-            
+            // Atualizar user com TODOS os dados do banco (preserva role, roleType, permissions)
+            user.id = existingUser.id
+            user.role = existingUser.role
+            ;(user as any).roleType = existingUser.roleType
+            ;(user as any).permissions = existingUser.permissions
+            ;(user as any).createdAt = existingUser.createdAt
+            ;(user as any).phone = existingUser.phone
+            ;(user as any).ownerName = existingUser.owner?.name || null
             // Atualizar user com TODOS os dados do banco (preserva role, roleType, permissions)
             user.id = existingUser.id
             user.role = existingUser.role
@@ -142,7 +158,6 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return true
-    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
@@ -151,9 +166,10 @@ export const authOptions: NextAuthOptions = {
         token.permissions = (user as any).permissions || []
         token.createdAt = (user as any).createdAt
         token.phone = (user as any).phone
+        token.ownerName = (user as any).ownerName || null
       }
       return token
-    },
+    },return token
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
@@ -162,8 +178,10 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as any).permissions = token.permissions || []
         ;(session.user as any).createdAt = token.createdAt
         ;(session.user as any).phone = token.phone
+        ;(session.user as any).ownerName = token.ownerName || null
       }
       return session
+    } return session
     }
   },
   secret: process.env.NEXTAUTH_SECRET,

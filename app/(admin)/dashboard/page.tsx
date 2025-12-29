@@ -159,6 +159,15 @@ export default async function DashboardPage() {
     take: 5
   })
 
+  // Formatar nome: se tiver proprietário, exibe "Proprietário + Usuário"
+  const getDisplayName = () => {
+    const ownerName = (session.user as any).ownerName;
+    if (ownerName) {
+      return `${ownerName} + ${session.user.name}`;
+    }
+    return session.user.name || "";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader user={session.user} />
@@ -168,7 +177,7 @@ export default async function DashboardPage() {
           {/* Header Section Railway */}
           <div className="mb-12 animate-fadeInUp">
             <h1 className="text-4xl font-bold text-foreground mb-3">
-              Bem-vindo, <span className="text-primary font-bold">{session.user.name}</span>!
+              Bem-vindo, <span className="text-primary font-bold">{getDisplayName()}</span>!
             </h1>
             <p className="text-foreground-muted text-lg">
               Aqui está um resumo da sua atividade nos últimos 30 dias

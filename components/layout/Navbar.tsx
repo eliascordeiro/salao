@@ -20,6 +20,16 @@ interface NavbarProps {
 export function Navbar({ showAuth = true }: NavbarProps) {
   const { data: session, status } = useSession();
   
+  // Formatar nome: se tiver proprietário, exibe "Proprietário + Usuário"
+  const getDisplayName = () => {
+    if (!session?.user) return "";
+    const ownerName = (session.user as any).ownerName;
+    if (ownerName) {
+      return `${ownerName} + ${session.user.name}`;
+    }
+    return session.user.name || "";
+  };
+  
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -55,12 +65,12 @@ export function Navbar({ showAuth = true }: NavbarProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2 border border-border/50 hover:bg-background-alt/80">
                     <User className="h-4 w-4 text-primary" />
-                    <span className="hidden md:inline text-foreground">{session.user.name}</span>
+                    <span className="hidden md:inline text-foreground">{getDisplayName()}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5 text-sm font-semibold text-foreground">
-                    {session.user.name}
+                    {getDisplayName()}
                   </div>
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">
                     {session.user.email}
