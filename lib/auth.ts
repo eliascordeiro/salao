@@ -182,7 +182,6 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as any).ownerName = token.ownerName || null
       }
       return session
-    } return session
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
