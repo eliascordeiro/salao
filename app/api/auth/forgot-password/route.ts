@@ -141,3 +141,16 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    return NextResponse.json({
+      success: true,
+      message: "Se o email existir, você receberá instruções para redefinir sua senha.",
+    });
+  } catch (error) {
+    console.error("Erro ao processar solicitação:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
+  }
+}
