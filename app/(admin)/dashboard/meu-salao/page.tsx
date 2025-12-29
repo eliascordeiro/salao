@@ -477,8 +477,8 @@ export default function MeuSalaoPage() {
       <DashboardHeader user={session?.user || { name: "", email: "", role: "CLIENT" }} />
       <GridBackground>
         <div className="py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="mb-8">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">
                 Informações do Salão
               </h1>
@@ -503,7 +503,7 @@ export default function MeuSalaoPage() {
 
           <form onSubmit={handleSubmit}>
             {/* Foto de Capa */}
-            <GlassCard className="p-6 md:p-8 mb-6">
+            <GlassCard className="p-6 md:p-8">
               <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />
                 Foto de Capa
@@ -590,7 +590,7 @@ export default function MeuSalaoPage() {
               </div>
             </GlassCard>
 
-            <GlassCard className="p-6 md:p-8 space-y-6">
+            <GlassCard className="p-6 md:p-8 space-y-8">
               {/* Informações Básicas */}
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
