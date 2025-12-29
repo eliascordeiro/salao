@@ -117,42 +117,42 @@
     --info: 217 91% 60%;             /* #3B82F6 */
   }
 
-  /* Ultra Light Theme - Tom acima do Light */
+  /* Ultra Light Theme - Tom levemente mais escuro que o Light */
   .ultra-light {
-    /* Ultra Light Background - Branco quase absoluto */
-    --background: 0 0% 100%;         /* #ffffff - Branco puro */
-    --background-alt: 240 20% 99%;   /* #fcfcfd - Quase branco com toque azul */
+    /* Ultra Light Background - Off-white suave */
+    --background: 220 15% 97%;       /* #f7f8f9 - Off-white com toque azulado */
+    --background-alt: 220 12% 94%;   /* #edeef0 - Cinza bem claro */
     
-    /* Foreground - Tons mais suaves */
-    --foreground: 220 10% 20%;       /* #2f3339 - Cinza escuro suave */
-    --foreground-muted: 220 5% 55%;  /* #858a91 - Cinza claro */
+    /* Foreground - Tom intermediário */
+    --foreground: 220 15% 15%;       /* #232730 - Cinza escuro suave */
+    --foreground-muted: 220 8% 50%;  /* #767b85 - Cinza médio */
     
-    /* Borders - Extremamente sutis */
-    --border: 220 15% 95%;           /* #f1f2f4 - Borda ultra clara */
-    --border-hover: 220 10% 88%;     /* #dfe1e4 - Hover bem suave */
+    /* Borders - Sutis mas visíveis */
+    --border: 220 12% 88%;           /* #dddfe2 - Borda suave */
+    --border-hover: 220 10% 78%;     /* #c3c6cc - Hover visível */
     
-    /* Primary - Tons pastéis */
-    --primary: 250 60% 65%;          /* #7b7ef5 - Roxo/Índigo pastel */
-    --primary-light: 250 70% 75%;
-    --primary-dark: 250 60% 55%;
+    /* Primary - Tons ligeiramente mais saturados */
+    --primary: 250 65% 58%;          /* #6d70f0 - Roxo/Índigo médio */
+    --primary-light: 250 75% 68%;
+    --primary-dark: 250 65% 48%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Secondary - Roxo pastel */
-    --secondary: 280 55% 70%;        /* #c084f5 - Roxo suave */
-    --secondary-light: 280 65% 80%;
-    --secondary-dark: 280 55% 60%;
+    /* Secondary - Roxo médio */
+    --secondary: 280 60% 65%;        /* #b377f3 - Roxo médio */
+    --secondary-light: 280 70% 75%;
+    --secondary-dark: 280 60% 55%;
     
-    /* Accent - Ciano pastel */
-    --accent: 193 70% 45%;           /* #3ec9e0 - Ciano suave */
-    --accent-light: 193 75% 55%;
-    --accent-dark: 193 65% 35%;
+    /* Accent - Ciano médio */
+    --accent: 193 75% 42%;           /* #2abdd6 - Ciano médio */
+    --accent-light: 193 80% 52%;
+    --accent-dark: 193 70% 32%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
-    /* Status colors - Tons pastéis */
-    --success: 142 60% 50%;          /* #4ade80 - Verde pastel */
-    --error: 0 70% 65%;              /* #f87171 - Vermelho pastel */
-    --warning: 38 80% 60%;           /* #fbbf24 - Amarelo pastel */
-    --info: 217 80% 65%;             /* #60a5fa - Azul pastel */
+    /* Status colors - Equilibrados */
+    --success: 142 68% 42%;          /* #2ecc71 - Verde equilibrado */
+    --error: 0 78% 62%;              /* #f06060 - Vermelho equilibrado */
+    --warning: 38 85% 55%;           /* #f5a623 - Amarelo equilibrado */
+    --info: 217 85% 62%;             /* #5b9ff5 - Azul equilibrado */
   }
   
   * {
@@ -192,9 +192,9 @@
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
   }
 
-  /* Ultra Light theme shadows - Ainda mais sutis */
+  /* Ultra Light theme shadows - Suaves mas presentes */
   .ultra-light .glass-card {
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04), 0 0 1px rgba(123, 126, 245, 0.08);
+    box-shadow: 0 3px 14px 0 rgba(0, 0, 0, 0.06), 0 0 1px rgba(109, 112, 240, 0.12);
   }
   
   .glass-card-hover {
