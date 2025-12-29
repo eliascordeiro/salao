@@ -19,6 +19,8 @@ model User {
   permissions     String[]         @default([]) // Array de permissões ["dashboard.view", "bookings.view", etc]
   image           String?
   active          Boolean          @default(true)
+  resetToken      String?          @unique // Token para redefinição de senha
+  resetTokenExpiry DateTime?       // Data de expiração do token
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   
