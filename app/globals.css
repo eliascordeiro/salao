@@ -116,6 +116,44 @@
     --warning: 38 92% 50%;           /* #f59e0b */
     --info: 217 91% 60%;             /* #3B82F6 */
   }
+
+  /* Ultra Light Theme - Tom acima do Light */
+  .ultra-light {
+    /* Ultra Light Background - Branco quase absoluto */
+    --background: 0 0% 100%;         /* #ffffff - Branco puro */
+    --background-alt: 240 20% 99%;   /* #fcfcfd - Quase branco com toque azul */
+    
+    /* Foreground - Tons mais suaves */
+    --foreground: 220 10% 20%;       /* #2f3339 - Cinza escuro suave */
+    --foreground-muted: 220 5% 55%;  /* #858a91 - Cinza claro */
+    
+    /* Borders - Extremamente sutis */
+    --border: 220 15% 95%;           /* #f1f2f4 - Borda ultra clara */
+    --border-hover: 220 10% 88%;     /* #dfe1e4 - Hover bem suave */
+    
+    /* Primary - Tons pastéis */
+    --primary: 250 60% 65%;          /* #7b7ef5 - Roxo/Índigo pastel */
+    --primary-light: 250 70% 75%;
+    --primary-dark: 250 60% 55%;
+    --primary-foreground: 0 0% 100%; /* #ffffff */
+    
+    /* Secondary - Roxo pastel */
+    --secondary: 280 55% 70%;        /* #c084f5 - Roxo suave */
+    --secondary-light: 280 65% 80%;
+    --secondary-dark: 280 55% 60%;
+    
+    /* Accent - Ciano pastel */
+    --accent: 193 70% 45%;           /* #3ec9e0 - Ciano suave */
+    --accent-light: 193 75% 55%;
+    --accent-dark: 193 65% 35%;
+    --accent-foreground: 0 0% 100%;  /* #ffffff */
+    
+    /* Status colors - Tons pastéis */
+    --success: 142 60% 50%;          /* #4ade80 - Verde pastel */
+    --error: 0 70% 65%;              /* #f87171 - Vermelho pastel */
+    --warning: 38 80% 60%;           /* #fbbf24 - Amarelo pastel */
+    --info: 217 80% 65%;             /* #60a5fa - Azul pastel */
+  }
   
   * {
     @apply border-border;
@@ -152,6 +190,11 @@
   /* Light theme shadows */
   .light .glass-card {
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
+  }
+
+  /* Ultra Light theme shadows - Ainda mais sutis */
+  .ultra-light .glass-card {
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04), 0 0 1px rgba(123, 126, 245, 0.08);
   }
   
   .glass-card-hover {

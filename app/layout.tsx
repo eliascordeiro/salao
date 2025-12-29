@@ -43,7 +43,7 @@ export default function RootLayout({
                   const savedTheme = localStorage.getItem('display-mode');
                   const theme = savedTheme || 'dark';
                   
-                  // Aplicar tema salvo (light, twilight ou dark)
+                  // Aplicar tema salvo (ultra-light, light, twilight ou dark)
                   document.documentElement.classList.add(theme);
                 } catch (e) {
                   // Fallback para dark se houver erro
