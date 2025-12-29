@@ -87,6 +87,7 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Login com Google OAuth
       if (account?.provider === "google") {
+        try {
           // Verificar se usuário já existe
           let existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
@@ -97,7 +98,6 @@ export const authOptions: NextAuthOptions = {
                 }
               }
             }
-          })where: { email: user.email! }
           })
 
           if (existingUser) {
