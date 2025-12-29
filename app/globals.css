@@ -119,40 +119,40 @@
 
   /* Ultra Light Theme - Tom levemente mais escuro que o Light */
   .ultra-light {
-    /* Ultra Light Background - Off-white suave */
-    --background: 220 15% 97%;       /* #f7f8f9 - Off-white com toque azulado */
-    --background-alt: 220 12% 94%;   /* #edeef0 - Cinza bem claro */
+    /* Ultra Light Background - Off-white mais acentuado */
+    --background: 220 12% 94%;       /* #edeef0 - Cinza bem claro */
+    --background-alt: 220 10% 90%;   /* #e3e4e7 - Cinza claro médio */
     
-    /* Foreground - Tom intermediário */
-    --foreground: 220 15% 15%;       /* #232730 - Cinza escuro suave */
-    --foreground-muted: 220 8% 50%;  /* #767b85 - Cinza médio */
+    /* Foreground - Tom mais forte */
+    --foreground: 220 18% 12%;       /* #1e2228 - Cinza escuro forte */
+    --foreground-muted: 220 10% 45%; /* #6b7075 - Cinza médio */
     
-    /* Borders - Sutis mas visíveis */
-    --border: 220 12% 88%;           /* #dddfe2 - Borda suave */
-    --border-hover: 220 10% 78%;     /* #c3c6cc - Hover visível */
+    /* Borders - Mais visíveis */
+    --border: 220 12% 85%;           /* #d4d6d9 - Borda clara */
+    --border-hover: 220 12% 75%;     /* #babdc2 - Hover mais escuro */
     
-    /* Primary - Tons ligeiramente mais saturados */
-    --primary: 250 65% 58%;          /* #6d70f0 - Roxo/Índigo médio */
-    --primary-light: 250 75% 68%;
-    --primary-dark: 250 65% 48%;
+    /* Primary - Tons mais saturados */
+    --primary: 250 68% 55%;          /* #5f62ed - Roxo/Índigo mais forte */
+    --primary-light: 250 78% 65%;
+    --primary-dark: 250 68% 45%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Secondary - Roxo médio */
-    --secondary: 280 60% 65%;        /* #b377f3 - Roxo médio */
-    --secondary-light: 280 70% 75%;
-    --secondary-dark: 280 60% 55%;
+    /* Secondary - Roxo mais saturado */
+    --secondary: 280 65% 62%;        /* #ad6ff0 - Roxo médio forte */
+    --secondary-light: 280 75% 72%;
+    --secondary-dark: 280 65% 52%;
     
-    /* Accent - Ciano médio */
-    --accent: 193 75% 42%;           /* #2abdd6 - Ciano médio */
-    --accent-light: 193 80% 52%;
-    --accent-dark: 193 70% 32%;
+    /* Accent - Ciano mais saturado */
+    --accent: 193 78% 40%;           /* #23b5d3 - Ciano médio forte */
+    --accent-light: 193 82% 50%;
+    --accent-dark: 193 75% 30%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
-    /* Status colors - Equilibrados */
-    --success: 142 68% 42%;          /* #2ecc71 - Verde equilibrado */
-    --error: 0 78% 62%;              /* #f06060 - Vermelho equilibrado */
-    --warning: 38 85% 55%;           /* #f5a623 - Amarelo equilibrado */
-    --info: 217 85% 62%;             /* #5b9ff5 - Azul equilibrado */
+    /* Status colors - Mais saturados */
+    --success: 142 70% 40%;          /* #26c96f - Verde forte */
+    --error: 0 80% 60%;              /* #ed5858 - Vermelho forte */
+    --warning: 38 87% 53%;           /* #f5a123 - Amarelo forte */
+    --info: 217 87% 60%;             /* #4d95f3 - Azul forte */
   }
   
   * {
@@ -192,9 +192,9 @@
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
   }
 
-  /* Ultra Light theme shadows - Suaves mas presentes */
+  /* Ultra Light theme shadows - Mais visíveis */
   .ultra-light .glass-card {
-    box-shadow: 0 3px 14px 0 rgba(0, 0, 0, 0.06), 0 0 1px rgba(109, 112, 240, 0.12);
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(95, 98, 237, 0.15);
   }
   
   .glass-card-hover {
