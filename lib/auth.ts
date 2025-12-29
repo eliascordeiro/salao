@@ -115,6 +115,13 @@ export const authOptions: NextAuthOptions = {
                 }
               })
             } else if (user.image && !existingUser.image) {
+              // Atualizar apenas imagem se usuário já está ativo
+              existingUser = await prisma.user.update({
+                where: { email: user.email! },
+                data: { image: user.image }
+              })
+            }
+            
             // Atualizar user com TODOS os dados do banco (preserva role, roleType, permissions)
             user.id = existingUser.id
             user.role = existingUser.role
@@ -123,13 +130,6 @@ export const authOptions: NextAuthOptions = {
             ;(user as any).createdAt = existingUser.createdAt
             ;(user as any).phone = existingUser.phone
             ;(user as any).ownerName = existingUser.owner?.name || null
-            // Atualizar user com TODOS os dados do banco (preserva role, roleType, permissions)
-            user.id = existingUser.id
-            user.role = existingUser.role
-            ;(user as any).roleType = existingUser.roleType
-            ;(user as any).permissions = existingUser.permissions
-            ;(user as any).createdAt = existingUser.createdAt
-            ;(user as any).phone = existingUser.phone
           } else {
             // Criar novo usuário
             console.log("✅ Criando novo usuário Google:", user.email)
