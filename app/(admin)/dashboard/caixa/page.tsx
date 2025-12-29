@@ -16,7 +16,6 @@ import {
   CreditCard,
   Banknote,
   Smartphone,
-  ArrowLeft,
   X,
   AlertCircle,
   ChevronLeft,
@@ -352,22 +351,11 @@ export default function CaixaPage() {
         <div className="space-y-6">
           {/* Header com Controles */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/dashboard")}
-            className="hover:bg-primary/10 flex-shrink-0 w-10 h-10 p-0"
-            title="Voltar ao Dashboard"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-bold">Frente de Caixa</h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Gerencie o fechamento de contas dos clientes
-            </p>
-          </div>
+        <div className="w-full sm:w-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold">Frente de Caixa</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            Gerencie o fechamento de contas dos clientes
+          </p>
         </div>
         
         {/* Botão Atualizar */}
