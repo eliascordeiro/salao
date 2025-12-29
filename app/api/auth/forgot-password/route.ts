@@ -126,22 +126,6 @@ export async function POST(request: NextRequest) {
       </html>
     `;
 
-    // Enviar email
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: user.email,
-        subject: "🔐 Redefinição de Senha - AgendaSalão",
-        html: htmlContent,
-      });
-    } catch (emailError) {
-      console.error("Erro ao enviar email:", emailError);
-      return NextResponse.json(
-        { error: "Erro ao enviar email. Verifique as configurações SMTP." },
-        { status: 500 }
-      </html>
-    `;
-
     // Enviar email via Resend
     try {
       await sendEmailViaResend({
