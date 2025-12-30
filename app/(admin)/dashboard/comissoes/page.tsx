@@ -392,7 +392,7 @@ export default function CommissionsPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="glass-card w-[95vw] max-w-md">
+        <DialogContent className="glass-card w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-4 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
               <CheckCircle className="h-6 w-6" />
