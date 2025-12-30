@@ -1,13 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Calendar, User, Filter } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Calendar, User, Filter, CreditCard, Banknote, Smartphone, ArrowLeftRight } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -67,6 +75,9 @@ export default function CommissionsPage() {
 
   // Estado de pagamento
   const [paying, setPaying] = useState<string | null>(null);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("PIX");
 
   useEffect(() => {
     fetchCommissions();
@@ -96,25 +107,6 @@ export default function CommissionsPage() {
   };
 
   const handleMarkAsPaid = async (commissionId: string) => {
-    const paymentMethod = prompt(
-      "Método de pagamento:\n1. CASH (Dinheiro)\n2. PIX\n3. TRANSFER (Transferência)\n4. CARD (Cartão)\n\nDigite o número correspondente:"
-    );
-
-    if (!paymentMethod) return;
-
-    const methods: Record<string, string> = {
-      "1": "CASH",
-      "2": "PIX",
-      "3": "TRANSFER",
-      "4": "CARD",
-    };
-
-    const method = methods[paymentMethod];
-    if (!method) {
-      alert("Método inválido");
-      return;
-    }
-
     try {
       setPaying(commissionId);
 
@@ -123,13 +115,14 @@ export default function CommissionsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "PAID",
-          paymentMethod: method,
+          paymentMethod: selectedPaymentMethod,
         }),
       });
 
       if (!response.ok) throw new Error("Erro ao marcar como pago");
 
-      alert("Comissão marcada como paga!");
+      setShowPaymentDialog(false);
+      setSelectedCommission(null);
       fetchCommissions();
     } catch (error) {
       console.error("Erro:", error);
@@ -137,6 +130,12 @@ export default function CommissionsPage() {
     } finally {
       setPaying(null);
     }
+  };
+
+  const openPaymentDialog = (commission: Commission) => {
+    setSelectedCommission(commission);
+    setSelectedPaymentMethod("PIX");
+    setShowPaymentDialog(true);
   };
 
   const handleCancelCommission = async (commissionId: string) => {
@@ -356,7 +355,7 @@ export default function CommissionsPage() {
                         {commission.status === "PENDING" && (
                           <>
                             <GradientButton
-                              onClick={() => handleMarkAsPaid(commission.id)}
+                              onClick={() => openPaymentDialog(commission)}
                               disabled={paying === commission.id}
                               variant="success"
                               className="text-xs"
@@ -390,6 +389,147 @@ export default function CommissionsPage() {
           )}
         </main>
       </GridBackground>
+
+      {/* Dialog de Confirmação de Pagamento */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="glass-card w-[95vw] max-w-md">
+          <DialogHeader className="pb-4 border-b border-primary/10">
+            <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
+              <CheckCircle className="h-6 w-6" />
+              Confirmar Pagamento de Comissão
+            </DialogTitle>
+            <DialogDescription className="text-base mt-3">
+              Selecione o método de pagamento utilizado
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-6 pb-4">
+            {/* Informações da Comissão */}
+            {selectedCommission && (
+              <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
+                <p className="text-sm">
+                  <span className="font-semibold">Profissional:</span> {selectedCommission.staff.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Serviço:</span> {selectedCommission.service.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Cliente:</span> {selectedCommission.booking.client.name}
+                </p>
+                <p className="text-sm">
+                  <span className="font-semibold">Data:</span>{" "}
+                  {format(new Date(selectedCommission.booking.date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
+                <div className="pt-2 border-t border-primary/10 mt-3">
+                  <p className="text-lg font-bold text-success">
+                    Valor: R$ {selectedCommission.calculatedValue.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Seletor de Método de Pagamento */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Método de Pagamento</Label>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {/* PIX */}
+                <button
+                  onClick={() => setSelectedPaymentMethod("PIX")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${selectedPaymentMethod === "PIX"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <Smartphone className={`h-6 w-6 ${selectedPaymentMethod === "PIX" ? "text-primary" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${selectedPaymentMethod === "PIX" ? "text-primary" : "text-foreground"}`}>
+                    PIX
+                  </span>
+                </button>
+
+                {/* Dinheiro */}
+                <button
+                  onClick={() => setSelectedPaymentMethod("CASH")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${selectedPaymentMethod === "CASH"
+                      ? "border-success bg-success/10 shadow-lg shadow-success/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <Banknote className={`h-6 w-6 ${selectedPaymentMethod === "CASH" ? "text-success" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${selectedPaymentMethod === "CASH" ? "text-success" : "text-foreground"}`}>
+                    Dinheiro
+                  </span>
+                </button>
+
+                {/* Cartão */}
+                <button
+                  onClick={() => setSelectedPaymentMethod("CARD")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${selectedPaymentMethod === "CARD"
+                      ? "border-accent bg-accent/10 shadow-lg shadow-accent/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <CreditCard className={`h-6 w-6 ${selectedPaymentMethod === "CARD" ? "text-accent" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${selectedPaymentMethod === "CARD" ? "text-accent" : "text-foreground"}`}>
+                    Cartão
+                  </span>
+                </button>
+
+                {/* Transferência */}
+                <button
+                  onClick={() => setSelectedPaymentMethod("TRANSFER")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${selectedPaymentMethod === "TRANSFER"
+                      ? "border-warning bg-warning/10 shadow-lg shadow-warning/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <ArrowLeftRight className={`h-6 w-6 ${selectedPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${selectedPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground"}`}>
+                    Transferência
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPaymentDialog(false)}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+                disabled={paying !== null}
+              >
+                Cancelar
+              </Button>
+              <GradientButton
+                variant="success"
+                onClick={() => selectedCommission && handleMarkAsPaid(selectedCommission.id)}
+                disabled={paying !== null}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+              >
+                <CheckCircle className="h-5 w-5 mr-2" />
+                {paying ? "Processando..." : "Confirmar Pagamento"}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

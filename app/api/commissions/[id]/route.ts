@@ -76,7 +76,7 @@ export async function PATCH(
           amount: updated.calculatedValue,
           category: "SALARIES",
           dueDate: new Date(),
-          paymentDate: new Date(),
+          paidAt: new Date(),
           status: "PAID",
           paymentMethod: paymentMethod || "CASH",
           notes: `Comissão ID: ${updated.id}`,
