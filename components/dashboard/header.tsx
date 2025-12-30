@@ -3,10 +3,10 @@
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { LogOut, User, Sun, Moon, Sunset, UserCircle, KeyRound } from "lucide-react"
+import { LogOut, User, Sun, Moon, Sunset, UserCircle, KeyRound, Sparkles } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 
-type Theme = "light" | "twilight" | "dark";
+type Theme = "ultra-light" | "light" | "twilight" | "dark";
 
 interface DashboardHeaderProps {
   user: {
@@ -24,7 +24,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   useEffect(() => {
     // Detectar tema atual no mount
     const root = document.documentElement
-    if (root.classList.contains('light')) {
+    if (root.classList.contains('ultra-light')) {
+      setTheme('ultra-light')
+    } else if (root.classList.contains('light')) {
       setTheme('light')
     } else if (root.classList.contains('twilight')) {
       setTheme('twilight')
@@ -37,17 +39,19 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     const root = document.documentElement
     let nextTheme: Theme
 
-    // Ciclo: light → twilight → dark → light
-    if (theme === 'light') {
+    // Ciclo: ultra-light → light → twilight → dark → ultra-light
+    if (theme === 'ultra-light') {
+      nextTheme = 'light'
+    } else if (theme === 'light') {
       nextTheme = 'twilight'
     } else if (theme === 'twilight') {
       nextTheme = 'dark'
     } else {
-      nextTheme = 'light'
+      nextTheme = 'ultra-light'
     }
 
     // Remover todos os temas e aplicar o novo
-    root.classList.remove('light', 'twilight', 'dark')
+    root.classList.remove('ultra-light', 'light', 'twilight', 'dark')
     root.classList.add(nextTheme)
     localStorage.setItem('display-mode', nextTheme)
     setTheme(nextTheme)
@@ -91,14 +95,18 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 onClick={cycleTheme}
                 className="hover:bg-background-alt hover:text-primary transition-colors"
                 title={
-                  theme === 'light' 
+                  theme === 'ultra-light' 
+                    ? "Mudar para tema claro"
+                    : theme === 'light' 
                     ? "Mudar para tema Twilight" 
                     : theme === 'twilight'
                     ? "Mudar para tema escuro"
-                    : "Mudar para tema claro"
+                    : "Mudar para tema ultra claro"
                 }
               >
-                {theme === 'light' ? (
+                {theme === 'ultra-light' ? (
+                  <Sparkles className="h-4 w-4 text-foreground" />
+                ) : theme === 'light' ? (
                   <Sun className="h-4 w-4 text-foreground" />
                 ) : theme === 'twilight' ? (
                   <Sunset className="h-4 w-4 text-foreground" />
@@ -121,7 +129,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
                 {/* Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 glass-card border border-border/50 rounded-lg shadow-lg overflow-hidden z-50">
+                  <div className="absolute right-0 mt-2 w-56 bg-background border border-border/50 rounded-lg shadow-lg overflow-hidden z-50">
                     <div className="p-3 border-b border-border/30">
                       <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{user?.email}</p>

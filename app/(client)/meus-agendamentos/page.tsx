@@ -18,7 +18,6 @@ import {
   AlertCircle,
   ArrowRight,
 } from "lucide-react";
-import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Button } from "@/components/ui/button";
@@ -191,8 +190,6 @@ function MyBookingsContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader user={session.user} />
-
       <GridBackground>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Success Message Railway */}
