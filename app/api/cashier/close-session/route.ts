@@ -152,6 +152,116 @@ export async function POST(request: Request) {
 
       console.log('✅ Nova sessão CLOSED criada:', closedSession.id);
 
+      // 💰 CALCULAR COMISSÕES AUTOMATICAMENTE para os itens pagos
+      console.log('💰 Calculando comissões para os agendamentos pagos...');
+      for (const item of selectedItems) {
+        try {
+          // Buscar informações do booking
+          const booking = await prisma.booking.findUnique({
+            where: { id: item.bookingId },
+            include: {
+              service: true,
+              staff: true,
+            },
+          });
+
+          if (!booking) continue;
+
+          // Verificar se já existe comissão
+          const existingCommission = await prisma.commission.findFirst({
+            where: {
+              bookingId: booking.id,
+              staffId: booking.staffId,
+            },
+          });
+
+          if (existingCommission) {
+            console.log(`⏭️ Comissão já existe para booking ${booking.id}, pulando...`);
+            continue;
+          }
+
+          // Buscar configuração de comissão
+          const staffConfig = await prisma.staffCommissionConfig.findUnique({
+            where: { staffId: booking.staffId },
+            include: {
+              serviceOverrides: {
+                where: { serviceId: booking.serviceId },
+              },
+            },
+          });
+
+          if (!staffConfig) {
+            console.log(`⚠️ Profissional ${booking.staff.name} não possui configuração de comissão`);
+            continue;
+          }
+
+          // Usar override se existir
+          const config =
+            staffConfig.serviceOverrides.length > 0
+              ? staffConfig.serviceOverrides[0]
+              : staffConfig;
+
+          // Função de cálculo
+          const calculateCommission = (
+            servicePrice: number,
+            commissionType: string,
+            percentageValue: number | null,
+            fixedValue: number | null
+          ): number => {
+            switch (commissionType) {
+              case "PERCENTAGE":
+                return servicePrice * ((percentageValue || 0) / 100);
+              case "FIXED":
+                return fixedValue || 0;
+              case "MIXED":
+                return (fixedValue || 0) + servicePrice * ((percentageValue || 0) / 100);
+              default:
+                return 0;
+            }
+          };
+
+          // Calcular comissão
+          const calculatedValue = calculateCommission(
+            booking.totalPrice,
+            config.commissionType,
+            config.percentageValue,
+            config.fixedValue
+          );
+
+          // Criar registro de comissão
+          await prisma.commission.create({
+            data: {
+              bookingId: booking.id,
+              staffId: booking.staffId,
+              salonId: salon.id,
+              serviceId: booking.serviceId,
+              servicePrice: booking.totalPrice,
+              commissionType: config.commissionType,
+              percentageValue: config.percentageValue,
+              fixedValue: config.fixedValue,
+              calculatedValue,
+              status: "PENDING",
+            },
+          });
+
+          console.log(`✅ Comissão criada: R$ ${calculatedValue.toFixed(2)} para ${booking.staff.name}`);
+        } catch (commissionError) {
+          console.error(`❌ Erro ao calcular comissão para item ${item.id}:`, commissionError);
+          // Não interrompe o fluxo
+        }
+      }
+
+      // Atualizar status dos bookings para COMPLETED
+      await prisma.booking.updateMany({
+        where: {
+          id: { in: bookingIds },
+          status: "CONFIRMED",
+        },
+        data: {
+          status: "COMPLETED",
+        },
+      });
+
       // Se ainda há itens não selecionados, mantém sessão OPEN com eles
       if (unselectedItems.length > 0) {
         console.log('♻️ Mantendo itens não pagos na sessão OPEN');
@@ -265,6 +375,94 @@ export async function POST(request: Request) {
         status: "COMPLETED",
       },
     });
+
+    // 💰 CALCULAR COMISSÕES AUTOMATICAMENTE
+    console.log('💰 Calculando comissões para os agendamentos pagos...');
+    for (const booking of bookings) {
+      try {
+        // Verificar se já existe comissão para este agendamento
+        const existingCommission = await prisma.commission.findFirst({
+          where: {
+            bookingId: booking.id,
+            staffId: booking.staffId,
+          },
+        });
+
+        if (existingCommission) {
+          console.log(`⏭️ Comissão já existe para booking ${booking.id}, pulando...`);
+          continue;
+        }
+
+        // Buscar configuração de comissão do profissional
+        const staffConfig = await prisma.staffCommissionConfig.findUnique({
+          where: { staffId: booking.staffId },
+          include: {
+            serviceOverrides: {
+              where: { serviceId: booking.serviceId },
+            },
+          },
+        });
+
+        if (!staffConfig) {
+          console.log(`⚠️ Profissional ${booking.staff.name} não possui configuração de comissão`);
+          continue;
+        }
+
+        // Usar override se existir, senão usar configuração padrão
+        const config =
+          staffConfig.serviceOverrides.length > 0
+            ? staffConfig.serviceOverrides[0]
+            : staffConfig;
+
+        // Função de cálculo
+        const calculateCommission = (
+          servicePrice: number,
+          commissionType: string,
+          percentageValue: number | null,
+          fixedValue: number | null
+        ): number => {
+          switch (commissionType) {
+            case "PERCENTAGE":
+              return servicePrice * ((percentageValue || 0) / 100);
+            case "FIXED":
+              return fixedValue || 0;
+            case "MIXED":
+              return (fixedValue || 0) + servicePrice * ((percentageValue || 0) / 100);
+            default:
+              return 0;
+          }
+        };
+
+        // Calcular comissão
+        const calculatedValue = calculateCommission(
+          booking.totalPrice,
+          config.commissionType,
+          config.percentageValue,
+          config.fixedValue
+        );
+
+        // Criar registro de comissão
+        await prisma.commission.create({
+          data: {
+            bookingId: booking.id,
+            staffId: booking.staffId,
+            salonId: salon.id,
+            serviceId: booking.serviceId,
+            servicePrice: booking.totalPrice,
+            commissionType: config.commissionType,
+            percentageValue: config.percentageValue,
+            fixedValue: config.fixedValue,
+            calculatedValue,
+            status: "PENDING",
+          },
+        });
+
+        console.log(`✅ Comissão criada: R$ ${calculatedValue.toFixed(2)} para ${booking.staff.name}`);
+      } catch (commissionError) {
+        console.error(`❌ Erro ao calcular comissão para booking ${booking.id}:`, commissionError);
+        // Não interrompe o fluxo se falhar a comissão
+      }
+    }
 
     console.log('✅ Nova sessão criada e fechada:', cashierSession.id);
 

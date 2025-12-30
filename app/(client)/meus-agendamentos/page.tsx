@@ -377,7 +377,7 @@ function MyBookingsContent() {
             </Link>
           </GlassCard>
         ) : (
-          <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             {filteredBookings.map((booking, index) => (
               <GlassCard 
                 key={booking.id} 
@@ -386,7 +386,7 @@ function MyBookingsContent() {
                 className="group animate-fadeInUp"
                 style={{ animationDelay: `${300 + index * 100}ms` }}
               >
-                <div className="p-4 sm:p-6 md:p-8">
+                <div className="p-4 sm:p-5 md:p-6">
                   <div className="flex items-start justify-between mb-4 sm:mb-6">
                     {/* Status Badge Railway */}
                     <span
@@ -407,21 +407,21 @@ function MyBookingsContent() {
                   </div>
 
                   {/* Main Info Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
                     {/* Left Column - Service Details */}
-                    <div className="space-y-4 sm:space-y-6">
-                      <h3 className="text-xl sm:text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                    <div className="space-y-3 sm:space-y-4 md:space-y-5">
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                         {booking.service.name}
                       </h3>
 
-                      <div className="space-y-3 sm:space-y-4">
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                          <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      <div className="space-y-2.5 sm:space-y-3">
+                        <div className="flex items-center gap-2 sm:gap-2.5">
+                          <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] sm:text-xs text-foreground-muted uppercase tracking-wide">Data</p>
-                            <p className="text-sm sm:text-base text-foreground font-medium truncate">
+                            <p className="text-xs sm:text-sm text-foreground font-medium truncate">
                               {format(new Date(booking.date), "dd/MM/yyyy", {
                                 locale: ptBR,
                               })}
@@ -429,25 +429,25 @@ function MyBookingsContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                          <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent/20 flex items-center justify-center">
-                            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                        <div className="flex items-center gap-2 sm:gap-2.5">
+                          <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] sm:text-xs text-foreground-muted uppercase tracking-wide">Horário</p>
-                            <p className="text-sm sm:text-base text-foreground font-medium truncate">
+                            <p className="text-xs sm:text-sm text-foreground font-medium truncate">
                               {new Date(booking.date).getUTCHours().toString().padStart(2, '0')}:{new Date(booking.date).getUTCMinutes().toString().padStart(2, '0')} • {booking.service.duration} min
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                          <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                            <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        <div className="flex items-center gap-2 sm:gap-2.5">
+                          <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] sm:text-xs text-foreground-muted uppercase tracking-wide">Profissional</p>
-                            <p className="text-sm sm:text-base text-foreground font-medium">
+                            <p className="text-xs sm:text-sm text-foreground font-medium">
                               <span className="truncate block">{booking.staff.name}</span>
                               {booking.staff.specialty && (
                                 <span className="text-foreground-muted text-xs sm:text-sm block mt-0.5 truncate">
@@ -458,13 +458,13 @@ function MyBookingsContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5 sm:gap-3">
-                          <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-success/20 flex items-center justify-center">
-                            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
+                        <div className="flex items-center gap-2 sm:gap-2.5">
+                          <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-success/20 flex items-center justify-center">
+                            <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-[10px] sm:text-xs text-foreground-muted uppercase tracking-wide">Local</p>
-                            <p className="text-sm sm:text-base text-foreground font-medium">
+                            <p className="text-xs sm:text-sm text-foreground font-medium">
                               <span className="truncate block">{booking.salon.name}</span>
                               {booking.salon.address && (
                                 <span className="text-foreground-muted block text-xs sm:text-sm mt-0.5 truncate">
@@ -478,11 +478,11 @@ function MyBookingsContent() {
                     </div>
 
                     {/* Right Column - Price & Actions */}
-                    <div className="flex flex-col justify-between space-y-4 sm:space-y-6">
+                    <div className="flex flex-col justify-between space-y-3 sm:space-y-4">
                       {/* Price Display */}
-                      <div className="p-4 sm:p-6 rounded-xl bg-success/10 border border-success/20">
-                        <p className="text-xs sm:text-sm text-foreground-muted mb-1 sm:mb-2 uppercase tracking-wide">Valor Total</p>
-                        <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-success">
+                      <div className="p-3 sm:p-4 md:p-5 rounded-xl bg-success/10 border border-success/20">
+                        <p className="text-xs sm:text-sm text-foreground-muted mb-1 uppercase tracking-wide">Valor Total</p>
+                        <p className="text-xl sm:text-2xl md:text-3xl font-bold text-success">
                           R$ {booking.totalPrice.toFixed(2)}
                         </p>
                       </div>

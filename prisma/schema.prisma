@@ -8,121 +8,126 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(cuid())
-  name            String
-  email           String           @unique
-  phone           String?
-  password        String
-  role            String           @default("CLIENT") // "CLIENT", "ADMIN"
-  roleType        String?          // "OWNER", "STAFF", "CUSTOM" (para usuários do salão)
-  ownerId         String?          // ID do usuário proprietário (se for STAFF ou CUSTOM)
-  permissions     String[]         @default([]) // Array de permissões ["dashboard.view", "bookings.view", etc]
-  image           String?
-  active          Boolean          @default(true)
-  resetToken      String?          @unique // Token para redefinição de senha
-  resetTokenExpiry DateTime?       // Data de expiração do token
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  phone            String?
+  password         String
+  role             String    @default("CLIENT") // "CLIENT", "ADMIN"
+  roleType         String? // "OWNER", "STAFF", "CUSTOM" (para usuários do salão)
+  ownerId          String? // ID do usuário proprietário (se for STAFF ou CUSTOM)
+  permissions      String[]  @default([]) // Array de permissões ["dashboard.view", "bookings.view", etc]
+  image            String?
+  active           Boolean   @default(true)
+  resetToken       String?   @unique // Token para redefinição de senha
+  resetTokenExpiry DateTime? // Data de expiração do token
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
   // Relações
-  bookings        Booking[]
-  reviews         Review[]
-  ownedSalons     Salon[]
-  cashierSessions CashierSession[]
-  owner           User?            @relation("UserOwner", fields: [ownerId], references: [id])
-  managedUsers    User[]           @relation("UserOwner")
-  supportTickets  SupportTicket[]
-  ticketMessages  TicketMessage[]
-  platformTickets PlatformTicket[]
+  bookings               Booking[]
+  reviews                Review[]
+  ownedSalons            Salon[]
+  cashierSessions        CashierSession[]
+  owner                  User?                   @relation("UserOwner", fields: [ownerId], references: [id])
+  managedUsers           User[]                  @relation("UserOwner")
+  supportTickets         SupportTicket[]
+  ticketMessages         TicketMessage[]
+  platformTickets        PlatformTicket[]
   platformTicketMessages PlatformTicketMessage[]
-  
+
   @@index([ownerId])
   @@index([roleType])
 }
 
 model Salon {
-  id           String    @id @default(cuid())
-  name         String
-  description  String?
-  address      String
-  phone        String
-  email        String?
-  logo         String?
-  openTime     String
-  closeTime    String
-  workDays     String
-  active       Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  ownerId      String
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  address         String
+  phone           String
+  email           String?
+  logo            String?
+  openTime        String
+  closeTime       String
+  workDays        String
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  ownerId         String
   // bookingType  String    @default("BOTH") // Temporariamente removido para Railway
-  city         String?
-  coverPhoto   String?
-  featured     Boolean   @default(false)
-  latitude     Float?
-  longitude    Float?
-  photos       String[]  @default([])
-  publishedAt  DateTime?
-  rating       Float     @default(0)
-  reviewsCount Int       @default(0)
-  specialties  String[]  @default([])
-  state        String?
-  verified     Boolean   @default(false)
-  zipCode      String?
+  city            String?
+  coverPhoto      String?
+  featured        Boolean          @default(false)
+  latitude        Float?
+  longitude       Float?
+  photos          String[]         @default([])
+  publishedAt     DateTime?
+  rating          Float            @default(0)
+  reviewsCount    Int              @default(0)
+  specialties     String[]         @default([])
+  state           String?
+  verified        Boolean          @default(false)
+  zipCode         String?
   // Campos de endereço separados
-  street       String?   // Rua/Logradouro
-  number       String?   // Número
-  complement   String?   // Complemento (apto, sala, etc)
-  neighborhood String?   // Bairro
-  bookings     Booking[]
-  reviews      Review[]
-  owner        User      @relation(fields: [ownerId], references: [id])
-  services     Service[]
-  staff        Staff[]
-  subscription Subscription?
-  expenses     Expense[]  // Despesas do salão
-  platformTickets PlatformTicket[]  // Tickets de suporte da plataforma
+  street          String? // Rua/Logradouro
+  number          String? // Número
+  complement      String? // Complemento (apto, sala, etc)
+  neighborhood    String? // Bairro
+  bookings        Booking[]
+  reviews         Review[]
+  owner           User             @relation(fields: [ownerId], references: [id])
+  services        Service[]
+  staff           Staff[]
+  subscription    Subscription?
+  expenses        Expense[] // Despesas do salão
+  platformTickets PlatformTicket[] // Tickets de suporte da plataforma
   whatsappSession WhatsAppSession? // Sessão WhatsApp do salão
+  commissions     Commission[] // Comissões calculadas no salão
 }
 
 model Staff {
-  id             String         @id @default(cuid())
-  name           String
-  email          String?
-  phone          String?
-  photo          String?
-  specialty      String?
-  active         Boolean        @default(true)
-  workDays       String?        @default("1,2,3,4,5")
-  workStart      String?        @default("09:00")
-  workEnd        String?        @default("18:00")
-  lunchStart     String?
-  lunchEnd       String?
-  slotInterval   Int            @default(5)  // Intervalo entre slots em minutos
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  salonId        String
-  bookings       Booking[]
-  services       ServiceStaff[]
-  blocks         Block[]        // Bloqueios pontuais de horário
-  salon          Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  id               String                 @id @default(cuid())
+  name             String
+  email            String?
+  phone            String?
+  photo            String?
+  specialty        String?
+  active           Boolean                @default(true)
+  workDays         String?                @default("1,2,3,4,5")
+  workStart        String?                @default("09:00")
+  workEnd          String?                @default("18:00")
+  lunchStart       String?
+  lunchEnd         String?
+  slotInterval     Int                    @default(5) // Intervalo entre slots em minutos
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  salonId          String
+  bookings         Booking[]
+  services         ServiceStaff[]
+  blocks           Block[] // Bloqueios pontuais de horário
+  salon            Salon                  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  commissionConfig StaffCommissionConfig? // Configuração de comissão
+  commissions      Commission[] // Comissões calculadas
 }
 
 model Service {
-  id          String         @id @default(cuid())
-  name        String
-  description String?
-  duration    Int
-  price       Float
-  category    String?
-  image       String?
-  active      Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  salonId     String
-  bookings    Booking[]
-  salon       Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  staff       ServiceStaff[]
+  id                String                    @id @default(cuid())
+  name              String
+  description       String?
+  duration          Int
+  price             Float
+  category          String?
+  image             String?
+  active            Boolean                   @default(true)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  salonId           String
+  bookings          Booking[]
+  salon             Salon                     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  staff             ServiceStaff[]
+  commissionConfigs ServiceCommissionConfig[] // Comissões específicas por profissional
+  commissions       Commission[] // Comissões calculadas para este serviço
 }
 
 model ServiceStaff {
@@ -154,6 +159,7 @@ model Booking {
   staff         Staff          @relation(fields: [staffId], references: [id])
   notifications Notification[]
   review        Review?
+  commissions   Commission[] // Comissões calculadas para este agendamento (pode ter múltiplas se tiver múltiplos profissionais)
 
   @@index([date])
   @@index([clientId])
@@ -200,8 +206,8 @@ model Block {
   id        String   @id @default(cuid())
   staffId   String
   date      DateTime
-  startTime String   // Formato "HH:MM"
-  endTime   String   // Formato "HH:MM"
+  startTime String // Formato "HH:MM"
+  endTime   String // Formato "HH:MM"
   reason    String?
   recurring Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -216,28 +222,28 @@ model Block {
 // ============================================
 
 model CashierSession {
-  id            String              @id @default(cuid())
-  salonId       String
-  clientId      String
-  client        User                @relation(fields: [clientId], references: [id])
-  
+  id       String @id @default(cuid())
+  salonId  String
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id])
+
   // Totais
-  subtotal      Float               // Soma dos serviços
-  discount      Float               @default(0) // Desconto aplicado
-  total         Float               // Subtotal - desconto
-  
+  subtotal Float // Soma dos serviços
+  discount Float @default(0) // Desconto aplicado
+  total    Float // Subtotal - desconto
+
   // Pagamento
-  status        CashierStatus       @default(OPEN)
-  paymentMethod String?             // "CASH", "CARD", "PIX", "MULTIPLE"
+  status        CashierStatus @default(OPEN)
+  paymentMethod String? // "CASH", "CARD", "PIX", "MULTIPLE"
   paidAt        DateTime?
-  
+
   // Items da sessão (serviços prestados)
-  items         CashierSessionItem[]
-  
+  items CashierSessionItem[]
+
   // Timestamps
-  createdAt     DateTime            @default(now())
-  closedAt      DateTime?
-  
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+
   @@index([salonId])
   @@index([clientId])
   @@index([status])
@@ -245,62 +251,62 @@ model CashierSession {
 }
 
 model CashierSessionItem {
-  id        String          @id @default(cuid())
+  id        String         @id @default(cuid())
   sessionId String
-  session   CashierSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+  session   CashierSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   // Referência ao agendamento
   bookingId String
-  
+
   // Snapshot do serviço no momento do fechamento
   serviceName String
   staffName   String
   price       Float
-  discount    Float          @default(0)
-  
-  createdAt   DateTime       @default(now())
-  
+  discount    Float  @default(0)
+
+  createdAt DateTime @default(now())
+
   @@index([sessionId])
   @@index([bookingId])
 }
 
 enum CashierStatus {
-  OPEN      // Conta aberta (cliente ainda no salão)
-  CLOSED    // Conta fechada (pagamento efetuado)
+  OPEN // Conta aberta (cliente ainda no salão)
+  CLOSED // Conta fechada (pagamento efetuado)
   CANCELLED // Cancelada
 }
 
 // Modelo de Despesas (Contas a Pagar)
 model Expense {
-  id          String    @id @default(cuid())
-  salonId     String
-  
+  id      String @id @default(cuid())
+  salonId String
+
   // Dados da despesa
   description String
-  category    String    // "RENT", "UTILITIES", "PRODUCTS", "SALARIES", "MARKETING", "TAXES", "MAINTENANCE", "OTHER"
+  category    String // "RENT", "UTILITIES", "PRODUCTS", "SALARIES", "MARKETING", "TAXES", "MAINTENANCE", "OTHER"
   amount      Float
-  
+
   // Controle de pagamento
-  status      String    // "PENDING", "PAID", "OVERDUE"
-  dueDate     DateTime
-  paidAt      DateTime?
+  status        String // "PENDING", "PAID", "OVERDUE"
+  dueDate       DateTime
+  paidAt        DateTime?
   paymentMethod String? // "CASH", "DEBIT", "CREDIT", "PIX", "BANK_TRANSFER"
-  
+
   // Recorrência (opcional - Fase 2)
-  isRecurring    Boolean   @default(false)
-  recurrence     String?   // "MONTHLY", "YEARLY", "WEEKLY"
-  recurringDay   Int?      // Dia do mês (1-31) para MONTHLY, dia da semana (0-6) para WEEKLY
-  lastGenerated  DateTime? // Última vez que uma despesa recorrente foi gerada
-  parentExpenseId String?  // ID da despesa original (para despesas auto-geradas)
-  
+  isRecurring     Boolean   @default(false)
+  recurrence      String? // "MONTHLY", "YEARLY", "WEEKLY"
+  recurringDay    Int? // Dia do mês (1-31) para MONTHLY, dia da semana (0-6) para WEEKLY
+  lastGenerated   DateTime? // Última vez que uma despesa recorrente foi gerada
+  parentExpenseId String? // ID da despesa original (para despesas auto-geradas)
+
   // Observações
-  notes       String?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
   @@index([salonId])
   @@index([status])
   @@index([dueDate])
@@ -311,32 +317,32 @@ model Expense {
 // ==========================================
 
 model SupportTicket {
-  id          String           @id @default(cuid())
-  ticketNumber Int             @unique @default(autoincrement())
-  
+  id           String @id @default(cuid())
+  ticketNumber Int    @unique @default(autoincrement())
+
   // Informações do solicitante
-  userId      String?         // Opcional - pode ser usuário não logado
-  name        String
-  email       String
-  phone       String?
-  
+  userId String? // Opcional - pode ser usuário não logado
+  name   String
+  email  String
+  phone  String?
+
   // Dados do ticket
   subject     String
-  category    String          // "TECNICO", "FATURAMENTO", "DUVIDA", "SUGESTAO", "RECLAMACAO"
+  category    String // "TECNICO", "FATURAMENTO", "DUVIDA", "SUGESTAO", "RECLAMACAO"
   description String
-  status      String          @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
-  priority    String          @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
-  
+  status      String @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
+  priority    String @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
+
   // Metadata
-  assignedTo  String?         // ID do admin que está atendendo
-  resolvedAt  DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  
+  assignedTo String? // ID do admin que está atendendo
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
   // Relações
-  user        User?           @relation(fields: [userId], references: [id])
-  messages    TicketMessage[]
-  
+  user     User?           @relation(fields: [userId], references: [id])
+  messages TicketMessage[]
+
   @@index([userId])
   @@index([status])
   @@index([category])
@@ -344,26 +350,26 @@ model SupportTicket {
 }
 
 model TicketMessage {
-  id        String        @id @default(cuid())
-  ticketId  String
-  
+  id       String @id @default(cuid())
+  ticketId String
+
   // Remetente
-  userId    String?       // Se for admin ou usuário logado
-  name      String        // Nome de quem enviou
-  isStaff   Boolean       @default(false) // Se é resposta da equipe
-  
+  userId  String? // Se for admin ou usuário logado
+  name    String // Nome de quem enviou
+  isStaff Boolean @default(false) // Se é resposta da equipe
+
   // Conteúdo
-  message   String
-  
+  message String
+
   // Anexos (opcional para futuro)
-  attachments String[]    @default([])
-  
-  createdAt DateTime      @default(now())
-  
+  attachments String[] @default([])
+
+  createdAt DateTime @default(now())
+
   // Relação
-  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User?         @relation(fields: [userId], references: [id])
-  
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User?         @relation(fields: [userId], references: [id])
+
   @@index([ticketId])
   @@index([createdAt])
 }
@@ -374,31 +380,31 @@ model TicketMessage {
 // ==========================================
 
 model PlatformTicket {
-  id          String                   @id @default(cuid())
-  ticketNumber Int                     @unique @default(autoincrement())
-  
+  id           String @id @default(cuid())
+  ticketNumber Int    @unique @default(autoincrement())
+
   // Proprietário que abriu o chamado
-  userId      String
-  salonId     String                   // Salão relacionado ao chamado
-  
+  userId  String
+  salonId String // Salão relacionado ao chamado
+
   // Dados do ticket
   subject     String
-  category    String                   // "BUG", "FEATURE_REQUEST", "QUESTION", "INTEGRATION", "BILLING", "OTHER"
+  category    String // "BUG", "FEATURE_REQUEST", "QUESTION", "INTEGRATION", "BILLING", "OTHER"
   description String
-  status      String                   @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
-  priority    String                   @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
-  
+  status      String @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"
+  priority    String @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
+
   // Metadata
-  assignedTo  String?                  // ID do desenvolvedor/suporte
-  resolvedAt  DateTime?
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
-  
+  assignedTo String? // ID do desenvolvedor/suporte
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
   // Relações
-  user        User                     @relation(fields: [userId], references: [id])
-  salon       Salon                    @relation(fields: [salonId], references: [id])
-  messages    PlatformTicketMessage[]
-  
+  user     User                    @relation(fields: [userId], references: [id])
+  salon    Salon                   @relation(fields: [salonId], references: [id])
+  messages PlatformTicketMessage[]
+
   @@index([userId])
   @@index([salonId])
   @@index([status])
@@ -407,26 +413,26 @@ model PlatformTicket {
 }
 
 model PlatformTicketMessage {
-  id        String         @id @default(cuid())
-  ticketId  String
-  
+  id       String @id @default(cuid())
+  ticketId String
+
   // Remetente
   userId    String
-  name      String         // Nome de quem enviou
-  isSupport Boolean        @default(false) // Se é resposta do suporte da plataforma
-  
+  name      String // Nome de quem enviou
+  isSupport Boolean @default(false) // Se é resposta do suporte da plataforma
+
   // Conteúdo
-  message   String
-  
+  message String
+
   // Anexos (opcional para futuro)
-  attachments String[]     @default([])
-  
-  createdAt DateTime       @default(now())
-  
+  attachments String[] @default([])
+
+  createdAt DateTime @default(now())
+
   // Relação
-  ticket    PlatformTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User           @relation(fields: [userId], references: [id])
-  
+  ticket PlatformTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User           @relation(fields: [userId], references: [id])
+
   @@index([ticketId])
   @@index([createdAt])
 }
@@ -436,73 +442,73 @@ model PlatformTicketMessage {
 // ==========================================
 
 model Plan {
-  id            String         @id @default(cuid())
-  name          String         // "Essencial", "Profissional"
-  slug          String?        @unique // "essencial", "profissional" (opcional para compatibilidade com dados antigos)
-  description   String?        // Opcional para compatibilidade com dados antigos
-  price         Float          // Preço mensal em reais
-  
+  id          String  @id @default(cuid())
+  name        String // "Essencial", "Profissional"
+  slug        String? @unique // "essencial", "profissional" (opcional para compatibilidade com dados antigos)
+  description String? // Opcional para compatibilidade com dados antigos
+  price       Float // Preço mensal em reais
+
   // Limites e Features
-  maxStaff      Int?           // null = ilimitado
-  maxUsers      Int            @default(1) // Usuários administrativos
-  features      Json           // { whatsapp: true, maps: true, multiUser: true, advancedReports: true }
-  featuresList  String[]       @default([]) // Lista simples para queries (deprecated, usar features Json)
-  
+  maxStaff     Int? // null = ilimitado
+  maxUsers     Int      @default(1) // Usuários administrativos
+  features     Json // { whatsapp: true, maps: true, multiUser: true, advancedReports: true }
+  featuresList String[] @default([]) // Lista simples para queries (deprecated, usar features Json)
+
   // Status
-  active        Boolean        @default(true)
-  
+  active Boolean @default(true)
+
   // Metadata
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relações
   subscriptions Subscription[]
-  
+
   @@index([slug])
   @@index([active])
 }
 
 model Subscription {
-  id                    String    @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Salão
-  salonId               String    @unique // Um salão = uma assinatura
-  
+  salonId String @unique // Um salão = uma assinatura
+
   // Plano
-  planId                String
-  
+  planId String
+
   // Mercado Pago
-  mpSubscriptionId      String?   @unique // ID da assinatura no MP (se cartão recorrente)
-  mpPreferenceId        String?   // ID da preferência de pagamento
-  mpPaymentId           String?   // ID do último pagamento
-  paymentMethod         String    @default("pix") // "pix", "credit_card" (padrão pix para compatibilidade)
-  
+  mpSubscriptionId String? @unique // ID da assinatura no MP (se cartão recorrente)
+  mpPreferenceId   String? // ID da preferência de pagamento
+  mpPaymentId      String? // ID do último pagamento
+  paymentMethod    String  @default("pix") // "pix", "credit_card" (padrão pix para compatibilidade)
+
   // Status
-  status                String    @default("PENDING") // "PENDING", "ACTIVE", "CANCELED", "EXPIRED", "SUSPENDED"
-  
+  status String @default("PENDING") // "PENDING", "ACTIVE", "CANCELED", "EXPIRED", "SUSPENDED"
+
   // Datas
-  startDate             DateTime?
-  endDate               DateTime?
-  nextBillingDate       DateTime?
-  canceledAt            DateTime?
-  
+  startDate       DateTime?
+  endDate         DateTime?
+  nextBillingDate DateTime?
+  canceledAt      DateTime?
+
   // Histórico de pagamentos
-  lastPaymentDate       DateTime?
-  lastPaymentAmount     Float?
-  lastPaymentStatus     String?   // "approved", "pending", "rejected"
-  
+  lastPaymentDate   DateTime?
+  lastPaymentAmount Float?
+  lastPaymentStatus String? // "approved", "pending", "rejected"
+
   // Trial (14 dias grátis)
-  trialEndsAt           DateTime?
-  
+  trialEndsAt DateTime?
+
   // Metadata
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relações
-  salon                 Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  plan                  Plan      @relation(fields: [planId], references: [id])
-  payments              SubscriptionPayment[]
-  
+  salon    Salon                 @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  plan     Plan                  @relation(fields: [planId], references: [id])
+  payments SubscriptionPayment[]
+
   @@index([salonId])
   @@index([planId])
   @@index([status])
@@ -510,28 +516,28 @@ model Subscription {
 }
 
 model SubscriptionPayment {
-  id              String       @id @default(cuid())
-  subscriptionId  String
-  
+  id             String @id @default(cuid())
+  subscriptionId String
+
   // Mercado Pago
-  mpPaymentId     String       @unique // ID do pagamento no MP
-  mpStatus        String       // "approved", "pending", "rejected", "refunded"
-  mpStatusDetail  String?
-  
+  mpPaymentId    String  @unique // ID do pagamento no MP
+  mpStatus       String // "approved", "pending", "rejected", "refunded"
+  mpStatusDetail String?
+
   // Valores
-  amount          Float
-  currency        String       @default("BRL")
-  
+  amount   Float
+  currency String @default("BRL")
+
   // Método
-  paymentMethod   String       // "pix", "credit_card", "debit_card"
-  
+  paymentMethod String // "pix", "credit_card", "debit_card"
+
   // Datas
-  paidAt          DateTime?
-  createdAt       DateTime     @default(now())
-  
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+
   // Relação
-  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
   @@index([subscriptionId])
   @@index([mpPaymentId])
   @@index([mpStatus])
@@ -540,26 +546,132 @@ model SubscriptionPayment {
 
 // WhatsApp Session (Baileys Auth)
 model WhatsAppSession {
-  id        String   @id @default(cuid())
-  salonId   String   @unique
-  
+  id      String @id @default(cuid())
+  salonId String @unique
+
   // Auth data (JSON stringified)
-  creds     String   @db.Text // JSON das credenciais Baileys
-  keys      String   @db.Text // JSON das chaves de sessão
-  
+  creds String @db.Text // JSON das credenciais Baileys
+  keys  String @db.Text // JSON das chaves de sessão
+
   // Status
-  connected Boolean  @default(false)
-  qrCode    String?  @db.Text // QR Code base64 (temporário)
-  phone     String?  // Número conectado
-  
+  connected Boolean @default(false)
+  qrCode    String? @db.Text // QR Code base64 (temporário)
+  phone     String? // Número conectado
+
   // Datas
   lastConnected DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   // Relação
-  salon     Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
   @@index([salonId])
   @@index([connected])
+}
+
+// ============================================
+// SISTEMA DE COMISSÕES
+// ============================================
+
+enum CommissionType {
+  PERCENTAGE // Percentual do valor (ex: 40%)
+  FIXED // Valor fixo (ex: R$ 15,00)
+  MIXED // Fixo + Percentual (ex: R$ 10,00 + 20%)
+}
+
+enum CommissionStatus {
+  PENDING // Comissão calculada, aguardando pagamento
+  PAID // Comissão paga ao profissional
+  CANCELLED // Agendamento cancelado, comissão cancelada
+}
+
+// Configuração de comissão padrão do profissional
+model StaffCommissionConfig {
+  id      String @id @default(cuid())
+  staffId String @unique
+
+  // Tipo de comissão
+  commissionType CommissionType @default(PERCENTAGE)
+
+  // Valores (usar conforme o tipo)
+  percentageValue Float? // Ex: 40 (significa 40%)
+  fixedValue      Float? // Ex: 15.00 (R$ 15,00)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relação
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  // Comissões específicas por serviço (sobrescrevem a padrão)
+  serviceOverrides ServiceCommissionConfig[]
+
+  @@index([staffId])
+}
+
+// Comissão específica para um serviço (sobrescreve a configuração padrão)
+model ServiceCommissionConfig {
+  id            String @id @default(cuid())
+  staffConfigId String
+  serviceId     String
+
+  // Tipo de comissão específica
+  commissionType  CommissionType
+  percentageValue Float?
+  fixedValue      Float?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  staffConfig StaffCommissionConfig @relation(fields: [staffConfigId], references: [id], onDelete: Cascade)
+  service     Service               @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([staffConfigId, serviceId])
+  @@index([staffConfigId])
+  @@index([serviceId])
+}
+
+// Registro de comissão calculada para um agendamento
+model Commission {
+  id String @id @default(cuid())
+
+  // Relações
+  bookingId String
+  staffId   String
+  salonId   String
+  serviceId String
+
+  // Valores
+  servicePrice    Float // Preço do serviço no momento
+  commissionType  CommissionType // Tipo usado no cálculo
+  percentageValue Float? // % usada (se aplicável)
+  fixedValue      Float? // Valor fixo usado (se aplicável)
+  calculatedValue Float // Valor final calculado da comissão
+
+  // Status e pagamento
+  status        CommissionStatus @default(PENDING)
+  paidAt        DateTime? // Data do pagamento
+  paymentMethod String? // Como foi pago (CASH, PIX, TRANSFER, etc)
+  notes         String? // Observações
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  staff   Staff   @relation(fields: [staffId], references: [id])
+  salon   Salon   @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@index([bookingId])
+  @@index([staffId])
+  @@index([salonId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([paidAt])
 }

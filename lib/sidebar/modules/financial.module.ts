@@ -1,4 +1,4 @@
-import { Receipt, TrendingUp } from "lucide-react"
+import { Receipt, TrendingUp, DollarSign } from "lucide-react"
 import { MenuModule } from "../types"
 
 /**
@@ -21,12 +21,21 @@ export const financialModule: MenuModule = {
       group: "financial",
     },
     {
+      id: "commissions",
+      label: "Comissões",
+      icon: DollarSign,
+      href: "/dashboard/comissoes",
+      permission: "financial.view",
+      order: 2,
+      group: "financial",
+    },
+    {
       id: "financial-analysis",
       label: "Análise Financeira",
       icon: TrendingUp,
       href: "/dashboard/financeiro",
       permission: "financial.view",
-      order: 2,
+      order: 3,
       group: "financial",
     },
   ],

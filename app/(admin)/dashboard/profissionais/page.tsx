@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, User, Phone, Mail, Briefcase, Clock, Calendar, CalendarCheck, Sparkles, CheckCircle, XCircle, Users } from "lucide-react";
+import { Plus, User, Phone, Mail, Briefcase, Clock, Calendar, CalendarCheck, Sparkles, CheckCircle, XCircle, Users, DollarSign } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -207,6 +207,12 @@ export default async function StaffPage() {
                       </Link>
                       <DeleteStaffButton staffId={member.id} staffName={member.name} />
                     </div>
+                    <Link href={`/dashboard/profissionais/${member.id}/comissao`}>
+                      <GradientButton variant="success" className="w-full text-xs">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        Comissão
+                      </GradientButton>
+                    </Link>
                   </div>
                 </GlassCard>
               ))}
