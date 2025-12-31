@@ -292,13 +292,13 @@ function NavegacaoContent() {
   }
 
   return (
-    <div className="relative h-screen w-full">
+    <div className="fixed inset-0 w-full h-full overflow-hidden">
       {/* Mapa */}
       <div ref={mapContainer} className="absolute inset-0" />
 
       {/* Header com informações da rota */}
-      <div className="absolute top-0 left-0 right-0 p-3 sm:p-4 z-10">
-        <GlassCard className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+      <div className="fixed top-0 left-0 right-0 p-3 sm:p-4 z-10 pointer-events-none">
+        <GlassCard className="p-3 sm:p-4 space-y-2 sm:space-y-3 pointer-events-auto">
           {/* Botão Voltar e Apps de Navegação */}
           <div className="flex items-center justify-between gap-2">
             <Button
@@ -355,7 +355,7 @@ function NavegacaoContent() {
         <Button
           size="lg"
           onClick={handleRecenter}
-          className="absolute bottom-20 sm:bottom-24 right-3 sm:right-4 z-10 h-12 w-12 sm:h-14 sm:w-14 p-0 rounded-full shadow-lg"
+          className="fixed bottom-20 sm:bottom-24 right-3 sm:right-4 z-10 h-12 w-12 sm:h-14 sm:w-14 p-0 rounded-full shadow-lg"
           title="Centralizar no mapa"
         >
           <Locate className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -364,7 +364,7 @@ function NavegacaoContent() {
 
       {/* Botões de iniciar navegação */}
       {!loading && (
-        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-10">
+        <div className="fixed bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-10">
           <div className="flex gap-2 sm:gap-3">
             <Button
               size="lg"
@@ -388,7 +388,7 @@ function NavegacaoContent() {
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20">
           <GlassCard className="p-6 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-sm text-muted-foreground">Calculando melhor rota...</p>
