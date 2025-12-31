@@ -234,13 +234,40 @@ function NavegacaoContent() {
     }
   };
 
-  const handleOpenExternalNav = () => {
+  const handleOpenGoogleMaps = () => {
     // Usar endereço se disponível, senão usar coordenadas
     const destination = salonAddress 
       ? encodeURIComponent(salonAddress)
       : `${destLat},${destLng}`;
     const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
     window.open(url, "_blank");
+  };
+
+  const handleOpenWaze = () => {
+    // Waze usa coordenadas no formato: waze://?ll=lat,lng&navigate=yes
+    const url = `https://waze.com/ul?ll=${destLat},${destLng}&navigate=yes`;
+    window.open(url, "_blank");
+  };
+
+  const handleOpenNavApp = () => {
+    // Tentar detectar e abrir o app preferido do usuário
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    if (isIOS) {
+      // No iOS, tentar abrir Apple Maps
+      const destination = salonAddress || `${destLat},${destLng}`;
+      window.location.href = `maps://?daddr=${encodeURIComponent(destination)}`;
+    } else if (isAndroid) {
+      // No Android, usar intent para Google Maps
+      const destination = salonAddress 
+        ? encodeURIComponent(salonAddress)
+        : `${destLat},${destLng}`;
+      window.location.href = `google.navigation:q=${destination}`;
+    } else {
+      // Fallback para Google Maps web
+      handleOpenGoogleMaps();
+    }
   };
 
   if (error) {
@@ -251,12 +278,12 @@ function NavegacaoContent() {
           <h2 className="text-xl font-bold">Erro na Navegação</h2>
           <p className="text-muted-foreground">{error}</p>
           <div className="flex gap-2">
-            <Button onClick={() => router.back()} variant="outline" className="flex-1">
+            <Button onClick={() => router.back()} variant="outline" className="flex-1 h-10 sm:h-11">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <Button onClick={handleOpenExternalNav} className="flex-1">
-              Abrir no Google Maps
+            <Button onClick={handleOpenGoogleMaps} className="flex-1 h-10 sm:h-11">
+              Abrir Navegação
             </Button>
           </div>
         </GlassCard>
@@ -270,36 +297,50 @@ function NavegacaoContent() {
       <div ref={mapContainer} className="absolute inset-0" />
 
       {/* Header com informações da rota */}
-      <div className="absolute top-0 left-0 right-0 p-4 z-10">
-        <GlassCard className="p-4 space-y-3">
-          {/* Botão Voltar */}
-          <div className="flex items-center justify-between">
+      <div className="absolute top-0 left-0 right-0 p-3 sm:p-4 z-10">
+        <GlassCard className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+          {/* Botão Voltar e Apps de Navegação */}
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="gap-2"
+              className="gap-2 h-9 sm:h-10"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleOpenExternalNav}
-              className="gap-2"
-            >
-              Google Maps
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOpenGoogleMaps}
+                className="gap-1.5 h-9 sm:h-10 px-2 sm:px-3"
+                title="Abrir no Google Maps"
+              >
+                <NavigationIcon className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Google</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOpenWaze}
+                className="gap-1.5 h-9 sm:h-10 px-2 sm:px-3"
+                title="Abrir no Waze"
+              >
+                <NavigationIcon className="h-4 w-4 text-[#33CCFF]" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Waze</span>
+              </Button>
+            </div>
           </div>
 
           {/* Informações do destino */}
           <div>
-            <h1 className="text-lg font-bold line-clamp-1">{salonName}</h1>
+            <h1 className="text-base sm:text-lg font-bold line-clamp-1">{salonName}</h1>
             {loading ? (
-              <p className="text-sm text-muted-foreground">Calculando rota...</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Calculando rota...</p>
             ) : (
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                 <span className="font-semibold text-primary">{distance}</span>
                 <span className="text-muted-foreground">•</span>
                 <span className="font-semibold text-primary">{duration}</span>
@@ -314,23 +355,34 @@ function NavegacaoContent() {
         <Button
           size="lg"
           onClick={handleRecenter}
-          className="absolute bottom-24 right-4 z-10 h-14 w-14 p-0 rounded-full shadow-lg"
+          className="absolute bottom-20 sm:bottom-24 right-3 sm:right-4 z-10 h-12 w-12 sm:h-14 sm:w-14 p-0 rounded-full shadow-lg"
+          title="Centralizar no mapa"
         >
-          <Locate className="h-6 w-6" />
+          <Locate className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
       )}
 
-      {/* Botão de iniciar navegação */}
+      {/* Botões de iniciar navegação */}
       {!loading && (
-        <div className="absolute bottom-4 left-4 right-4 z-10">
-          <Button
-            size="lg"
-            onClick={handleOpenExternalNav}
-            className="w-full gap-2 h-14"
-          >
-            <NavigationIcon className="h-5 w-5" />
-            Iniciar Navegação no Google Maps
-          </Button>
+        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-10">
+          <div className="flex gap-2 sm:gap-3">
+            <Button
+              size="lg"
+              onClick={handleOpenGoogleMaps}
+              className="flex-1 gap-2 h-12 sm:h-14"
+            >
+              <NavigationIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-xs sm:text-sm">Google Maps</span>
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleOpenWaze}
+              className="flex-1 gap-2 h-12 sm:h-14 bg-[#33CCFF] hover:bg-[#2BB8E6]"
+            >
+              <NavigationIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-xs sm:text-sm">Waze</span>
+            </Button>
+          </div>
         </div>
       )}
 
