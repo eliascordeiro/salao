@@ -38,6 +38,11 @@ export function DirectionsButton({
       name: salonName,
     });
     
+    // Adicionar endereço se disponível
+    if (address) {
+      params.append('address', address);
+    }
+    
     router.push(`/navegacao?${params.toString()}`);
   };
 

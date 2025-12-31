@@ -27,6 +27,7 @@ function NavegacaoContent() {
   const destLat = parseFloat(searchParams.get("lat") || "0");
   const destLng = parseFloat(searchParams.get("lng") || "0");
   const salonName = searchParams.get("name") || "Destino";
+  const salonAddress = searchParams.get("address") || null;
 
   useEffect(() => {
     console.log("🗺️ NavegacaoContent montado");
@@ -234,7 +235,11 @@ function NavegacaoContent() {
   };
 
   const handleOpenExternalNav = () => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}`;
+    // Usar endereço se disponível, senão usar coordenadas
+    const destination = salonAddress 
+      ? encodeURIComponent(salonAddress)
+      : `${destLat},${destLng}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
     window.open(url, "_blank");
   };
 
