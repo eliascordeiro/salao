@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Navigation as NavigationIcon, Locate, X } from "lucide-react";
+import { ArrowLeft, Navigation as NavigationIcon, Locate, X, ChevronDown, ChevronUp } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 
 // Configurar token do Mapbox
@@ -22,6 +22,7 @@ function NavegacaoContent() {
   const [distance, setDistance] = useState<string>("");
   const [duration, setDuration] = useState<string>("");
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   
   // Parâmetros da URL
   const destLat = parseFloat(searchParams.get("lat") || "0");
@@ -296,56 +297,70 @@ function NavegacaoContent() {
       {/* Mapa */}
       <div ref={mapContainer} className="absolute inset-0" />
 
-      {/* Header com informações da rota */}
-      <div className="fixed top-0 left-0 right-0 p-3 sm:p-4 z-10 pointer-events-none">
-        <GlassCard className="p-3 sm:p-4 space-y-2 sm:space-y-3 pointer-events-auto">
-          {/* Botão Voltar e Apps de Navegação */}
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="gap-2 h-9 sm:h-10"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Voltar</span>
-            </Button>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenGoogleMaps}
-                className="gap-1.5 h-9 sm:h-10 px-2 sm:px-3"
-                title="Abrir no Google Maps"
-              >
-                <NavigationIcon className="h-4 w-4" />
-                <span className="hidden sm:inline text-xs sm:text-sm">Google</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenWaze}
-                className="gap-1.5 h-9 sm:h-10 px-2 sm:px-3"
-                title="Abrir no Waze"
-              >
-                <NavigationIcon className="h-4 w-4 text-[#33CCFF]" />
-                <span className="hidden sm:inline text-xs sm:text-sm">Waze</span>
-              </Button>
-            </div>
-          </div>
+      {/* Header compacto - apenas botão voltar */}
+      <div className="fixed top-3 left-3 z-20">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.back()}
+          className="gap-2 h-9 sm:h-10 bg-background/95 backdrop-blur-md shadow-lg"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Voltar</span>
+        </Button>
+      </div>
 
-          {/* Informações do destino */}
-          <div>
-            <h1 className="text-base sm:text-lg font-bold line-clamp-1">{salonName}</h1>
-            {loading ? (
-              <p className="text-xs sm:text-sm text-muted-foreground">Calculando rota...</p>
-            ) : (
-              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                <span className="font-semibold text-primary">{distance}</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="font-semibold text-primary">{duration}</span>
+      {/* Card de informações do salão - expansível em mobile */}
+      <div className="fixed top-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-80 z-10 mt-12 sm:mt-0">
+        <GlassCard className="overflow-hidden">
+          {/* Header do card - sempre visível */}
+          <button
+            onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+            className="w-full p-3 text-left hover:bg-background-alt/20 transition-colors sm:cursor-default sm:hover:bg-transparent"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold line-clamp-1">{salonName}</h2>
+                {!loading && (
+                  <p className="text-xs text-muted-foreground">
+                    {distance} • {duration}
+                  </p>
+                )}
               </div>
-            )}
+              <ChevronDown 
+                className={`h-4 w-4 transition-transform sm:hidden ${isInfoExpanded ? 'rotate-180' : ''}`} 
+              />
+            </div>
+          </button>
+
+          {/* Conteúdo expansível - Apps de navegação */}
+          <div className={`
+            overflow-hidden transition-all duration-300
+            ${isInfoExpanded ? 'max-h-40' : 'max-h-0 sm:max-h-40'}
+          `}>
+            <div className="p-3 pt-0 space-y-2 border-t border-border/50">
+              <p className="text-xs text-muted-foreground">Abrir em:</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenGoogleMaps}
+                  className="flex-1 gap-1.5 h-9"
+                >
+                  <NavigationIcon className="h-4 w-4" />
+                  <span className="text-xs">Google</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenWaze}
+                  className="flex-1 gap-1.5 h-9 border-[#33CCFF]/30 text-[#33CCFF] hover:bg-[#33CCFF]/10"
+                >
+                  <NavigationIcon className="h-4 w-4" />
+                  <span className="text-xs">Waze</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </GlassCard>
       </div>
