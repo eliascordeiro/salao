@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Calendar, User, Filter, CreditCard, Banknote, Smartphone, ArrowLeftRight } from "lucide-react";
-import { DashboardHeader } from "@/components/dashboard/header";
+import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Calendar, User, Filter, CreditCard, Banknote, Smartphone, ArrowLeftRight, Check } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +78,11 @@ export default function CommissionsPage() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedCommission, setSelectedCommission] = useState<Commission | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("PIX");
+  
+  // Seleção múltipla
+  const [selectedCommissions, setSelectedCommissions] = useState<Set<string>>(new Set());
+  const [showBulkPaymentDialog, setShowBulkPaymentDialog] = useState(false);
+  const [bulkPaymentMethod, setBulkPaymentMethod] = useState<string>("PIX");
 
   useEffect(() => {
     fetchCommissions();
@@ -158,6 +163,79 @@ export default function CommissionsPage() {
     }
   };
 
+  // Funções de seleção múltipla
+  const toggleCommissionSelection = (commissionId: string) => {
+    const newSelection = new Set(selectedCommissions);
+    if (newSelection.has(commissionId)) {
+      newSelection.delete(commissionId);
+    } else {
+      newSelection.add(commissionId);
+    }
+    setSelectedCommissions(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    const pendingCommissions = commissions.filter(c => c.status === 'PENDING');
+    if (selectedCommissions.size === pendingCommissions.length) {
+      setSelectedCommissions(new Set());
+    } else {
+      setSelectedCommissions(new Set(pendingCommissions.map(c => c.id)));
+    }
+  };
+
+  const getSelectedTotal = () => {
+    return commissions
+      .filter(c => selectedCommissions.has(c.id))
+      .reduce((sum, c) => sum + c.calculatedValue, 0);
+  };
+
+  const handleBulkPayment = async () => {
+    if (selectedCommissions.size === 0) return;
+
+    try {
+      setPaying("bulk");
+      
+      // Processar pagamento de todas as comissões selecionadas
+      const promises = Array.from(selectedCommissions).map(id =>
+        fetch(`/api/commissions/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "PAID",
+            paymentMethod: bulkPaymentMethod,
+          }),
+        })
+      );
+
+      const results = await Promise.all(promises);
+      const failed = results.filter(r => !r.ok);
+
+      if (failed.length > 0) {
+        throw new Error(`${failed.length} pagamento(s) falharam`);
+      }
+
+      setShowBulkPaymentDialog(false);
+      setSelectedCommissions(new Set());
+      setBulkPaymentMethod("PIX");
+      fetchCommissions();
+      alert(`${selectedCommissions.size} comissão(ões) marcadas como pagas!`);
+    } catch (error) {
+      console.error("Erro:", error);
+      alert("Erro ao processar pagamentos em lote");
+    } finally {
+      setPaying(null);
+    }
+  };
+
+  const openBulkPaymentDialog = () => {
+    if (selectedCommissions.size === 0) {
+      alert("Selecione pelo menos uma comissão pendente");
+      return;
+    }
+    setBulkPaymentMethod("PIX");
+    setShowBulkPaymentDialog(true);
+  };
+
   // Obter lista única de profissionais
   const staffList = Array.from(
     new Set(commissions.map((c) => JSON.stringify({ id: c.staff.id, name: c.staff.name })))
@@ -166,7 +244,6 @@ export default function CommissionsPage() {
   return (
     <div className="min-h-screen bg-background">
       <GridBackground>
-        <DashboardHeader />
         <main className="container mx-auto px-4 py-8 max-w-7xl">
           {/* Header */}
           <div className="mb-8">
@@ -180,7 +257,7 @@ export default function CommissionsPage() {
 
           {/* Cards de Resumo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <GlassCard hover glow="warning">
+            <GlassCard hover>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm text-foreground-muted">Pendentes</p>
@@ -220,9 +297,25 @@ export default function CommissionsPage() {
           {/* Filtros */}
           <GlassCard className="mb-6">
             <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Filter className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold text-foreground">Filtros</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-bold text-foreground">Filtros</h2>
+                </div>
+                
+                {/* Checkbox "Selecionar Todos" - apenas para pendentes */}
+                {commissions.filter(c => c.status === 'PENDING').length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="select-all"
+                      checked={selectedCommissions.size === commissions.filter(c => c.status === 'PENDING').length && selectedCommissions.size > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <Label htmlFor="select-all" className="text-sm cursor-pointer">
+                      Selecionar todas pendentes ({commissions.filter(c => c.status === 'PENDING').length})
+                    </Label>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -295,6 +388,25 @@ export default function CommissionsPage() {
                 <GlassCard key={commission.id} hover>
                   <div className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      {/* Checkbox de seleção - apenas para pendentes */}
+                      {commission.status === 'PENDING' && (
+                        <div className="lg:col-span-4 mb-2">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              id={`commission-${commission.id}`}
+                              checked={selectedCommissions.has(commission.id)}
+                              onCheckedChange={() => toggleCommissionSelection(commission.id)}
+                            />
+                            <Label 
+                              htmlFor={`commission-${commission.id}`} 
+                              className="text-xs text-muted-foreground cursor-pointer"
+                            >
+                              Selecionar para pagamento em lote
+                            </Label>
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Info Principal */}
                       <div className="lg:col-span-2 space-y-3">
                         <div className="flex items-start justify-between">
@@ -363,14 +475,14 @@ export default function CommissionsPage() {
                               <CheckCircle className="h-3.5 w-3.5" />
                               {paying === commission.id ? "Processando..." : "Marcar como Pago"}
                             </GradientButton>
-                            <GradientButton
+                            <Button
                               onClick={() => handleCancelCommission(commission.id)}
-                              variant="ghost"
-                              className="text-xs border-error text-error"
+                              variant="outline"
+                              className="text-xs border-error text-error hover:bg-error/10"
                             >
                               <XCircle className="h-3.5 w-3.5" />
                               Cancelar
-                            </GradientButton>
+                            </Button>
                           </>
                         )}
                         {commission.status === "PAID" && commission.paidAt && (
@@ -389,6 +501,48 @@ export default function CommissionsPage() {
           )}
         </main>
       </GridBackground>
+
+      {/* Barra flutuante de pagamento em lote */}
+      {selectedCommissions.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95vw] max-w-2xl">
+          <GlassCard className="p-4 sm:p-6 shadow-2xl border-2 border-success/30">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-success/20">
+                  <CheckCircle className="h-6 w-6 text-success" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-sm sm:text-base">
+                    {selectedCommissions.size} comissão(ões) selecionada(s)
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-success">
+                    R$ {getSelectedTotal().toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedCommissions(new Set())}
+                  className="flex-1 sm:flex-initial"
+                >
+                  Cancelar
+                </Button>
+                <GradientButton
+                  onClick={openBulkPaymentDialog}
+                  variant="success"
+                  className="flex-1 sm:flex-initial"
+                  disabled={paying === "bulk"}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  {paying === "bulk" ? "Processando..." : "Pagar Selecionadas"}
+                </GradientButton>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      )}
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
@@ -525,6 +679,148 @@ export default function CommissionsPage() {
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
                 {paying ? "Processando..." : "Confirmar Pagamento"}
+              </GradientButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Pagamento em Lote */}
+      <Dialog open={showBulkPaymentDialog} onOpenChange={setShowBulkPaymentDialog}>
+        <DialogContent className="glass-card w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-4 border-b border-primary/10">
+            <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
+              <CheckCircle className="h-6 w-6" />
+              Pagamento em Lote
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-base pt-2">
+              Confirme o pagamento de <span className="font-bold text-success">{selectedCommissions.size}</span> comissão(ões) 
+              no valor total de <span className="font-bold text-success">R$ {getSelectedTotal().toFixed(2)}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 pt-4">
+            {/* Lista de comissões selecionadas */}
+            <div className="max-h-[200px] overflow-y-auto space-y-2">
+              {commissions
+                .filter(c => selectedCommissions.has(c.id))
+                .map((commission) => (
+                  <div key={commission.id} className="p-3 rounded-lg bg-background-alt/30 border border-primary/10">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {commission.service.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {commission.staff.name}
+                        </p>
+                      </div>
+                      <p className="text-sm font-bold text-success whitespace-nowrap">
+                        R$ {commission.calculatedValue.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Seletor de Método de Pagamento */}
+            <div>
+              <Label className="text-base font-semibold mb-3 block">
+                Selecione o método de pagamento:
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setBulkPaymentMethod("PIX")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${bulkPaymentMethod === "PIX"
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <Smartphone className={`h-6 w-6 ${bulkPaymentMethod === "PIX" ? "text-primary" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${bulkPaymentMethod === "PIX" ? "text-primary" : "text-foreground"}`}>
+                    PIX
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkPaymentMethod("CASH")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${bulkPaymentMethod === "CASH"
+                      ? "border-success bg-success/10 shadow-lg shadow-success/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <Banknote className={`h-6 w-6 ${bulkPaymentMethod === "CASH" ? "text-success" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${bulkPaymentMethod === "CASH" ? "text-success" : "text-foreground"}`}>
+                    Dinheiro
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkPaymentMethod("CARD")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${bulkPaymentMethod === "CARD"
+                      ? "border-error bg-error/10 shadow-lg shadow-error/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <CreditCard className={`h-6 w-6 ${bulkPaymentMethod === "CARD" ? "text-error" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${bulkPaymentMethod === "CARD" ? "text-error" : "text-foreground"}`}>
+                    Cartão
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkPaymentMethod("TRANSFER")}
+                  className={`
+                    p-4 rounded-xl border-2 transition-all duration-200
+                    flex flex-col items-center gap-2 min-h-[100px]
+                    ${bulkPaymentMethod === "TRANSFER"
+                      ? "border-warning bg-warning/10 shadow-lg shadow-warning/20"
+                      : "border-primary/20 bg-background-alt/30 hover:border-primary/40"
+                    }
+                  `}
+                >
+                  <ArrowLeftRight className={`h-6 w-6 ${bulkPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground-muted"}`} />
+                  <span className={`text-sm font-semibold ${bulkPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground"}`}>
+                    Transferência
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowBulkPaymentDialog(false)}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+                disabled={paying === "bulk"}
+              >
+                Cancelar
+              </Button>
+              <GradientButton
+                variant="success"
+                onClick={handleBulkPayment}
+                disabled={paying === "bulk"}
+                className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
+              >
+                <CheckCircle className="h-5 w-5 mr-2" />
+                {paying === "bulk" ? "Processando..." : `Pagar ${selectedCommissions.size} Comissão(ões)`}
               </GradientButton>
             </div>
           </div>
