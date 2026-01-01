@@ -34,6 +34,7 @@ export default function MarketingLayout({
               <h4 className="font-semibold mb-4">Para Proprietários</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/login" className="hover:text-primary">Área do Proprietário</a></li>
+                <li><a href="/staff-login" className="hover:text-primary">Área do Profissional</a></li>
                 <li><a href="/sobre" className="hover:text-primary">Benefícios</a></li>
               </ul>
             </div>
