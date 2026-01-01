@@ -29,6 +29,7 @@ model User {
   reviews                Review[]
   ownedSalons            Salon[]
   cashierSessions        CashierSession[]
+  staffProfile           Staff? // Perfil de profissional (se for STAFF)
   owner                  User?                   @relation("UserOwner", fields: [ownerId], references: [id])
   managedUsers           User[]                  @relation("UserOwner")
   supportTickets         SupportTicket[]
@@ -100,6 +101,7 @@ model Staff {
   lunchStart       String?
   lunchEnd         String?
   slotInterval     Int                    @default(5) // Intervalo entre slots em minutos
+  userId           String?                @unique // Vinculo com usuário para login
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
   salonId          String
@@ -107,6 +109,7 @@ model Staff {
   services         ServiceStaff[]
   blocks           Block[] // Bloqueios pontuais de horário
   salon            Salon                  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  user             User?                  @relation(fields: [userId], references: [id])
   commissionConfig StaffCommissionConfig? // Configuração de comissão
   commissions      Commission[] // Comissões calculadas
 }
