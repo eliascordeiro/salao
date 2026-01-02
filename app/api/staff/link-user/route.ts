@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 /**
- * API para criar/vincular conta de usuário a um profissional
+ * API para configurar acesso ao portal para um profissional
  * POST /api/staff/link-user
  */
 export async function POST(request: NextRequest) {
@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar permissão de gestão de profissionais
-    // OWNER tem acesso total, outros precisam de permissão específica
     const hasPermission = 
       session.user.roleType === "OWNER" ||
       session.user.permissions?.includes("staff.manage") ||
@@ -31,11 +30,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Sem permissão para gerenciar profissionais" }, { status: 403 });
     }
 
-    const { staffId, email, password, name } = await request.json();
+    const { staffId, email, phone, name, isActive } = await request.json();
 
-    if (!staffId || !email || !password) {
+    if (!staffId || !email) {
       return NextResponse.json(
-        { error: "staffId, email e password são obrigatórios" },
+        { error: "staffId e email são obrigatórios" },
         { status: 400 }
       );
     }
@@ -73,47 +72,122 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Gerar senha temporária aleatória (será redefinida pelo profissional via "Esqueci senha")
+    const temporaryPassword = crypto.randomBytes(16).toString('hex');
 
     // Criar usuário e vincular ao profissional
     const user = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
+        password: temporaryPassword, // Senha temporária - profissional deve usar "Esqueci senha"
         name: name || staff.name,
+        phone: phone || null,
         role: "STAFF",
         roleType: "STAFF",
-        isActive: true,
+        active: isActive ?? true,
       },
     });
 
-    // Vincular usuário ao profissional
+    // Vincular usuário ao profissional e atualizar dados
     await prisma.staff.update({
       where: { id: staffId },
-      data: { userId: user.id },
+      data: { 
+        userId: user.id,
+        email: email,
+        phone: phone || staff.phone,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Conta criada e vinculada com sucesso",
+      message: "Acesso configurado com sucesso. O profissional deve usar 'Esqueci minha senha' para definir sua senha.",
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
+        active: user.active,
       },
     });
   } catch (error) {
-    console.error("Erro ao vincular usuário:", error);
+    console.error("Erro ao configurar acesso:", error);
     return NextResponse.json(
-      { error: "Erro ao criar conta" },
+      { error: "Erro ao configurar acesso" },
       { status: 500 }
     );
   }
 }
 
 /**
- * API para desvincular conta de usuário de um profissional
+ * API para atualizar status ativo/inativo do acesso
+ * PATCH /api/staff/link-user
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    }
+
+    // Verificar permissão
+    const hasPermission = 
+      session.user.roleType === "OWNER" ||
+      session.user.permissions?.includes("staff.manage") ||
+      session.user.permissions?.includes("users.manage");
+    
+    if (!hasPermission) {
+      return NextResponse.json({ error: "Sem permissão para gerenciar profissionais" }, { status: 403 });
+    }
+
+    const { staffId, isActive } = await request.json();
+
+    if (!staffId || isActive === undefined) {
+      return NextResponse.json(
+        { error: "staffId e isActive são obrigatórios" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar profissional
+    const staff = await prisma.staff.findUnique({
+      where: { id: staffId },
+    });
+
+    if (!staff) {
+      return NextResponse.json(
+        { error: "Profissional não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (!staff.userId) {
+      return NextResponse.json(
+        { error: "Este profissional não possui conta vinculada" },
+        { status: 400 }
+      );
+    }
+
+    // Atualizar status do usuário
+    await prisma.user.update({
+      where: { id: staff.userId },
+      data: { active: isActive },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: isActive ? "Acesso ativado com sucesso" : "Acesso desativado com sucesso",
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar status:", error);
+    return NextResponse.json(
+      { error: "Erro ao atualizar status" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * API para remover acesso ao portal (desvincular conta)
  * DELETE /api/staff/link-user?staffId=xxx
  */
 export async function DELETE(request: NextRequest) {
@@ -172,17 +246,21 @@ export async function DELETE(request: NextRequest) {
     // Desativar usuário em vez de deletar
     await prisma.user.update({
       where: { id: staff.userId },
-      data: { isActive: false },
+      data: { active: false },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Conta desvinculada com sucesso",
+      message: "Acesso removido com sucesso",
     });
   } catch (error) {
-    console.error("Erro ao desvincular usuário:", error);
+    console.error("Erro ao remover acesso:", error);
     return NextResponse.json(
-      { error: "Erro ao desvincular conta" },
+      { error: "Erro ao remover acesso" },
+      { status: 500 }
+    );
+  }
+}
       { status: 500 }
     );
   }

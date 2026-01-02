@@ -51,6 +51,7 @@ export default async function StaffPage() {
           id: true,
           email: true,
           name: true,
+          active: true,
         },
       },
       _count: {
@@ -226,7 +227,9 @@ export default async function StaffPage() {
                         staffId={member.id}
                         staffName={member.name}
                         staffEmail={member.email || ""}
+                        staffPhone={member.phone || ""}
                         hasUser={!!member.userId}
+                        userActive={member.user?.active ?? false}
                       />
                     </div>
                   </div>
