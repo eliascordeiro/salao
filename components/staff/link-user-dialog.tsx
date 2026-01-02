@@ -224,6 +224,7 @@ export function LinkUserDialog({
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -240,6 +241,7 @@ export function LinkUserDialog({
                 <Input
                   id="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={(e) =>
                     setFormData({

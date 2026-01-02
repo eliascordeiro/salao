@@ -16,13 +16,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Verificar permissão de gestão de usuários ou profissionais
-    if (
-      session.user.roleType !== "OWNER" &&
-      !session.user.permissions?.includes("users.manage") &&
-      !session.user.permissions?.includes("staff.manage")
-    ) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    // Verificar permissão de gestão de profissionais
+    // OWNER tem acesso total, outros precisam de permissão específica
+    const hasPermission = 
+      session.user.roleType === "OWNER" ||
+      session.user.permissions?.includes("staff.manage") ||
+      session.user.permissions?.includes("users.manage");
+    
+    if (!hasPermission) {
+      console.error("Permissão negada para:", {
+        roleType: session.user.roleType,
+        permissions: session.user.permissions,
+      });
+      return NextResponse.json({ error: "Sem permissão para gerenciar profissionais" }, { status: 403 });
     }
 
     const { staffId, email, password, name } = await request.json();
@@ -119,12 +125,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verificar permissão
-    if (
-      session.user.roleType !== "OWNER" &&
-      !session.user.permissions?.includes("users.manage") &&
-      !session.user.permissions?.includes("staff.manage")
-    ) {
-      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const hasPermission = 
+      session.user.roleType === "OWNER" ||
+      session.user.permissions?.includes("staff.manage") ||
+      session.user.permissions?.includes("users.manage");
+    
+    if (!hasPermission) {
+      return NextResponse.json({ error: "Sem permissão para gerenciar profissionais" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
