@@ -104,13 +104,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Atualizar dados do staff
+    // Email e telefone NÃO são atualizados pelo profissional (apenas admin pode alterar)
     const updatedStaff = await prisma.staff.update({
       where: { id: staffProfile.id },
       data: {
         name: name.trim(),
-        email: email || null,
-        phone: phone || null,
         specialty: specialty || null,
+        // email e phone são omitidos propositalmente
       },
     });
 

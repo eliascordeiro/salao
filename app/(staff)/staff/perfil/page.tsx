@@ -237,9 +237,11 @@ export default function StaffPerfilPage() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="seu@email.com"
+              disabled
+              className="bg-muted/50 cursor-not-allowed"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Este email é para contato com clientes, não altera o email de login
+              ⚠️ Apenas o administrador pode alterar o email
             </p>
           </div>
 
@@ -252,7 +254,12 @@ export default function StaffPerfilPage() {
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(00) 00000-0000"
+              disabled
+              className="bg-muted/50 cursor-not-allowed"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              ⚠️ Apenas o administrador pode alterar o telefone
+            </p>
           </div>
 
           {/* Especialidade */}
