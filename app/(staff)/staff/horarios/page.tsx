@@ -315,6 +315,7 @@ export default function StaffHorariosPage() {
                 <strong>Dias de trabalho:</strong>{" "}
                 {formData.workDays
                   .map((d) => DAYS_OF_WEEK.find((day) => day.key === d)?.label)
+                  .filter(Boolean)
                   .join(", ")}
               </p>
               <p>
