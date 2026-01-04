@@ -15,7 +15,7 @@ import {
   X,
   Briefcase
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
 import { signOut } from "next-auth/react";
@@ -89,18 +89,17 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
       <GridBackground>
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 z-40 border-b border-primary/10 bg-background/95 backdrop-blur-md">
-          <div className="flex items-center justify-between p-4">
+          <div className="flex items-center justify-between p-3 sm:p-4">
             <div className="flex items-center gap-2">
-              <Briefcase className="h-6 w-6 text-primary" />
-              <span className="font-bold text-foreground">Portal do Profissional</span>
+              <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <span className="font-bold text-sm sm:text-base text-foreground truncate">Portal do Profissional</span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -154,14 +153,14 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
 
             {/* Logout Button */}
             <div className="border-t border-primary/10 p-4">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-3"
+              <GradientButton
+                variant="accent"
+                className="w-full justify-start gap-3 min-h-[44px]"
                 onClick={handleLogout}
               >
                 <LogOut className="h-5 w-5" />
-                Sair
-              </Button>
+                <span>Sair</span>
+              </GradientButton>
             </div>
           </div>
         </aside>
@@ -175,8 +174,8 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
         )}
 
         {/* Main Content */}
-        <main className="lg:pl-64 pt-16 lg:pt-0">
-          <div className="container mx-auto p-4 lg:p-8 max-w-7xl">
+        <main className="lg:pl-64 pt-16 lg:pt-0 min-h-screen">
+          <div className="container mx-auto p-3 sm:p-4 lg:p-8 max-w-7xl">
             {children}
           </div>
         </main>

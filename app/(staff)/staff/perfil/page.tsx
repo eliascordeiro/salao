@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { User, Mail, Phone, Save, Lock, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -181,14 +181,14 @@ export default function StaffPerfilPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-          <User className="h-8 w-8 text-primary" />
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
+          <User className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           Meu Perfil
         </h1>
-        <p className="text-foreground-muted">
+        <p className="text-sm sm:text-base text-foreground-muted">
           Gerencie suas informações pessoais
         </p>
       </div>
@@ -209,28 +209,29 @@ export default function StaffPerfilPage() {
       )}
 
       {/* Formulário de Dados Pessoais */}
-      <GlassCard hover>
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <User className="h-5 w-5 text-primary" />
+      <GlassCard hover className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           Informações Pessoais
         </h3>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           {/* Nome */}
           <div>
-            <Label htmlFor="name">Nome Completo *</Label>
+            <Label htmlFor="name" className="text-sm sm:text-base">Nome Completo *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Seu nome completo"
               required
+              className="min-h-[44px]"
             />
           </div>
 
           {/* Email Profissional */}
           <div>
-            <Label htmlFor="email">Email Profissional</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base">Email Profissional</Label>
             <Input
               id="email"
               type="email"
@@ -238,7 +239,7 @@ export default function StaffPerfilPage() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="seu@email.com"
               disabled
-              className="bg-muted/50 cursor-not-allowed"
+              className="bg-muted/50 cursor-not-allowed min-h-[44px]"
             />
             <p className="text-xs text-muted-foreground mt-1">
               ⚠️ Apenas o administrador pode alterar o email
@@ -247,7 +248,7 @@ export default function StaffPerfilPage() {
 
           {/* Telefone */}
           <div>
-            <Label htmlFor="phone">Telefone</Label>
+            <Label htmlFor="phone" className="text-sm sm:text-base">Telefone</Label>
             <Input
               id="phone"
               type="tel"
@@ -255,7 +256,7 @@ export default function StaffPerfilPage() {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(00) 00000-0000"
               disabled
-              className="bg-muted/50 cursor-not-allowed"
+              className="bg-muted/50 cursor-not-allowed min-h-[44px]"
             />
             <p className="text-xs text-muted-foreground mt-1">
               ⚠️ Apenas o administrador pode alterar o telefone
@@ -264,36 +265,37 @@ export default function StaffPerfilPage() {
 
           {/* Especialidade */}
           <div>
-            <Label htmlFor="specialty">Especialidade</Label>
+            <Label htmlFor="specialty" className="text-sm sm:text-base">Especialidade</Label>
             <Input
               id="specialty"
               value={formData.specialty}
               onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
               placeholder="Ex: Barbeiro, Cabeleireiro, Manicure..."
+              className="min-h-[44px]"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={saving}>
+          <GradientButton type="submit" variant="primary" className="w-full min-h-[48px]" disabled={saving}>
             {saving ? (
               "Salvando..."
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Alterações
+                <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>Salvar Alterações</span>
               </>
             )}
-          </Button>
+          </GradientButton>
         </form>
       </GlassCard>
 
       {/* Formulário de Alteração de Senha */}
-      <GlassCard hover>
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Lock className="h-5 w-5 text-primary" />
+      <GlassCard hover className="p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+          <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           Alterar Senha
         </h3>
 
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+        <form onSubmit={handlePasswordSubmit} className="space-y-3 sm:space-y-4">
           {/* Senha Atual */}
           <div>
             <Label htmlFor="currentPassword">Senha Atual *</Label>
@@ -382,16 +384,16 @@ export default function StaffPerfilPage() {
             </div>
           </div>
 
-          <Button type="submit" variant="outline" className="w-full" disabled={changingPassword}>
+          <GradientButton type="submit" variant="accent" className="w-full min-h-[48px]" disabled={changingPassword}>
             {changingPassword ? (
               "Alterando..."
             ) : (
               <>
-                <Lock className="h-4 w-4 mr-2" />
-                Alterar Senha
+                <Lock className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>Alterar Senha</span>
               </>
             )}
-          </Button>
+          </GradientButton>
         </form>
       </GlassCard>
 

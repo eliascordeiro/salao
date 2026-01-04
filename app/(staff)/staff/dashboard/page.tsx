@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -67,17 +68,17 @@ export default function StaffDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
           Olá, {session?.user?.name?.split(" ")[0]}! 👋
         </h1>
-        <p className="text-foreground-muted">
+        <p className="text-sm sm:text-base text-foreground-muted">
           Bem-vindo ao seu painel de profissional
         </p>
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <GlassCard hover glow="success">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">

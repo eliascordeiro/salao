@@ -71,83 +71,81 @@ export default function StaffAgendaPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
           Minha Agenda
         </h1>
-        <p className="text-foreground-muted">
+        <p className="text-sm sm:text-base text-foreground-muted">
           Visualize seus agendamentos
         </p>
       </div>
 
       {bookings.length === 0 ? (
         <GlassCard>
-          <div className="p-12 text-center">
-            <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhum agendamento encontrado</p>
+          <div className="p-8 sm:p-12 text-center">
+            <CalendarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground">Nenhum agendamento encontrado</p>
           </div>
         </GlassCard>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {bookings.map((booking) => (
-            <GlassCard key={booking.id} hover>
-              <div className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="lg:col-span-2 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-bold text-foreground text-lg">
-                          {booking.service.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="h-4 w-4 text-primary" />
-                          <span className="text-sm text-muted-foreground">
-                            {booking.service.duration} min
-                          </span>
-                        </div>
+            <GlassCard key={booking.id} hover className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="lg:col-span-2 space-y-2 sm:space-y-3">
+                  <div className="flex items-start justify-between flex-wrap gap-2">
+                    <div>
+                      <h3 className="font-bold text-foreground text-base sm:text-lg">
+                        {booking.service.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          {booking.service.duration} min
+                        </span>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                          booking.status
-                        )}`}
-                      >
-                        {getStatusLabel(booking.status)}
-                      </span>
                     </div>
+                    <span
+                      className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
+                        booking.status
+                      )}`}
+                    >
+                      {getStatusLabel(booking.status)}
+                    </span>
+                  </div>
 
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="h-4 w-4 text-primary" />
-                      <span className="text-foreground">{booking.client.name}</span>
-                      {booking.client.phone && (
-                        <>
-                          <span className="text-muted-foreground">•</span>
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{booking.client.phone}</span>
-                        </>
-                      )}
-                    </div>
-
-                    {booking.notes && (
-                      <p className="text-sm text-muted-foreground italic">
-                        Obs: {booking.notes}
-                      </p>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm flex-wrap">
+                    <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                    <span className="text-foreground">{booking.client.name}</span>
+                    {booking.client.phone && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">{booking.client.phone}</span>
+                      </>
                     )}
                   </div>
 
-                  <div className="flex lg:flex-col items-start lg:items-end gap-2">
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Data</p>
-                      <p className="text-lg font-bold text-primary">
-                        {format(new Date(booking.date), "dd/MM/yyyy", { locale: ptBR })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Horário</p>
-                      <p className="text-lg font-bold text-accent">
-                        {format(new Date(booking.date), "HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
+                  {booking.notes && (
+                    <p className="text-xs sm:text-sm text-muted-foreground italic">
+                      Obs: {booking.notes}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex lg:flex-col items-start lg:items-end gap-3 sm:gap-4">
+                  <div className="text-left lg:text-right">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Data</p>
+                    <p className="text-base sm:text-lg font-bold text-primary">
+                      {format(new Date(booking.date), "dd/MM/yyyy", { locale: ptBR })}
+                    </p>
+                  </div>
+                  <div className="text-left lg:text-right">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Horário</p>
+                    <p className="text-base sm:text-lg font-bold text-accent">
+                      {format(new Date(booking.date), "HH:mm", { locale: ptBR })}
+                    </p>
                   </div>
                 </div>
               </div>

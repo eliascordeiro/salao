@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Clock, Calendar, Save, AlertCircle, CheckCircle2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -170,14 +170,14 @@ export default function StaffHorariosPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
-          <Clock className="h-8 w-8 text-primary" />
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
+          <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           Meus Horários
         </h1>
-        <p className="text-foreground-muted">
+        <p className="text-sm sm:text-base text-foreground-muted">
           Configure seus dias e horários de trabalho
         </p>
       </div>
@@ -197,20 +197,20 @@ export default function StaffHorariosPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Dias de Trabalho */}
-        <GlassCard hover>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+        <GlassCard hover className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             Dias de Trabalho
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {DAYS_OF_WEEK.map((day) => (
               <button
                 key={day.key}
                 type="button"
                 onClick={() => toggleWorkDay(day.key)}
-                className={`p-3 rounded-lg border-2 transition-all ${
+                className={`p-2.5 sm:p-3 rounded-lg border-2 transition-all text-sm sm:text-base min-h-[44px] ${
                   formData.workDays.includes(day.key)
                     ? "bg-primary/20 border-primary text-primary font-semibold"
                     : "bg-background-alt/30 border-border hover:border-primary/50"
@@ -223,14 +223,14 @@ export default function StaffHorariosPage() {
         </GlassCard>
 
         {/* Horários de Expediente */}
-        <GlassCard hover>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
+        <GlassCard hover className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             Horário de Expediente
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="workStart">Início do Expediente</Label>
+              <Label htmlFor="workStart" className="text-sm sm:text-base">Início do Expediente</Label>
               <Input
                 id="workStart"
                 type="time"
@@ -239,10 +239,11 @@ export default function StaffHorariosPage() {
                   setFormData({ ...formData, workStart: e.target.value })
                 }
                 required
+                className="min-h-[44px]"
               />
             </div>
             <div>
-              <Label htmlFor="workEnd">Término do Expediente</Label>
+              <Label htmlFor="workEnd" className="text-sm sm:text-base">Término do Expediente</Label>
               <Input
                 id="workEnd"
                 type="time"
@@ -251,16 +252,17 @@ export default function StaffHorariosPage() {
                   setFormData({ ...formData, workEnd: e.target.value })
                 }
                 required
+                className="min-h-[44px]"
               />
             </div>
           </div>
         </GlassCard>
 
         {/* Horário de Almoço */}
-        <GlassCard hover>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
+        <GlassCard hover className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-2">
+            <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Horário de Almoço
             </h3>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -270,18 +272,18 @@ export default function StaffHorariosPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, hasLunch: e.target.checked })
                 }
-                className="w-4 h-4 rounded border-primary text-primary focus:ring-primary"
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded border-primary text-primary focus:ring-primary"
               />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 Tenho intervalo de almoço
               </span>
             </label>
           </div>
 
           {formData.hasLunch && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="lunchStart">Início do Almoço</Label>
+                <Label htmlFor="lunchStart" className="text-sm sm:text-base">Início do Almoço</Label>
                 <Input
                   id="lunchStart"
                   type="time"
@@ -289,10 +291,11 @@ export default function StaffHorariosPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, lunchStart: e.target.value })
                   }
+                  className="min-h-[44px]"
                 />
               </div>
               <div>
-                <Label htmlFor="lunchEnd">Término do Almoço</Label>
+                <Label htmlFor="lunchEnd" className="text-sm sm:text-base">Término do Almoço</Label>
                 <Input
                   id="lunchEnd"
                   type="time"
@@ -300,6 +303,7 @@ export default function StaffHorariosPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, lunchEnd: e.target.value })
                   }
+                  className="min-h-[44px]"
                 />
               </div>
             </div>
@@ -308,9 +312,9 @@ export default function StaffHorariosPage() {
 
         {/* Resumo */}
         {formData.workDays.length > 0 && formData.workStart && formData.workEnd && (
-          <GlassCard hover glow="primary">
-            <h3 className="text-lg font-semibold mb-3">Resumo</h3>
-            <div className="space-y-2 text-sm">
+          <GlassCard hover glow="primary" className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Resumo</h3>
+            <div className="space-y-2 text-xs sm:text-sm">
               <p>
                 <strong>Dias de trabalho:</strong>{" "}
                 {formData.workDays
@@ -333,16 +337,16 @@ export default function StaffHorariosPage() {
         )}
 
         {/* Botão Salvar */}
-        <Button type="submit" className="w-full" disabled={saving}>
+        <GradientButton type="submit" variant="primary" className="w-full min-h-[48px]" disabled={saving}>
           {saving ? (
             "Salvando..."
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
-              Salvar Horários
+              <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Salvar Horários</span>
             </>
           )}
-        </Button>
+        </GradientButton>
       </form>
     </div>
   );
