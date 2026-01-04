@@ -121,7 +121,27 @@ export async function middleware(request: NextRequest) {
   // PROTEÇÃO DE ROTAS ESPECÍFICAS (todos os domínios)
   // ====================
   
-  // Dashboard sempre protegido
+  // Staff Dashboard (portal do profissional)
+  if (pathname.startsWith("/staff")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    // Permitir acesso APENAS para STAFF
+    const hasAccess = token.role === "STAFF" || (token as any).roleType === "STAFF"
+    
+    if (!hasAccess) {
+      // Se não for STAFF, redirecionar para rota apropriada
+      if (token.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+      return NextResponse.redirect(new URL("/saloes", request.url));
+    }
+  }
+  
+  // Dashboard sempre protegido (apenas ADMIN)
   if (pathname.startsWith("/dashboard")) {
     if (!token) {
       const loginUrl = new URL("/login", request.url);
@@ -133,6 +153,10 @@ export async function middleware(request: NextRequest) {
     const hasAccess = token.role === "ADMIN"
     
     if (!hasAccess) {
+      // Se for STAFF, redirecionar para dashboard de profissional
+      if (token.role === "STAFF" || (token as any).roleType === "STAFF") {
+        return NextResponse.redirect(new URL("/staff/dashboard", request.url));
+      }
       return NextResponse.redirect(new URL("/saloes", request.url));
     }
   }

@@ -53,13 +53,22 @@ function LoginForm() {
           if (session?.user) {
             const permissions = (session.user as any).permissions || []
             const roleType = (session.user as any).roleType
+            const role = session.user.role
             
-            // Get the first accessible route based on user permissions
-            const redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+            // Determinar rota de redirecionamento
+            let redirectRoute = "/dashboard"
+            
+            // Se for STAFF, redireciona para dashboard de profissional
+            if (roleType === "STAFF" || role === "STAFF") {
+              redirectRoute = "/staff/dashboard"
+            } else {
+              // Para ADMIN/OWNER, usa a primeira rota acessível baseada em permissões
+              redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+            }
             
             console.log("🔐 Login successful:", {
               user: session.user.name,
-              role: session.user.role,
+              role,
               roleType,
               permissions: permissions.length,
               redirectTo: redirectRoute
@@ -180,7 +189,21 @@ function LoginForm() {
                 type="button"
                 variant="outline"
                 className="w-full min-h-[48px] py-3 gap-3 bg-white hover:bg-gray-50 dark:bg-white dark:hover:bg-gray-50 text-gray-700 dark:text-gray-700 border-gray-300 hover:border-gray-400 transition-all font-medium shadow-sm hover:shadow"
-                onClick={() => signIn("google", { callbackUrl: callbackUrl || "/dashboard" })}
+                onClick={async () => {
+                  // Fetch session antes do signIn para determinar redirecionamento
+                  const response = await fetch("/api/auth/session")
+                  const session = await response.json()
+                  const roleType = (session?.user as any)?.roleType
+                  const role = session?.user?.role
+                  
+                  // Determinar callbackUrl baseado no tipo de usuário
+                  let redirectUrl = callbackUrl || "/dashboard"
+                  if (roleType === "STAFF" || role === "STAFF") {
+                    redirectUrl = "/staff/dashboard"
+                  }
+                  
+                  signIn("google", { callbackUrl: redirectUrl })
+                }}
                 disabled={isLoading}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
