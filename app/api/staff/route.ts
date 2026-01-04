@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getUserSalonId } from "@/lib/salon-helper"
+import crypto from "crypto"
 
 // GET - Listar todos os profissionais do salão do usuário
 export async function GET(request: Request) {
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
       workDays: data.workDays,
       workStart: data.workStart,
       workEnd: data.workEnd,
-      slotInterval: data.slotInterval
+      slotInterval: data.slotInterval,
+      loginEnabled: data.loginEnabled
     })
     
     const { 
@@ -96,7 +98,8 @@ export async function POST(request: Request) {
       workEnd,
       lunchStart,
       lunchEnd,
-      slotInterval
+      slotInterval,
+      loginEnabled = false
     } = data
 
     // Validações
@@ -122,6 +125,48 @@ export async function POST(request: Request) {
       }
     }
 
+    // Criar usuário se loginEnabled estiver ativo
+    let userId: string | undefined = undefined;
+    if (loginEnabled && email) {
+      console.log('🔑 [POST /api/staff] Criando acesso ao portal para:', email);
+      
+      // Verificar se já existe um usuário com este email
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      });
+
+      if (existingUser) {
+        console.log('⚠️ [POST /api/staff] Usuário já existe:', existingUser.id);
+        userId = existingUser.id;
+        
+        // Reativar se estiver inativo
+        if (!existingUser.active) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { active: true }
+          });
+          console.log('✅ [POST /api/staff] Usuário reativado');
+        }
+      } else {
+        // Criar novo usuário com senha temporária
+        const temporaryPassword = crypto.randomBytes(16).toString('hex');
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            password: temporaryPassword, // Senha temporária (profissional usará "Esqueci senha")
+            name,
+            phone: phone || null,
+            role: "STAFF",
+            roleType: "STAFF",
+            active: true,
+            ownerId: session.user.id, // Vincular ao dono do salão
+          }
+        });
+        userId = newUser.id;
+        console.log('✅ [POST /api/staff] Usuário criado:', newUser.id);
+      }
+    }
+
     const staff = await prisma.staff.create({
       data: {
         name,
@@ -129,6 +174,7 @@ export async function POST(request: Request) {
         phone: phone || null,
         specialty: specialty || null,
         salonId: userSalonId, // Usar salão do usuário automaticamente
+        userId, // Vincular ao usuário criado
         // Adicionar dados de horário
         workDays: workDays || null,
         workStart: workStart || null,
@@ -147,6 +193,13 @@ export async function POST(request: Request) {
         services: {
           include: {
             service: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            active: true
           }
         }
       }

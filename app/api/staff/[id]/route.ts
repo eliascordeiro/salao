@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import crypto from "crypto"
 
 // GET - Buscar profissional por ID
 export async function GET(
@@ -23,6 +24,13 @@ export async function GET(
         services: {
           include: {
             service: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            active: true
           }
         }
       }
@@ -58,7 +66,77 @@ export async function PUT(
 
     const { id } = await context.params
     const data = await request.json()
-    const { name, email, phone, specialty, active, serviceIds } = data
+    const { name, email, phone, specialty, active, serviceIds, loginEnabled } = data
+
+    // Buscar profissional atual
+    const currentStaff = await prisma.staff.findUnique({
+      where: { id },
+      select: { userId: true, email: true }
+    })
+
+    if (!currentStaff) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 })
+    }
+
+    // Gerenciar acesso ao portal
+    let userId = currentStaff.userId
+
+    if (loginEnabled && email) {
+      console.log('🔑 [PUT /api/staff] Gerenciando acesso ao portal para:', email)
+
+      if (userId) {
+        // Usuário já existe, apenas ativar
+        await prisma.user.update({
+          where: { id: userId },
+          data: { 
+            active: true,
+            email, // Atualizar email se mudou
+            name,
+            phone: phone || null
+          }
+        })
+        console.log('✅ [PUT /api/staff] Usuário ativado:', userId)
+      } else {
+        // Criar novo usuário
+        const existingUser = await prisma.user.findUnique({
+          where: { email }
+        })
+
+        if (existingUser) {
+          // Vincular ao usuário existente
+          userId = existingUser.id
+          await prisma.user.update({
+            where: { id: userId },
+            data: { active: true }
+          })
+          console.log('✅ [PUT /api/staff] Vinculado a usuário existente:', userId)
+        } else {
+          // Criar novo usuário com senha temporária
+          const temporaryPassword = crypto.randomBytes(16).toString('hex')
+          const newUser = await prisma.user.create({
+            data: {
+              email,
+              password: temporaryPassword,
+              name,
+              phone: phone || null,
+              role: "STAFF",
+              roleType: "STAFF",
+              active: true,
+              ownerId: session.user.id,
+            }
+          })
+          userId = newUser.id
+          console.log('✅ [PUT /api/staff] Novo usuário criado:', userId)
+        }
+      }
+    } else if (!loginEnabled && userId) {
+      // Desativar acesso ao portal
+      await prisma.user.update({
+        where: { id: userId },
+        data: { active: false }
+      })
+      console.log('🔒 [PUT /api/staff] Usuário desativado:', userId)
+    }
 
     // Se serviceIds foi fornecido, atualizar as associações
     if (serviceIds !== undefined) {
@@ -86,12 +164,20 @@ export async function PUT(
         phone: phone || null,
         specialty: specialty || null,
         active: active !== undefined ? active : true,
+        userId, // Atualizar vínculo com usuário
       },
       include: {
         salon: true,
         services: {
           include: {
             service: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            active: true
           }
         }
       }

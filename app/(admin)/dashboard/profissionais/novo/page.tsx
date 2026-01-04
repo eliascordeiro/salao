@@ -24,6 +24,7 @@ export default function NewStaffPage() {
     phone: "",
     specialty: "",
     active: true,
+    loginEnabled: true, // Login ativado por padrão
   });
 
   const [scheduleData, setScheduleData] = useState({
@@ -83,6 +84,7 @@ export default function NewStaffPage() {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
+          loginEnabled: formData.loginEnabled, // Enviar flag de login
           // Incluir dados de horário
           workDays: scheduleData.workDays.join(","),
           workStart: scheduleData.workStart,
@@ -225,6 +227,33 @@ export default function NewStaffPage() {
                 {errors.email && (
                   <p className="text-xs sm:text-sm text-destructive mt-1">{errors.email}</p>
                 )}
+              </div>
+
+              {/* Login Ativado */}
+              <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="loginEnabled" className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                    Login no Portal
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, loginEnabled: !formData.loginEnabled })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.loginEnabled ? "bg-success" : "bg-gray-400"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.loginEnabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formData.loginEnabled 
+                    ? "✓ Profissional poderá acessar o portal usando 'Esqueci minha senha' para criar credenciais" 
+                    : "⚠ Profissional não terá acesso ao portal"}
+                </p>
               </div>
 
               {/* Telefone */}
