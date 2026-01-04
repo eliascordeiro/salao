@@ -47,7 +47,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(staffProfile);
+    // Converter workDays de string CSV para array
+    const profileData = {
+      ...staffProfile,
+      workDays: staffProfile.workDays 
+        ? staffProfile.workDays.split(',').filter(Boolean)
+        : []
+    };
+
+    return NextResponse.json(profileData);
   } catch (error) {
     console.error("Erro ao buscar perfil:", error);
     return NextResponse.json(

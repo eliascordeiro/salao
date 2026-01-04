@@ -50,15 +50,18 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Converter array de workDays para string CSV
+    const workDaysString = Array.isArray(workDays) ? workDays.join(',') : workDays;
+
     // Atualizar horários
     const updatedStaff = await prisma.staff.update({
       where: { id: staffProfile.id },
       data: {
-        workDays,
+        workDays: workDaysString,
         workStart,
         workEnd,
-        lunchStart,
-        lunchEnd,
+        lunchStart: lunchStart || null,
+        lunchEnd: lunchEnd || null,
       },
     });
 
