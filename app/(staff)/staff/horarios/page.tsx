@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Clock, Calendar, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Clock, Calendar, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
@@ -31,12 +31,10 @@ interface StaffData {
 export default function StaffHorariosPage() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [staffData, setStaffData] = useState<StaffData | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [displayData, setDisplayData] = useState({
     workDays: [] as string[],
     workStart: "",
     workEnd: "",
@@ -59,8 +57,8 @@ export default function StaffHorariosPage() {
       const data = await response.json();
       setStaffData(data);
 
-      // Preencher formulário com dados existentes
-      setFormData({
+      // Preencher apenas para exibição (somente leitura)
+      setDisplayData({
         workDays: data.workDays || [],
         workStart: data.workStart || "",
         workEnd: data.workEnd || "",
@@ -75,84 +73,9 @@ export default function StaffHorariosPage() {
     }
   };
 
-  const toggleWorkDay = (day: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      workDays: prev.workDays.includes(day)
-        ? prev.workDays.filter((d) => d !== day)
-        : [...prev.workDays, day],
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    // Validações
-    if (formData.workDays.length === 0) {
-      setError("Selecione pelo menos um dia de trabalho");
-      return;
-    }
-
-    if (!formData.workStart || !formData.workEnd) {
-      setError("Horário de início e término são obrigatórios");
-      return;
-    }
-
-    if (formData.workStart >= formData.workEnd) {
-      setError("Horário de término deve ser posterior ao de início");
-      return;
-    }
-
-    if (formData.hasLunch) {
-      if (!formData.lunchStart || !formData.lunchEnd) {
-        setError("Preencha o horário de almoço completo ou desmarque a opção");
-        return;
-      }
-
-      if (formData.lunchStart >= formData.lunchEnd) {
-        setError("Horário de término do almoço deve ser posterior ao de início");
-        return;
-      }
-
-      if (
-        formData.lunchStart < formData.workStart ||
-        formData.lunchEnd > formData.workEnd
-      ) {
-        setError("Horário de almoço deve estar dentro do expediente");
-        return;
-      }
-    }
-
-    setSaving(true);
-
-    try {
-      const response = await fetch("/api/staff/schedule", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workDays: formData.workDays,
-          workStart: formData.workStart,
-          workEnd: formData.workEnd,
-          lunchStart: formData.hasLunch ? formData.lunchStart : null,
-          lunchEnd: formData.hasLunch ? formData.lunchEnd : null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao salvar horários");
-      }
-
-      setSuccess("Horários atualizados com sucesso!");
-      fetchStaffData();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
+  const getDayLabel = (dayKey: string) => {
+    const day = DAYS_OF_WEEK.find(d => d.key === dayKey);
+    return day ? day.label : dayKey;
   };
 
   if (status === "loading" || loading) {
@@ -182,7 +105,18 @@ export default function StaffHorariosPage() {
         </p>
       </div>
 
-      {/* Alertas */}
+      {/* Alerta informativo */}
+      <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-start gap-3">
+        <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm text-foreground font-medium mb-1">Apenas Visualização</p>
+          <p className="text-xs text-muted-foreground">
+            Seus horários são gerenciados pelo administrador do salão. Entre em contato caso precise de alterações.
+          </p>
+        </div>
+      </div>
+
+      {/* Alertas de erro */}
       {error && (
         <div className="p-4 rounded-lg bg-error/10 border border-error/20 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
@@ -190,14 +124,7 @@ export default function StaffHorariosPage() {
         </div>
       )}
 
-      {success && (
-        <div className="p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
-          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-success">{success}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Dias de Trabalho */}
         <GlassCard hover className="p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
@@ -205,20 +132,24 @@ export default function StaffHorariosPage() {
             Dias de Trabalho
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-            {DAYS_OF_WEEK.map((day) => (
-              <button
-                key={day.key}
-                type="button"
-                onClick={() => toggleWorkDay(day.key)}
-                className={`p-2.5 sm:p-3 rounded-lg border-2 transition-all text-sm sm:text-base min-h-[44px] ${
-                  formData.workDays.includes(day.key)
-                    ? "bg-primary/20 border-primary text-primary font-semibold"
-                    : "bg-background-alt/30 border-border hover:border-primary/50"
-                }`}
-              >
-                {day.label}
-              </button>
-            ))}
+            {DAYS_OF_WEEK.map((day) => {
+              const isActive = displayData.workDays.includes(day.key);
+              return (
+                <div
+                  key={day.key}
+                  className={`
+                    p-2.5 sm:p-3 rounded-lg text-center font-medium transition-all min-h-[44px] text-sm sm:text-base flex items-center justify-center
+                    ${
+                      isActive
+                        ? "bg-primary/20 text-primary border-2 border-primary"
+                        : "bg-background-alt/30 text-muted-foreground border border-primary/10 opacity-50"
+                    }
+                  `}
+                >
+                  {day.label}
+                </div>
+              );
+            })}
           </div>
         </GlassCard>
 
@@ -234,12 +165,9 @@ export default function StaffHorariosPage() {
               <Input
                 id="workStart"
                 type="time"
-                value={formData.workStart}
-                onChange={(e) =>
-                  setFormData({ ...formData, workStart: e.target.value })
-                }
-                required
-                className="min-h-[44px]"
+                value={displayData.workStart}
+                disabled
+                className="min-h-[44px] bg-muted/50 cursor-not-allowed"
               />
             </div>
             <div>
@@ -247,12 +175,9 @@ export default function StaffHorariosPage() {
               <Input
                 id="workEnd"
                 type="time"
-                value={formData.workEnd}
-                onChange={(e) =>
-                  setFormData({ ...formData, workEnd: e.target.value })
-                }
-                required
-                className="min-h-[44px]"
+                value={displayData.workEnd}
+                disabled
+                className="min-h-[44px] bg-muted/50 cursor-not-allowed"
               />
             </div>
           </div>
@@ -265,33 +190,29 @@ export default function StaffHorariosPage() {
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Horário de Almoço
             </h3>
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-not-allowed opacity-70">
               <input
                 type="checkbox"
-                checked={formData.hasLunch}
-                onChange={(e) =>
-                  setFormData({ ...formData, hasLunch: e.target.checked })
-                }
-                className="w-4 h-4 sm:w-5 sm:h-5 rounded border-primary text-primary focus:ring-primary"
+                checked={displayData.hasLunch}
+                disabled
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded border-primary text-primary"
               />
               <span className="text-xs sm:text-sm text-muted-foreground">
-                Tenho intervalo de almoço
+                Intervalo de almoço
               </span>
             </label>
           </div>
 
-          {formData.hasLunch && (
+          {displayData.hasLunch && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label htmlFor="lunchStart" className="text-sm sm:text-base">Início do Almoço</Label>
                 <Input
                   id="lunchStart"
                   type="time"
-                  value={formData.lunchStart}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lunchStart: e.target.value })
-                  }
-                  className="min-h-[44px]"
+                  value={displayData.lunchStart}
+                  disabled
+                  className="min-h-[44px] bg-muted/50 cursor-not-allowed"
                 />
               </div>
               <div>
@@ -299,11 +220,9 @@ export default function StaffHorariosPage() {
                 <Input
                   id="lunchEnd"
                   type="time"
-                  value={formData.lunchEnd}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lunchEnd: e.target.value })
-                  }
-                  className="min-h-[44px]"
+                  value={displayData.lunchEnd}
+                  disabled
+                  className="min-h-[44px] bg-muted/50 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -311,43 +230,31 @@ export default function StaffHorariosPage() {
         </GlassCard>
 
         {/* Resumo */}
-        {formData.workDays.length > 0 && formData.workStart && formData.workEnd && (
+        {displayData.workDays.length > 0 && displayData.workStart && displayData.workEnd && (
           <GlassCard hover glow="primary" className="p-4 sm:p-6">
             <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Resumo</h3>
             <div className="space-y-2 text-xs sm:text-sm">
               <p>
                 <strong>Dias de trabalho:</strong>{" "}
-                {formData.workDays
-                  .map((d) => DAYS_OF_WEEK.find((day) => day.key === d)?.label)
+                {displayData.workDays
+                  .map((d) => getDayLabel(d))
                   .filter(Boolean)
                   .join(", ")}
               </p>
               <p>
-                <strong>Expediente:</strong> {formData.workStart} às{" "}
-                {formData.workEnd}
+                <strong>Expediente:</strong> {displayData.workStart} às{" "}
+                {displayData.workEnd}
               </p>
-              {formData.hasLunch && formData.lunchStart && formData.lunchEnd && (
+              {displayData.hasLunch && displayData.lunchStart && displayData.lunchEnd && (
                 <p>
-                  <strong>Almoço:</strong> {formData.lunchStart} às{" "}
-                  {formData.lunchEnd}
+                  <strong>Almoço:</strong> {displayData.lunchStart} às{" "}
+                  {displayData.lunchEnd}
                 </p>
               )}
             </div>
           </GlassCard>
         )}
-
-        {/* Botão Salvar */}
-        <GradientButton type="submit" variant="primary" className="w-full min-h-[48px]" disabled={saving}>
-          {saving ? (
-            "Salvando..."
-          ) : (
-            <>
-              <Save className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Salvar Horários</span>
-            </>
-          )}
-        </GradientButton>
-      </form>
+      </div>
     </div>
   );
 }
