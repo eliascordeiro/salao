@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const DAYS_OF_WEEK = [
-  { key: "sunday", label: "Domingo" },
-  { key: "monday", label: "Segunda-feira" },
-  { key: "tuesday", label: "Terça-feira" },
-  { key: "wednesday", label: "Quarta-feira" },
-  { key: "thursday", label: "Quinta-feira" },
-  { key: "friday", label: "Sexta-feira" },
-  { key: "saturday", label: "Sábado" },
+  { key: "0", value: "0", label: "Domingo" },
+  { key: "1", value: "1", label: "Segunda-feira" },
+  { key: "2", value: "2", label: "Terça-feira" },
+  { key: "3", value: "3", label: "Quarta-feira" },
+  { key: "4", value: "4", label: "Quinta-feira" },
+  { key: "5", value: "5", label: "Sexta-feira" },
+  { key: "6", value: "6", label: "Sábado" },
 ];
 
 interface StaffData {
