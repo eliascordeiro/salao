@@ -32,6 +32,14 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // Verificar se o profissional tem permissão para editar
+    if (!staffProfile.canEditSchedule) {
+      return NextResponse.json(
+        { error: "Você não tem permissão para editar seus horários. Contate o administrador." },
+        { status: 403 }
+      );
+    }
+
     const { workDays, workStart, workEnd, lunchStart, lunchEnd } =
       await request.json();
 

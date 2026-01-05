@@ -34,6 +34,7 @@ export default function NewStaffPage() {
     lunchStart: "12:00",
     lunchEnd: "13:00",
     slotInterval: 15,
+    canEditSchedule: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,6 +93,7 @@ export default function NewStaffPage() {
           lunchStart: scheduleData.lunchStart || null,
           lunchEnd: scheduleData.lunchEnd || null,
           slotInterval: scheduleData.slotInterval,
+          canEditSchedule: scheduleData.canEditSchedule,
         }),
       });
 
@@ -459,6 +461,28 @@ export default function NewStaffPage() {
                     <option value={30}>30 minutos</option>
                     <option value={60}>60 minutos</option>
                   </select>
+                </div>
+
+                {/* Permitir Edição de Horários */}
+                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scheduleData.canEditSchedule}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, canEditSchedule: e.target.checked })
+                      }
+                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <span className="text-foreground font-medium text-sm sm:text-base block">
+                        Permitir que profissional edite horários
+                      </span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        Se marcado, o profissional poderá alterar seus próprios horários de trabalho
+                      </span>
+                    </div>
+                  </label>
                 </div>
 
                 {/* Botões */}

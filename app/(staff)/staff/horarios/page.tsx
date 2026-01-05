@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Clock, Calendar, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { Clock, Calendar, AlertCircle, CheckCircle2, Info, Save } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +26,17 @@ interface StaffData {
   workEnd: string | null;
   lunchStart: string | null;
   lunchEnd: string | null;
+  canEditSchedule: boolean;
 }
 
 export default function StaffHorariosPage() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [staffData, setStaffData] = useState<StaffData | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
 
   const [displayData, setDisplayData] = useState({
     workDays: [] as string[],
@@ -56,8 +60,9 @@ export default function StaffHorariosPage() {
 
       const data = await response.json();
       setStaffData(data);
+      setCanEdit(data.canEditSchedule || false);
 
-      // Preencher apenas para exibição (somente leitura)
+      // Preencher dados para exibição/edição
       setDisplayData({
         workDays: data.workDays || [],
         workStart: data.workStart || "",
@@ -76,6 +81,89 @@ export default function StaffHorariosPage() {
   const getDayLabel = (dayKey: string) => {
     const day = DAYS_OF_WEEK.find(d => d.key === dayKey);
     return day ? day.label : dayKey;
+  };
+
+  const toggleWorkDay = (day: string) => {
+    if (!canEdit) return;
+    setDisplayData((prev) => ({
+      ...prev,
+      workDays: prev.workDays.includes(day)
+        ? prev.workDays.filter((d) => d !== day)
+        : [...prev.workDays, day],
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canEdit) return;
+
+    setError("");
+    setSuccess("");
+
+    // Validações
+    if (displayData.workDays.length === 0) {
+      setError("Selecione pelo menos um dia de trabalho");
+      return;
+    }
+
+    if (!displayData.workStart || !displayData.workEnd) {
+      setError("Horário de início e término são obrigatórios");
+      return;
+    }
+
+    if (displayData.workStart >= displayData.workEnd) {
+      setError("Horário de término deve ser posterior ao de início");
+      return;
+    }
+
+    if (displayData.hasLunch) {
+      if (!displayData.lunchStart || !displayData.lunchEnd) {
+        setError("Preencha o horário de almoço completo ou desmarque a opção");
+        return;
+      }
+
+      if (displayData.lunchStart >= displayData.lunchEnd) {
+        setError("Horário de término do almoço deve ser posterior ao de início");
+        return;
+      }
+
+      if (
+        displayData.lunchStart < displayData.workStart ||
+        displayData.lunchEnd > displayData.workEnd
+      ) {
+        setError("Horário de almoço deve estar dentro do expediente");
+        return;
+      }
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await fetch("/api/staff/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workDays: displayData.workDays,
+          workStart: displayData.workStart,
+          workEnd: displayData.workEnd,
+          lunchStart: displayData.hasLunch ? displayData.lunchStart : null,
+          lunchEnd: displayData.hasLunch ? displayData.lunchEnd : null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao salvar horários");
+      }
+
+      setSuccess("Horários atualizados com sucesso!");
+      fetchStaffData();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (status === "loading" || loading) {
@@ -106,17 +194,31 @@ export default function StaffHorariosPage() {
       </div>
 
       {/* Alerta informativo */}
-      <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-start gap-3">
-        <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm text-foreground font-medium mb-1">Apenas Visualização</p>
-          <p className="text-xs text-muted-foreground">
-            Seus horários são gerenciados pelo administrador do salão. Entre em contato caso precise de alterações.
-          </p>
+      {!canEdit && (
+        <div className="p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-start gap-3">
+          <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-foreground font-medium mb-1">Apenas Visualização</p>
+            <p className="text-xs text-muted-foreground">
+              Seus horários são gerenciados pelo administrador do salão. Entre em contato caso precise de alterações.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Alertas de erro */}
+      {canEdit && (
+        <div className="p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
+          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-foreground font-medium mb-1">Edição Habilitada</p>
+            <p className="text-xs text-muted-foreground">
+              Você pode editar seus horários de trabalho. As alterações serão salvas automaticamente.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Alertas de erro e sucesso */}
       {error && (
         <div className="p-4 rounded-lg bg-error/10 border border-error/20 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-error flex-shrink-0 mt-0.5" />
@@ -124,7 +226,14 @@ export default function StaffHorariosPage() {
         </div>
       )}
 
-      <div className="space-y-4 sm:space-y-6">
+      {success && (
+        <div className="p-4 rounded-lg bg-success/10 border border-success/20 flex items-start gap-3">
+          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-success">{success}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Dias de Trabalho */}
         <GlassCard hover className="p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
@@ -134,14 +243,30 @@ export default function StaffHorariosPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             {DAYS_OF_WEEK.map((day) => {
               const isActive = displayData.workDays.includes(day.key);
-              return (
-                <div
+              return canEdit ? (
+                <button
                   key={day.key}
+                  type="button"
+                  onClick={() => toggleWorkDay(day.key)}
                   className={`
                     p-2.5 sm:p-3 rounded-lg text-center font-medium transition-all min-h-[44px] text-sm sm:text-base flex items-center justify-center
                     ${
                       isActive
-                        ? "bg-primary/20 text-primary border-2 border-primary"
+                        ? "bg-primary text-primary-foreground border-2 border-primary shadow-lg"
+                        : "bg-background-alt/30 text-muted-foreground border border-primary/10 hover:bg-primary/10 hover:border-primary/30"
+                    }
+                  `}
+                >
+                  {day.label}
+                </button>
+              ) : (
+                <div
+                  key={day.key}
+                  className={`
+                    p-2.5 sm:p-3 rounded-lg text-center font-medium transition-all min-h-[44px] text-sm sm:text-base flex items-center justify-center cursor-not-allowed
+                    ${
+                      isActive
+                        ? "bg-primary/20 text-primary border-2 border-primary/50 opacity-70"
                         : "bg-background-alt/30 text-muted-foreground border border-primary/10 opacity-50"
                     }
                   `}
@@ -166,8 +291,9 @@ export default function StaffHorariosPage() {
                 id="workStart"
                 type="time"
                 value={displayData.workStart}
-                disabled
-                className="min-h-[44px] bg-muted/50 cursor-not-allowed"
+                onChange={(e) => canEdit && setDisplayData({ ...displayData, workStart: e.target.value })}
+                disabled={!canEdit}
+                className={`min-h-[44px] ${!canEdit ? "bg-muted/50 cursor-not-allowed" : ""}`}
               />
             </div>
             <div>
@@ -176,8 +302,9 @@ export default function StaffHorariosPage() {
                 id="workEnd"
                 type="time"
                 value={displayData.workEnd}
-                disabled
-                className="min-h-[44px] bg-muted/50 cursor-not-allowed"
+                onChange={(e) => canEdit && setDisplayData({ ...displayData, workEnd: e.target.value })}
+                disabled={!canEdit}
+                className={`min-h-[44px] ${!canEdit ? "bg-muted/50 cursor-not-allowed" : ""}`}
               />
             </div>
           </div>
@@ -190,11 +317,12 @@ export default function StaffHorariosPage() {
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Horário de Almoço
             </h3>
-            <label className="flex items-center gap-2 cursor-not-allowed opacity-70">
+            <label className={`flex items-center gap-2 ${canEdit ? "cursor-pointer" : "cursor-not-allowed opacity-70"}`}>
               <input
                 type="checkbox"
                 checked={displayData.hasLunch}
-                disabled
+                onChange={(e) => canEdit && setDisplayData({ ...displayData, hasLunch: e.target.checked })}
+                disabled={!canEdit}
                 className="w-4 h-4 sm:w-5 sm:h-5 rounded border-primary text-primary"
               />
               <span className="text-xs sm:text-sm text-muted-foreground">
@@ -211,8 +339,9 @@ export default function StaffHorariosPage() {
                   id="lunchStart"
                   type="time"
                   value={displayData.lunchStart}
-                  disabled
-                  className="min-h-[44px] bg-muted/50 cursor-not-allowed"
+                  onChange={(e) => canEdit && setDisplayData({ ...displayData, lunchStart: e.target.value })}
+                  disabled={!canEdit}
+                  className={`min-h-[44px] ${!canEdit ? "bg-muted/50 cursor-not-allowed" : ""}`}
                 />
               </div>
               <div>
@@ -221,8 +350,9 @@ export default function StaffHorariosPage() {
                   id="lunchEnd"
                   type="time"
                   value={displayData.lunchEnd}
-                  disabled
-                  className="min-h-[44px] bg-muted/50 cursor-not-allowed"
+                  onChange={(e) => canEdit && setDisplayData({ ...displayData, lunchEnd: e.target.value })}
+                  disabled={!canEdit}
+                  className={`min-h-[44px] ${!canEdit ? "bg-muted/50 cursor-not-allowed" : ""}`}
                 />
               </div>
             </div>
@@ -254,7 +384,22 @@ export default function StaffHorariosPage() {
             </div>
           </GlassCard>
         )}
-      </div>
+
+        {/* Botão Salvar (apenas se canEdit) */}
+        {canEdit && (
+          <div className="flex justify-end pt-2">
+            <GradientButton
+              type="submit"
+              variant="primary"
+              disabled={saving}
+              className="min-w-[200px]"
+            >
+              <Save className="h-4 w-4 sm:h-5 sm:w-5" />
+              {saving ? "Salvando..." : "Salvar Horários"}
+            </GradientButton>
+          </div>
+        )}
+      </form>
     </div>
   );
 }

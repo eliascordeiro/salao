@@ -68,6 +68,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     lunchStart: "",
     lunchEnd: "",
     slotInterval: 5,
+    canEditSchedule: false,
   });
 
   const [blockForm, setBlockForm] = useState({
@@ -126,6 +127,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           lunchStart: staff.lunchStart || '',
           lunchEnd: staff.lunchEnd || '',
           slotInterval: staff.slotInterval || 15,
+          canEditSchedule: (staff as any).canEditSchedule || false,
         });
 
         // Buscar bloqueios
@@ -628,6 +630,26 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     <option value={30}>30 minutos</option>
                     <option value={60}>60 minutos</option>
                   </select>
+                </div>
+
+                {/* Permissão de Edição */}
+                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scheduleData.canEditSchedule}
+                      onChange={(e) => setScheduleData({ ...scheduleData, canEditSchedule: e.target.checked })}
+                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary focus:ring-offset-0"
+                    />
+                    <div className="flex-1">
+                      <span className="text-foreground font-medium text-sm sm:text-base block mb-1">
+                        Permitir que profissional edite horários
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Se marcado, o profissional poderá alterar seus próprios horários de trabalho no portal
+                      </span>
+                    </div>
+                  </label>
                 </div>
 
                 {/* Botão Salvar */}
