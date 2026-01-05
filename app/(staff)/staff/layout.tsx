@@ -18,6 +18,7 @@ import {
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GridBackground } from "@/components/ui/grid-background";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { signOut } from "next-auth/react";
 
 interface StaffLayoutProps {
@@ -94,12 +95,15 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
               <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               <span className="font-bold text-sm sm:text-base text-foreground truncate">Portal do Profissional</span>
             </div>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
-            >
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -151,8 +155,11 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
               })}
             </nav>
 
-            {/* Logout Button */}
-            <div className="border-t border-primary/10 p-4">
+            {/* Theme Toggle and Logout */}
+            <div className="border-t border-primary/10 p-4 space-y-3">
+              <div className="flex justify-center">
+                <ThemeToggle />
+              </div>
               <GradientButton
                 variant="accent"
                 className="w-full justify-start gap-3 min-h-[44px]"
