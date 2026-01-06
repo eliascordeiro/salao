@@ -70,6 +70,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     slotInterval: 5,
     canEditSchedule: false,
     canManageBlocks: false,
+    canManageBookings: false,
   });
 
   const [blockForm, setBlockForm] = useState({
@@ -130,6 +131,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           slotInterval: staff.slotInterval || 15,
           canEditSchedule: (staff as any).canEditSchedule || false,
           canManageBlocks: (staff as any).canManageBlocks || false,
+          canManageBookings: (staff as any).canManageBookings || false,
         });
 
         // Buscar bloqueios
@@ -179,7 +181,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks', value: boolean) => {
+  const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks' | 'canManageBookings', value: boolean) => {
     try {
       // Atualizar estado local imediatamente
       setScheduleData(prev => ({ ...prev, [field]: value }));
@@ -208,6 +210,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           slotInterval: staff.slotInterval || 15,
           canEditSchedule: (staff as any).canEditSchedule || false,
           canManageBlocks: (staff as any).canManageBlocks || false,
+          canManageBookings: (staff as any).canManageBookings || false,
         });
       }
     } catch (error) {
@@ -296,6 +299,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           // Preservar permissões existentes
           canEditSchedule: scheduleData.canEditSchedule,
           canManageBlocks: scheduleData.canManageBlocks,
+          canManageBookings: scheduleData.canManageBookings,
         }),
       });
 
@@ -748,6 +752,26 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Se marcado, o profissional poderá criar e remover bloqueios de datas/horários indisponíveis pelo portal
+                    </span>
+                  </div>
+                </label>
+              </div>
+
+              {/* Permissão de Agendamentos */}
+              <div className="glass-card bg-accent/5 border-accent/20 p-4 rounded-lg mb-4 sm:mb-6">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={scheduleData.canManageBookings}
+                    onChange={(e) => handlePermissionToggle('canManageBookings', e.target.checked)}
+                    className="mt-0.5 w-5 h-5 rounded border-accent text-accent focus:ring-accent focus:ring-offset-0"
+                  />
+                  <div className="flex-1">
+                    <span className="text-foreground font-medium text-sm sm:text-base block mb-1">
+                      Permitir que profissional gerencie agendamentos
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Se marcado, o profissional poderá confirmar e cancelar seus próprios agendamentos
                     </span>
                   </div>
                 </label>
