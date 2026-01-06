@@ -66,7 +66,7 @@ export async function PUT(
 
     const { id } = await context.params
     const data = await request.json()
-    const { name, email, phone, specialty, active, serviceIds, loginEnabled, canEditSchedule } = data
+    const { name, email, phone, specialty, active, serviceIds, loginEnabled, canEditSchedule, canManageBlocks } = data
 
     // Buscar profissional atual
     const currentStaff = await prisma.staff.findUnique({
@@ -165,6 +165,7 @@ export async function PUT(
         specialty: specialty || null,
         active: active !== undefined ? active : true,
         canEditSchedule: canEditSchedule !== undefined ? canEditSchedule : false,
+        canManageBlocks: canManageBlocks !== undefined ? canManageBlocks : false,
         userId, // Atualizar vínculo com usuário
       },
       include: {
@@ -207,7 +208,7 @@ export async function PATCH(
 
     const { id } = await context.params
     const data = await request.json()
-    const { workDays, workStart, workEnd, lunchStart, lunchEnd, slotInterval, canEditSchedule } = data
+    const { workDays, workStart, workEnd, lunchStart, lunchEnd, slotInterval, canEditSchedule, canManageBlocks } = data
 
     console.log("📝 Dados recebidos:", {
       workDays,
@@ -269,6 +270,7 @@ export async function PATCH(
         lunchEnd: lunchEnd && lunchEnd.trim() !== "" ? lunchEnd : null,
         slotInterval: slotInterval || 15,
         canEditSchedule: canEditSchedule !== undefined ? canEditSchedule : undefined,
+        canManageBlocks: canManageBlocks !== undefined ? canManageBlocks : undefined,
       },
       include: {
         salon: true,

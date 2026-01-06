@@ -35,6 +35,7 @@ export default function NewStaffPage() {
     lunchEnd: "13:00",
     slotInterval: 15,
     canEditSchedule: false,
+    canManageBlocks: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -94,6 +95,7 @@ export default function NewStaffPage() {
           lunchEnd: scheduleData.lunchEnd || null,
           slotInterval: scheduleData.slotInterval,
           canEditSchedule: scheduleData.canEditSchedule,
+          canManageBlocks: scheduleData.canManageBlocks,
         }),
       });
 
@@ -480,6 +482,28 @@ export default function NewStaffPage() {
                       </span>
                       <span className="text-xs sm:text-sm text-muted-foreground">
                         Se marcado, o profissional poderá alterar seus próprios horários de trabalho
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Permissão de Bloqueios */}
+                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scheduleData.canManageBlocks}
+                      onChange={(e) =>
+                        setScheduleData({ ...scheduleData, canManageBlocks: e.target.checked })
+                      }
+                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <span className="text-foreground font-medium text-sm sm:text-base block">
+                        Permitir que profissional gerencie bloqueios
+                      </span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        Se marcado, o profissional poderá criar e remover bloqueios de datas/horários indisponíveis
                       </span>
                     </div>
                   </label>

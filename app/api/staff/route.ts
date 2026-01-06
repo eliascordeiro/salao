@@ -100,6 +100,7 @@ export async function POST(request: Request) {
       lunchEnd,
       slotInterval,
       canEditSchedule = false,
+      canManageBlocks = false,
       loginEnabled = false
     } = data
 
@@ -184,6 +185,7 @@ export async function POST(request: Request) {
         lunchEnd: lunchEnd || null,
         slotInterval: finalSlotInterval,
         canEditSchedule: canEditSchedule,
+        canManageBlocks: canManageBlocks,
         services: {
           create: serviceIds.map((serviceId: string) => ({
             serviceId,

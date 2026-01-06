@@ -96,6 +96,7 @@ model Staff {
   specialty        String?
   active           Boolean                @default(true)
   canEditSchedule  Boolean                @default(false) // Profissional pode editar próprios horários
+  canManageBlocks  Boolean                @default(false) // Profissional pode gerenciar bloqueios
   workDays         String?                @default("1,2,3,4,5")
   workStart        String?                @default("09:00")
   workEnd          String?                @default("18:00")

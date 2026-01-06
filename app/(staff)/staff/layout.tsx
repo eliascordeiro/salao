@@ -13,7 +13,8 @@ import {
   LogOut,
   Menu,
   X,
-  Briefcase
+  Briefcase,
+  Ban
 } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -73,6 +74,11 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
       icon: Clock,
       label: "Horários",
       href: "/staff/horarios",
+    },
+    {
+      icon: Ban,
+      label: "Bloqueios",
+      href: "/staff/bloqueios",
     },
     {
       icon: User,

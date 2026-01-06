@@ -69,6 +69,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     lunchEnd: "",
     slotInterval: 5,
     canEditSchedule: false,
+    canManageBlocks: false,
   });
 
   const [blockForm, setBlockForm] = useState({
@@ -128,6 +129,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           lunchEnd: staff.lunchEnd || '',
           slotInterval: staff.slotInterval || 15,
           canEditSchedule: (staff as any).canEditSchedule || false,
+          canManageBlocks: (staff as any).canManageBlocks || false,
         });
 
         // Buscar bloqueios
@@ -647,6 +649,26 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       </span>
                       <span className="text-xs text-muted-foreground">
                         Se marcado, o profissional poderá alterar seus próprios horários de trabalho no portal
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Permissão de Bloqueios */}
+                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scheduleData.canManageBlocks}
+                      onChange={(e) => setScheduleData({ ...scheduleData, canManageBlocks: e.target.checked })}
+                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary focus:ring-offset-0"
+                    />
+                    <div className="flex-1">
+                      <span className="text-foreground font-medium text-sm sm:text-base block mb-1">
+                        Permitir que profissional gerencie bloqueios
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Se marcado, o profissional poderá criar e remover bloqueios de datas/horários indisponíveis
                       </span>
                     </div>
                   </label>
