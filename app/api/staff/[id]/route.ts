@@ -156,18 +156,27 @@ export async function PUT(
       }
     }
 
+    // Construir objeto de atualização para o PUT
+    const updateDataPut: any = {
+      name,
+      email: email || null,
+      phone: phone || null,
+      specialty: specialty || null,
+      active: active !== undefined ? active : true,
+      userId, // Atualizar vínculo com usuário
+    }
+
+    // Apenas atualizar permissões se foram enviadas
+    if (canEditSchedule !== undefined) {
+      updateDataPut.canEditSchedule = canEditSchedule
+    }
+    if (canManageBlocks !== undefined) {
+      updateDataPut.canManageBlocks = canManageBlocks
+    }
+
     const staff = await prisma.staff.update({
       where: { id },
-      data: {
-        name,
-        email: email || null,
-        phone: phone || null,
-        specialty: specialty || null,
-        active: active !== undefined ? active : true,
-        canEditSchedule: canEditSchedule !== undefined ? canEditSchedule : false,
-        canManageBlocks: canManageBlocks !== undefined ? canManageBlocks : false,
-        userId, // Atualizar vínculo com usuário
-      },
+      data: updateDataPut,
       include: {
         salon: true,
         services: {

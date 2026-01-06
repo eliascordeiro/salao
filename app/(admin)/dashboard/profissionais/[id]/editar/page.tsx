@@ -293,6 +293,9 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           specialty: formData.specialty || null,
           active: formData.active,
           loginEnabled: formData.loginEnabled,
+          // Preservar permissões existentes
+          canEditSchedule: scheduleData.canEditSchedule,
+          canManageBlocks: scheduleData.canManageBlocks,
         }),
       });
 
