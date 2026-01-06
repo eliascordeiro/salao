@@ -179,6 +179,27 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     }
   };
 
+  const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks', value: boolean) => {
+    try {
+      // Atualizar estado local imediatamente
+      setScheduleData(prev => ({ ...prev, [field]: value }));
+
+      // Salvar no banco de dados
+      const response = await fetch(`/api/staff/${staffId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao atualizar permissão");
+    } catch (error) {
+      console.error("Erro ao salvar permissão:", error);
+      // Reverter estado em caso de erro
+      setScheduleData(prev => ({ ...prev, [field]: !value }));
+      alert("Erro ao salvar permissão");
+    }
+  };
+
   const handleBlockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -640,7 +661,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     <input
                       type="checkbox"
                       checked={scheduleData.canEditSchedule}
-                      onChange={(e) => setScheduleData({ ...scheduleData, canEditSchedule: e.target.checked })}
+                      onChange={(e) => handlePermissionToggle('canEditSchedule', e.target.checked)}
                       className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary focus:ring-offset-0"
                     />
                     <div className="flex-1">
@@ -697,7 +718,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   <input
                     type="checkbox"
                     checked={scheduleData.canManageBlocks}
-                    onChange={(e) => setScheduleData({ ...scheduleData, canManageBlocks: e.target.checked })}
+                    onChange={(e) => handlePermissionToggle('canManageBlocks', e.target.checked)}
                     className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary focus:ring-offset-0"
                   />
                   <div className="flex-1">
