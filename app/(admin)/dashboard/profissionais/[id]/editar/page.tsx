@@ -58,6 +58,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     phone: "",
     specialty: "",
     active: true,
+    loginEnabled: false, // Será carregado do backend
   });
 
   const [scheduleData, setScheduleData] = useState({
@@ -116,6 +117,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           phone: staff.phone || "",
           specialty: staff.specialty || "",
           active: staff.active,
+          loginEnabled: staff.userId ? (staff.user?.active ?? false) : false,
         });
 
         // Preencher horários
@@ -290,6 +292,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
+          loginEnabled: formData.loginEnabled,
           // Preservar permissões existentes
           canEditSchedule: scheduleData.canEditSchedule,
           canManageBlocks: scheduleData.canManageBlocks,
@@ -456,6 +459,35 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   placeholder="(11) 98765-4321"
                   className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground min-h-[44px] text-base"
                 />
+              </div>
+
+              {/* Login Ativado */}
+              <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="loginEnabled" className="text-foreground text-sm sm:text-base">
+                    Login no Portal
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, loginEnabled: !formData.loginEnabled })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      formData.loginEnabled ? "bg-success" : "bg-gray-400"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        formData.loginEnabled ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formData.loginEnabled ? (
+                    <>✓ Profissional poderá acessar o portal usando &quot;Esqueci minha senha&quot;</>
+                  ) : (
+                    <>⚠ Profissional não terá acesso ao portal</>
+                  )}
+                </p>
               </div>
 
               {/* Especialidade */}
