@@ -192,6 +192,24 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
       });
 
       if (!response.ok) throw new Error("Erro ao atualizar permissão");
+
+      // Recarregar dados do profissional para garantir sincronização
+      const staffRes = await fetch(`/api/staff/${staffId}`);
+      if (staffRes.ok) {
+        const staff: Staff = await staffRes.json();
+        
+        // Atualizar scheduleData com os dados completos do backend
+        setScheduleData({
+          workDays: staff.workDays ? staff.workDays.split(",") : [],
+          workStart: staff.workStart || "",
+          workEnd: staff.workEnd || '',
+          lunchStart: staff.lunchStart || '',
+          lunchEnd: staff.lunchEnd || '',
+          slotInterval: staff.slotInterval || 15,
+          canEditSchedule: (staff as any).canEditSchedule || false,
+          canManageBlocks: (staff as any).canManageBlocks || false,
+        });
+      }
     } catch (error) {
       console.error("Erro ao salvar permissão:", error);
       // Reverter estado em caso de erro

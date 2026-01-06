@@ -259,19 +259,41 @@ export async function PATCH(
       )
     }
 
+    // Construir objeto de atualização com apenas os campos enviados
+    const updateData: any = {}
+
+    // Apenas atualizar campos de horário se foram enviados
+    if (workDays !== undefined) {
+      updateData.workDays = workDays.length > 0 ? workDays.join(",") : null
+    }
+    if (workStart !== undefined) {
+      updateData.workStart = workStart || null
+    }
+    if (workEnd !== undefined) {
+      updateData.workEnd = workEnd || null
+    }
+    if (lunchStart !== undefined) {
+      updateData.lunchStart = lunchStart && lunchStart.trim() !== "" ? lunchStart : null
+    }
+    if (lunchEnd !== undefined) {
+      updateData.lunchEnd = lunchEnd && lunchEnd.trim() !== "" ? lunchEnd : null
+    }
+    if (slotInterval !== undefined) {
+      updateData.slotInterval = slotInterval || 15
+    }
+
+    // Apenas atualizar permissões se foram enviadas
+    if (canEditSchedule !== undefined) {
+      updateData.canEditSchedule = canEditSchedule
+    }
+    if (canManageBlocks !== undefined) {
+      updateData.canManageBlocks = canManageBlocks
+    }
+
     // Atualizar dados do profissional
     const staff = await prisma.staff.update({
       where: { id },
-      data: {
-        workDays: workDays && workDays.length > 0 ? workDays.join(",") : null,
-        workStart: workStart || null,
-        workEnd: workEnd || null,
-        lunchStart: lunchStart && lunchStart.trim() !== "" ? lunchStart : null,
-        lunchEnd: lunchEnd && lunchEnd.trim() !== "" ? lunchEnd : null,
-        slotInterval: slotInterval || 15,
-        canEditSchedule: canEditSchedule !== undefined ? canEditSchedule : undefined,
-        canManageBlocks: canManageBlocks !== undefined ? canManageBlocks : undefined,
-      },
+      data: updateData,
       include: {
         salon: true,
         services: {
