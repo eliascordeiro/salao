@@ -10,7 +10,6 @@ import { GridBackground } from "@/components/ui/grid-background";
 import { prisma } from "@/lib/prisma";
 import { DeleteStaffButton } from "@/components/dashboard/delete-staff-button";
 import { getUserSalonId } from "@/lib/salon-helper";
-import { LinkUserButton } from "@/components/staff/link-user-button";
 
 export default async function StaffPage() {
   const session = await getServerSession(authOptions);
@@ -207,31 +206,19 @@ export default async function StaffPage() {
                   </div>
 
                   {/* Ações */}
-                  <div className="flex flex-col gap-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link href={`/dashboard/profissionais/${member.id}/editar`}>
-                        <GradientButton variant="accent" className="w-full text-xs">
-                          Editar
-                        </GradientButton>
-                      </Link>
-                      <DeleteStaffButton staffId={member.id} staffName={member.name} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link href={`/dashboard/profissionais/${member.id}/comissao`}>
-                        <GradientButton variant="success" className="w-full text-xs">
-                          <DollarSign className="h-3.5 w-3.5" />
-                          Comissão
-                        </GradientButton>
-                      </Link>
-                      <LinkUserButton 
-                        staffId={member.id}
-                        staffName={member.name}
-                        staffEmail={member.email || ""}
-                        staffPhone={member.phone || ""}
-                        hasUser={!!member.userId}
-                        userActive={member.user?.active ?? false}
-                      />
-                    </div>
+                  <div className="flex gap-2">
+                    <Link href={`/dashboard/profissionais/${member.id}/editar`} className="flex-1">
+                      <GradientButton variant="accent" className="w-full text-xs">
+                        Editar
+                      </GradientButton>
+                    </Link>
+                    <Link href={`/dashboard/profissionais/${member.id}/comissao`} className="flex-1">
+                      <GradientButton variant="success" className="w-full text-xs">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        Comissão
+                      </GradientButton>
+                    </Link>
+                    <DeleteStaffButton staffId={member.id} staffName={member.name} />
                   </div>
                 </GlassCard>
               ))}
