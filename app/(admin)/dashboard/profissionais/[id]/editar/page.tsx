@@ -50,7 +50,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const [showSuccess, setShowSuccess] = useState(false);
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions" | "blocks">("info");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -420,6 +420,18 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 }`}
               >
                 <Calendar className="h-4 w-4 inline mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">Permissões</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("blocks")}
+                className={`flex-1 sm:flex-initial px-3 sm:px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
+                  activeTab === "blocks"
+                    ? "bg-gradient-primary text-white shadow-lg"
+                    : "text-foreground-muted hover:text-foreground"
+                }`}
+              >
+                <Calendar className="h-4 w-4 inline mr-1 sm:mr-2" />
                 <span className="text-sm sm:text-base">Bloqueios</span>
               </button>
             </div>
@@ -771,6 +783,159 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     </span>
                   </div>
                 </label>
+              </div>
+
+              {/* Botão Novo Bloqueio */}
+              {!showBlockForm && (
+                <GradientButton
+                  type="button"
+                  variant="accent"
+                  onClick={() => setShowBlockForm(true)}
+                  className="mb-4 sm:mb-6 w-full py-3 min-h-[48px]"
+                >
+                  <Plus className="h-4 w-4 sm:mr-2" />
+                  Novo Bloqueio
+                </GradientButton>
+              )}
+
+              {/* Formulário de Bloqueio */}
+              {showBlockForm && (
+                <form onSubmit={handleBlockSubmit} className="mb-4 sm:mb-6 p-4 sm:p-6 glass-card bg-background-alt/30 rounded-lg space-y-3 sm:space-y-4">
+                  <div className="flex justify-between items-center mb-3 sm:mb-4">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Novo Bloqueio</h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowBlockForm(false)}
+                      className="text-foreground-muted hover:text-foreground p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div>
+                      <Label htmlFor="blockDate" className="text-foreground text-sm sm:text-base">Data</Label>
+                      <Input
+                        id="blockDate"
+                        type="date"
+                        value={blockForm.date}
+                        onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                        required
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blockStartTime" className="text-foreground text-sm sm:text-base">Horário Início</Label>
+                      <Input
+                        id="blockStartTime"
+                        type="time"
+                        value={blockForm.startTime}
+                        onChange={(e) => setBlockForm({ ...blockForm, startTime: e.target.value })}
+                        required
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blockEndTime" className="text-foreground text-sm sm:text-base">Horário Término</Label>
+                      <Input
+                        id="blockEndTime"
+                        type="time"
+                        value={blockForm.endTime}
+                        onChange={(e) => setBlockForm({ ...blockForm, endTime: e.target.value })}
+                        required
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blockReason" className="text-foreground text-sm sm:text-base">Motivo</Label>
+                      <Input
+                        id="blockReason"
+                        value={blockForm.reason}
+                        onChange={(e) => setBlockForm({ ...blockForm, reason: e.target.value })}
+                        placeholder="Reunião, compromisso..."
+                        className="glass-card bg-background-alt/50 border-primary/20 min-h-[44px] text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 min-h-[44px]">
+                    <input
+                      type="checkbox"
+                      id="recurring"
+                      checked={blockForm.recurring}
+                      onChange={(e) => setBlockForm({ ...blockForm, recurring: e.target.checked })}
+                      className="h-5 w-5 sm:h-4 sm:w-4 text-primary focus:ring-primary border-primary/30 rounded flex-shrink-0"
+                    />
+                    <Label htmlFor="recurring" className="cursor-pointer text-foreground text-sm sm:text-base">
+                      Repetir semanalmente
+                    </Label>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <GradientButton type="button" variant="primary" onClick={() => setShowBlockForm(false)} className="flex-1 py-2 min-h-[48px] order-2 sm:order-1">
+                      Cancelar
+                    </GradientButton>
+                    <GradientButton type="submit" variant="accent" className="flex-1 py-2 min-h-[48px] order-1 sm:order-2">
+                      <Plus className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden xs:inline">Criar Bloqueio</span>
+                      <span className="xs:hidden">Criar</span>
+                    </GradientButton>
+                  </div>
+                </form>
+              )}
+
+              {/* Lista de Bloqueios */}
+              <div className="space-y-2 sm:space-y-3">
+                {blocks.length === 0 ? (
+                  <div className="text-center py-8 sm:py-12 text-foreground-muted">
+                    <Calendar className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 opacity-50" />
+                    <p className="text-sm sm:text-base">Nenhum bloqueio configurado</p>
+                  </div>
+                ) : (
+                  blocks.map((block) => (
+                    <div key={block.id} className="glass-card bg-background-alt/30 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1">
+                          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent flex-shrink-0" />
+                          <span className="font-medium text-foreground text-sm sm:text-base">{block.date}</span>
+                          <span className="text-foreground-muted text-sm">•</span>
+                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                          <span className="text-foreground text-xs sm:text-sm">{block.startTime} - {block.endTime}</span>
+                          {block.recurring && (
+                            <span className="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded-full whitespace-nowrap">
+                              Recorrente
+                            </span>
+                          )}
+                        </div>
+                        {block.reason && (
+                          <p className="text-xs sm:text-sm text-foreground-muted sm:ml-6 truncate">{block.reason}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleBlockDelete(block.id)}
+                        className="p-2 hover:bg-destructive/20 rounded-lg transition-colors text-destructive self-end sm:self-auto min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </GlassCard>
+          )}
+
+          {/* Aba Bloqueios */}
+          {activeTab === "blocks" && (
+            <GlassCard glow="accent" className="max-w-4xl p-4 sm:p-6 md:p-8">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
+                  Gestão de Bloqueios
+                </h2>
+                <p className="text-foreground-muted mt-1 text-xs sm:text-sm md:text-base">
+                  Crie bloqueios para datas/horários indisponíveis
+                </p>
               </div>
 
               {/* Botão Novo Bloqueio */}
