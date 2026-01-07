@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Clock, Calendar, X, Plus, Trash2, Info } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Clock, Calendar, CalendarCheck, X, Plus, Trash2, Info } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +50,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const [showSuccess, setShowSuccess] = useState(false);
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "blocks">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions">("info");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,7 +58,12 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     phone: "",
     specialty: "",
     active: true,
-    loginEnabled: false, // Será carregado do backend
+  });
+
+  const [permissionsData, setPermissionsData] = useState({
+    loginEnabled: false,
+    canConfirmBooking: false,
+    canCancelBooking: false,
   });
 
   const [scheduleData, setScheduleData] = useState({
@@ -70,7 +75,6 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     slotInterval: 5,
     canEditSchedule: false,
     canManageBlocks: false,
-    canManageBookings: false,
   });
 
   const [blockForm, setBlockForm] = useState({
@@ -118,7 +122,13 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           phone: staff.phone || "",
           specialty: staff.specialty || "",
           active: staff.active,
+        });
+
+        // Preencher permissões
+        setPermissionsData({
           loginEnabled: staff.userId ? (staff.user?.active ?? false) : false,
+          canConfirmBooking: (staff as any).canConfirmBooking || false,
+          canCancelBooking: (staff as any).canCancelBooking || false,
         });
 
         // Preencher horários
@@ -131,7 +141,6 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           slotInterval: staff.slotInterval || 15,
           canEditSchedule: (staff as any).canEditSchedule || false,
           canManageBlocks: (staff as any).canManageBlocks || false,
-          canManageBookings: (staff as any).canManageBookings || false,
         });
 
         // Buscar bloqueios
@@ -181,10 +190,14 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks' | 'canManageBookings', value: boolean) => {
+  const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks' | 'canConfirmBooking' | 'canCancelBooking', value: boolean) => {
     try {
-      // Atualizar estado local imediatamente
-      setScheduleData(prev => ({ ...prev, [field]: value }));
+      // Determinar onde atualizar (scheduleData ou permissionsData)
+      if (field === 'canConfirmBooking' || field === 'canCancelBooking') {
+        setPermissionsData(prev => ({ ...prev, [field]: value }));
+      } else {
+        setScheduleData(prev => ({ ...prev, [field]: value }));
+      }
 
       // Salvar no banco de dados
       const response = await fetch(`/api/staff/${staffId}`, {
@@ -210,13 +223,23 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           slotInterval: staff.slotInterval || 15,
           canEditSchedule: (staff as any).canEditSchedule || false,
           canManageBlocks: (staff as any).canManageBlocks || false,
-          canManageBookings: (staff as any).canManageBookings || false,
+        });
+        
+        // Atualizar permissionsData
+        setPermissionsData({
+          loginEnabled: staff.userId ? (staff.user?.active ?? false) : false,
+          canConfirmBooking: (staff as any).canConfirmBooking || false,
+          canCancelBooking: (staff as any).canCancelBooking || false,
         });
       }
     } catch (error) {
       console.error("Erro ao salvar permissão:", error);
       // Reverter estado em caso de erro
-      setScheduleData(prev => ({ ...prev, [field]: !value }));
+      if (field === 'canConfirmBooking' || field === 'canCancelBooking') {
+        setPermissionsData(prev => ({ ...prev, [field]: !value }));
+      } else {
+        setScheduleData(prev => ({ ...prev, [field]: !value }));
+      }
       alert("Erro ao salvar permissão");
     }
   };
@@ -295,11 +318,12 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
-          loginEnabled: formData.loginEnabled,
+          loginEnabled: permissionsData.loginEnabled,
           // Preservar permissões existentes
           canEditSchedule: scheduleData.canEditSchedule,
           canManageBlocks: scheduleData.canManageBlocks,
-          canManageBookings: scheduleData.canManageBookings,
+          canConfirmBooking: permissionsData.canConfirmBooking,
+          canCancelBooking: permissionsData.canCancelBooking,
         }),
       });
 
@@ -388,9 +412,9 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("blocks")}
+                onClick={() => setActiveTab("permissions")}
                 className={`flex-1 sm:flex-initial px-3 sm:px-6 py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
-                  activeTab === "blocks"
+                  activeTab === "permissions"
                     ? "bg-gradient-primary text-white shadow-lg"
                     : "text-foreground-muted hover:text-foreground"
                 }`}
@@ -465,34 +489,6 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 />
               </div>
 
-              {/* Login Ativado */}
-              <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="loginEnabled" className="text-foreground text-sm sm:text-base">
-                    Login no Portal
-                  </Label>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, loginEnabled: !formData.loginEnabled })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.loginEnabled ? "bg-success" : "bg-gray-400"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.loginEnabled ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {formData.loginEnabled ? (
-                    <>✓ Profissional poderá acessar o portal usando &quot;Esqueci minha senha&quot;</>
-                  ) : (
-                    <>⚠ Profissional não terá acesso ao portal</>
-                  )}
-                </p>
-              </div>
 
               {/* Especialidade */}
               <div>
@@ -725,7 +721,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           )}
 
           {/* Aba Bloqueios */}
-          {activeTab === "blocks" && (
+          {activeTab === "permissions" && (
             <GlassCard glow="accent" className="max-w-4xl p-4 sm:p-6 md:p-8">
               <div className="mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
@@ -762,8 +758,8 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={scheduleData.canManageBookings}
-                    onChange={(e) => handlePermissionToggle('canManageBookings', e.target.checked)}
+                    checked={permissionsData.canConfirmBooking}
+                    onChange={(e) => handlePermissionToggle('canConfirmBooking', e.target.checked)}
                     className="mt-0.5 w-5 h-5 rounded border-accent text-accent focus:ring-accent focus:ring-offset-0"
                   />
                   <div className="flex-1">

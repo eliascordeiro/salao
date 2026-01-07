@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Clock, Calendar, X, Plus, Info } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, UserPlus, Save, Clock, Calendar, CalendarCheck, X, Plus, Info } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ export default function NewStaffPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"info" | "schedule">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions">("info");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,7 +24,6 @@ export default function NewStaffPage() {
     phone: "",
     specialty: "",
     active: true,
-    loginEnabled: true, // Login ativado por padrão
   });
 
   const [scheduleData, setScheduleData] = useState({
@@ -36,7 +35,12 @@ export default function NewStaffPage() {
     slotInterval: 15,
     canEditSchedule: false,
     canManageBlocks: false,
-    canManageBookings: false,
+  });
+
+  const [permissionsData, setPermissionsData] = useState({
+    loginEnabled: true,
+    canConfirmBooking: false,
+    canCancelBooking: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -87,7 +91,10 @@ export default function NewStaffPage() {
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
-          loginEnabled: formData.loginEnabled, // Enviar flag de login
+          // Permissões
+          loginEnabled: permissionsData.loginEnabled,
+          canConfirmBooking: permissionsData.canConfirmBooking,
+          canCancelBooking: permissionsData.canCancelBooking,
           // Incluir dados de horário
           workDays: scheduleData.workDays.join(","),
           workStart: scheduleData.workStart,
@@ -97,7 +104,6 @@ export default function NewStaffPage() {
           slotInterval: scheduleData.slotInterval,
           canEditSchedule: scheduleData.canEditSchedule,
           canManageBlocks: scheduleData.canManageBlocks,
-          canManageBookings: scheduleData.canManageBookings,
         }),
       });
 
@@ -183,6 +189,19 @@ export default function NewStaffPage() {
                 <span className="hidden xs:inline ml-1 sm:ml-0">Horários</span>
                 <span className="xs:hidden ml-1">Hor.</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("permissions")}
+                className={`px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium transition-all whitespace-nowrap min-h-[44px] ${
+                  activeTab === "permissions"
+                    ? "bg-gradient-primary text-white shadow-lg"
+                    : "text-foreground-muted hover:text-foreground"
+                }`}
+              >
+                <Calendar className="h-4 w-4 inline sm:mr-2" />
+                <span className="hidden xs:inline ml-1 sm:ml-0">Permissões</span>
+                <span className="xs:hidden ml-1">Perm.</span>
+              </button>
             </div>
           </div>
 
@@ -233,33 +252,6 @@ export default function NewStaffPage() {
                 {errors.email && (
                   <p className="text-xs sm:text-sm text-destructive mt-1">{errors.email}</p>
                 )}
-              </div>
-
-              {/* Login Ativado */}
-              <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="loginEnabled" className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
-                    Login no Portal
-                  </Label>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, loginEnabled: !formData.loginEnabled })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      formData.loginEnabled ? "bg-success" : "bg-gray-400"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.loginEnabled ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {formData.loginEnabled 
-                    ? "✓ Profissional poderá acessar o portal usando 'Esqueci minha senha' para criar credenciais" 
-                    : "⚠ Profissional não terá acesso ao portal"}
-                </p>
               </div>
 
               {/* Telefone */}
@@ -467,7 +459,74 @@ export default function NewStaffPage() {
                   </select>
                 </div>
 
-                {/* Permitir Edição de Horários */}
+                {/* Botões */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
+                  <GradientButton
+                    type="button"
+                    variant="primary"
+                    onClick={() => setActiveTab("info")}
+                    className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
+                  >
+                    <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Voltar</span>
+                  </GradientButton>
+                  <GradientButton
+                    type="button"
+                    variant="accent"
+                    onClick={() => setActiveTab("permissions")}
+                    className="flex-1 py-3 min-h-[48px] order-1 sm:order-2"
+                  >
+                    <span className="hidden sm:inline">Próximo</span>
+                    <span className="sm:hidden">Avançar</span>
+                    <ArrowLeft className="h-4 w-4 sm:ml-2 rotate-180" />
+                  </GradientButton>
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
+          {/* Aba Permissões */}
+          {activeTab === "permissions" && (
+            <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-6 w-6 text-accent" />
+                  Permissões do Profissional
+                </h2>
+                <p className="text-foreground-muted mt-1 text-xs sm:text-sm md:text-base">
+                  Configure as permissões de acesso ao portal
+                </p>
+              </div>
+
+              <div className="space-y-4 sm:space-y-6">
+                {/* Login no Portal */}
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Login no Portal
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setPermissionsData({ ...permissionsData, loginEnabled: !permissionsData.loginEnabled })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        permissionsData.loginEnabled ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          permissionsData.loginEnabled ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {permissionsData.loginEnabled 
+                      ? "✓ Profissional poderá acessar o portal usando 'Esqueci minha senha' para criar credenciais" 
+                      : "⚠ Profissional não terá acesso ao portal"}
+                  </p>
+                </div>
+
+                {/* Permissão de Edição de Horários */}
                 <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
@@ -480,10 +539,10 @@ export default function NewStaffPage() {
                     />
                     <div>
                       <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Permitir que profissional edite horários
+                        Editar horários
                       </span>
                       <span className="text-xs sm:text-sm text-muted-foreground">
-                        Se marcado, o profissional poderá alterar seus próprios horários de trabalho
+                        Profissional poderá alterar seus próprios horários de trabalho
                       </span>
                     </div>
                   </label>
@@ -502,32 +561,65 @@ export default function NewStaffPage() {
                     />
                     <div>
                       <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Permitir que profissional gerencie bloqueios
+                        Gerenciar bloqueios
                       </span>
                       <span className="text-xs sm:text-sm text-muted-foreground">
-                        Se marcado, o profissional poderá criar e remover bloqueios de datas/horários indisponíveis
+                        Profissional poderá criar e remover bloqueios de datas/horários indisponíveis
                       </span>
                     </div>
                   </label>
                 </div>
 
-                {/* Permissão de Agendamentos */}
-                <div className="glass-card bg-accent/5 border-accent/20 p-4 rounded-lg">
+                {/* Título: Gestão de Agendamentos */}
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <CalendarCheck className="h-5 w-5 text-accent" />
+                    Gestão de Agendamentos
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                    Configure as permissões de gerenciamento de agendamentos
+                  </p>
+                </div>
+
+                {/* Confirmar Agendamentos */}
+                <div className="glass-card bg-success/5 border-success/20 p-4 rounded-lg">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={scheduleData.canManageBookings}
+                      checked={permissionsData.canConfirmBooking}
                       onChange={(e) =>
-                        setScheduleData({ ...scheduleData, canManageBookings: e.target.checked })
+                        setPermissionsData({ ...permissionsData, canConfirmBooking: e.target.checked })
                       }
-                      className="mt-0.5 w-5 h-5 rounded border-accent text-accent focus:ring-accent"
+                      className="mt-0.5 w-5 h-5 rounded border-success text-success focus:ring-success"
                     />
                     <div>
                       <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Permitir que profissional gerencie agendamentos
+                        Confirmar agendamentos
                       </span>
                       <span className="text-xs sm:text-sm text-muted-foreground">
-                        Se marcado, o profissional poderá confirmar e cancelar seus próprios agendamentos
+                        Profissional poderá confirmar seus próprios agendamentos
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Cancelar Agendamentos */}
+                <div className="glass-card bg-destructive/5 border-destructive/20 p-4 rounded-lg">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={permissionsData.canCancelBooking}
+                      onChange={(e) =>
+                        setPermissionsData({ ...permissionsData, canCancelBooking: e.target.checked })
+                      }
+                      className="mt-0.5 w-5 h-5 rounded border-destructive text-destructive focus:ring-destructive"
+                    />
+                    <div>
+                      <span className="text-foreground font-medium text-sm sm:text-base block">
+                        Cancelar agendamentos
+                      </span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">
+                        Profissional poderá cancelar seus próprios agendamentos
                       </span>
                     </div>
                   </label>
@@ -538,7 +630,7 @@ export default function NewStaffPage() {
                   <GradientButton
                     type="button"
                     variant="primary"
-                    onClick={() => setActiveTab("info")}
+                    onClick={() => setActiveTab("schedule")}
                     className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
                   >
                     <ArrowLeft className="h-4 w-4 sm:mr-2" />
