@@ -941,7 +941,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setPermissionsData({ ...permissionsData, loginEnabled: !permissionsData.loginEnabled })}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, loginEnabled: !prev.loginEnabled }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.loginEnabled ? "bg-success" : "bg-gray-400"
                       }`}
@@ -966,7 +966,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     </Label>
                     <button
                       type="button"
-                      onClick={() => handlePermissionToggle('canConfirmBooking', !permissionsData.canConfirmBooking)}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, canConfirmBooking: !prev.canConfirmBooking }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.canConfirmBooking ? "bg-success" : "bg-gray-400"
                       }`}
@@ -991,7 +991,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     </Label>
                     <button
                       type="button"
-                      onClick={() => handlePermissionToggle('canCancelBooking', !permissionsData.canCancelBooking)}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, canCancelBooking: !prev.canCancelBooking }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.canCancelBooking ? "bg-success" : "bg-gray-400"
                       }`}

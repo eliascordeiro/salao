@@ -533,7 +533,7 @@ export default function NewStaffPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setPermissionsData({ ...permissionsData, loginEnabled: !permissionsData.loginEnabled })}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, loginEnabled: !prev.loginEnabled }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.loginEnabled ? "bg-success" : "bg-gray-400"
                       }`}
@@ -560,7 +560,7 @@ export default function NewStaffPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setScheduleData({ ...scheduleData, canEditSchedule: !scheduleData.canEditSchedule })}
+                      onClick={() => setScheduleData(prev => ({ ...prev, canEditSchedule: !prev.canEditSchedule }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         scheduleData.canEditSchedule ? "bg-success" : "bg-gray-400"
                       }`}
@@ -585,7 +585,7 @@ export default function NewStaffPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setScheduleData({ ...scheduleData, canManageBlocks: !scheduleData.canManageBlocks })}
+                      onClick={() => setScheduleData(prev => ({ ...prev, canManageBlocks: !prev.canManageBlocks }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         scheduleData.canManageBlocks ? "bg-success" : "bg-gray-400"
                       }`}
@@ -621,7 +621,7 @@ export default function NewStaffPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setPermissionsData({ ...permissionsData, canConfirmBooking: !permissionsData.canConfirmBooking })}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, canConfirmBooking: !prev.canConfirmBooking }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.canConfirmBooking ? "bg-success" : "bg-gray-400"
                       }`}
@@ -646,7 +646,7 @@ export default function NewStaffPage() {
                     </Label>
                     <button
                       type="button"
-                      onClick={() => setPermissionsData({ ...permissionsData, canCancelBooking: !permissionsData.canCancelBooking })}
+                      onClick={() => setPermissionsData(prev => ({ ...prev, canCancelBooking: !prev.canCancelBooking }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         permissionsData.canCancelBooking ? "bg-success" : "bg-gray-400"
                       }`}
