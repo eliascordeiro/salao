@@ -16,7 +16,7 @@ export default function NewStaffPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions" | "blocks">("info");
+  const [activeTab, setActiveTab] = useState<"info" | "schedule" | "permissions">("info");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -459,6 +459,32 @@ export default function NewStaffPage() {
                   </select>
                 </div>
 
+                {/* Divisor */}
+                <div className="border-t border-primary/10 my-6"></div>
+
+                {/* Gestão de Bloqueios */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-2">
+                      <Calendar className="h-5 w-5 text-accent" />
+                      Gestão de Bloqueios
+                    </h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Configure bloqueios de horários indisponíveis
+                    </p>
+                  </div>
+
+                  <div className="p-6 rounded-lg glass-card bg-background-alt/30 border border-primary/10 text-center">
+                    <Calendar className="h-12 w-12 mx-auto mb-3 text-accent opacity-50" />
+                    <p className="text-foreground font-medium mb-2">
+                      Bloqueios disponíveis após cadastro
+                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Após criar o profissional, você poderá gerenciar bloqueios de horários na página de edição
+                    </p>
+                  </div>
+                </div>
+
                 {/* Botões */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
                   <GradientButton
@@ -639,74 +665,29 @@ export default function NewStaffPage() {
                   <GradientButton
                     type="button"
                     variant="success"
-                    onClick={() => setActiveTab("blocks")}
+                    onClick={handleSubmit}
+                    disabled={loading}
                     className="flex-1 py-3 min-h-[48px] order-1 sm:order-2"
                   >
-                    <span className="hidden xs:inline">Próximo</span>
-                    <span className="xs:hidden">Próximo</span>
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden xs:inline">Cadastrar Profissional</span>
+                        <span className="xs:hidden">Cadastrar</span>
+                      </>
+                    )}
                   </GradientButton>
                 </div>
               </div>
             </GlassCard>
           )}
 
-          {/* Aba Bloqueios */}
-          {activeTab === "blocks" && (
-            <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
-              <div className="mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-                  <Calendar className="h-6 w-6 text-accent" />
-                  Bloqueios de Horários
-                </h2>
-                <p className="text-foreground-muted mt-1 text-xs sm:text-sm md:text-base">
-                  Configure bloqueios de horários indisponíveis (será implementado após cadastro)
-                </p>
-              </div>
 
-              <div className="p-6 rounded-lg glass-card bg-background-alt/30 border border-primary/10 text-center">
-                <Calendar className="h-12 w-12 mx-auto mb-3 text-accent opacity-50" />
-                <p className="text-foreground font-medium mb-2">
-                  Bloqueios disponíveis após cadastro
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Após criar o profissional, você poderá gerenciar bloqueios de horários na página de edição
-                </p>
-              </div>
-
-              {/* Botões */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
-                <GradientButton
-                  type="button"
-                  variant="primary"
-                  onClick={() => setActiveTab("permissions")}
-                  className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
-                >
-                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Voltar</span>
-                </GradientButton>
-                <GradientButton
-                  type="button"
-                  variant="success"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="flex-1 py-3 min-h-[48px] order-1 sm:order-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden xs:inline">Cadastrar Profissional</span>
-                      <span className="xs:hidden">Cadastrar</span>
-                    </>
-                  )}
-                </GradientButton>
-              </div>
-            </GlassCard>
-          )}
         </main>
       </GridBackground>
     </div>
