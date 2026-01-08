@@ -959,43 +959,53 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 </div>
 
                 {/* Permissão de Agendamentos - Confirmar */}
-                <div className="glass-card bg-accent/5 border-accent/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={permissionsData.canConfirmBooking}
-                      onChange={(e) => handlePermissionToggle('canConfirmBooking', e.target.checked)}
-                      className="mt-0.5 w-5 h-5 rounded border-accent text-accent focus:ring-accent focus:ring-offset-0"
-                    />
-                    <div className="flex-1">
-                      <span className="text-foreground font-medium text-sm sm:text-base block mb-1">
-                        Confirmar agendamentos
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Profissional poderá confirmar seus próprios agendamentos
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Confirmar agendamentos
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => handlePermissionToggle('canConfirmBooking', !permissionsData.canConfirmBooking)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        permissionsData.canConfirmBooking ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          permissionsData.canConfirmBooking ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá confirmar seus próprios agendamentos
+                  </p>
                 </div>
 
                 {/* Permissão de Agendamentos - Cancelar */}
-                <div className="glass-card bg-destructive/5 border-destructive/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={permissionsData.canCancelBooking}
-                      onChange={(e) => handlePermissionToggle('canCancelBooking', e.target.checked)}
-                      className="mt-0.5 w-5 h-5 rounded border-destructive text-destructive focus:ring-destructive focus:ring-offset-0"
-                    />
-                    <div className="flex-1">
-                      <span className="text-foreground font-medium text-sm sm:text-base block mb-1">
-                        Cancelar agendamentos
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Profissional poderá cancelar seus próprios agendamentos
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Cancelar agendamentos
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => handlePermissionToggle('canCancelBooking', !permissionsData.canCancelBooking)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        permissionsData.canCancelBooking ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          permissionsData.canCancelBooking ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá cancelar seus próprios agendamentos
+                  </p>
                 </div>
               </div>
             </GlassCard>

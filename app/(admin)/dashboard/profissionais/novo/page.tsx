@@ -553,47 +553,53 @@ export default function NewStaffPage() {
                 </div>
 
                 {/* Permissão de Edição de Horários */}
-                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={scheduleData.canEditSchedule}
-                      onChange={(e) =>
-                        setScheduleData({ ...scheduleData, canEditSchedule: e.target.checked })
-                      }
-                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary"
-                    />
-                    <div>
-                      <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Editar horários
-                      </span>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        Profissional poderá alterar seus próprios horários de trabalho
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Editar horários
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setScheduleData({ ...scheduleData, canEditSchedule: !scheduleData.canEditSchedule })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        scheduleData.canEditSchedule ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          scheduleData.canEditSchedule ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá alterar seus próprios horários de trabalho
+                  </p>
                 </div>
 
                 {/* Permissão de Bloqueios */}
-                <div className="glass-card bg-primary/5 border-primary/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={scheduleData.canManageBlocks}
-                      onChange={(e) =>
-                        setScheduleData({ ...scheduleData, canManageBlocks: e.target.checked })
-                      }
-                      className="mt-0.5 w-5 h-5 rounded border-primary text-primary focus:ring-primary"
-                    />
-                    <div>
-                      <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Gerenciar bloqueios
-                      </span>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        Profissional poderá criar e remover bloqueios de datas/horários indisponíveis
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Gerenciar bloqueios
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setScheduleData({ ...scheduleData, canManageBlocks: !scheduleData.canManageBlocks })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        scheduleData.canManageBlocks ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          scheduleData.canManageBlocks ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá criar e remover bloqueios de datas/horários indisponíveis
+                  </p>
                 </div>
 
                 {/* Título: Gestão de Agendamentos */}
@@ -608,47 +614,53 @@ export default function NewStaffPage() {
                 </div>
 
                 {/* Confirmar Agendamentos */}
-                <div className="glass-card bg-success/5 border-success/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={permissionsData.canConfirmBooking}
-                      onChange={(e) =>
-                        setPermissionsData({ ...permissionsData, canConfirmBooking: e.target.checked })
-                      }
-                      className="mt-0.5 w-5 h-5 rounded border-success text-success focus:ring-success"
-                    />
-                    <div>
-                      <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Confirmar agendamentos
-                      </span>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        Profissional poderá confirmar seus próprios agendamentos
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Confirmar agendamentos
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setPermissionsData({ ...permissionsData, canConfirmBooking: !permissionsData.canConfirmBooking })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        permissionsData.canConfirmBooking ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          permissionsData.canConfirmBooking ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá confirmar seus próprios agendamentos
+                  </p>
                 </div>
 
                 {/* Cancelar Agendamentos */}
-                <div className="glass-card bg-destructive/5 border-destructive/20 p-4 rounded-lg">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={permissionsData.canCancelBooking}
-                      onChange={(e) =>
-                        setPermissionsData({ ...permissionsData, canCancelBooking: e.target.checked })
-                      }
-                      className="mt-0.5 w-5 h-5 rounded border-destructive text-destructive focus:ring-destructive"
-                    />
-                    <div>
-                      <span className="text-foreground font-medium text-sm sm:text-base block">
-                        Cancelar agendamentos
-                      </span>
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        Profissional poderá cancelar seus próprios agendamentos
-                      </span>
-                    </div>
-                  </label>
+                <div className="p-4 rounded-lg glass-card bg-background-alt/30 border border-primary/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-foreground text-sm sm:text-base font-medium cursor-pointer">
+                      Cancelar agendamentos
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setPermissionsData({ ...permissionsData, canCancelBooking: !permissionsData.canCancelBooking })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        permissionsData.canCancelBooking ? "bg-success" : "bg-gray-400"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          permissionsData.canCancelBooking ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Profissional poderá cancelar seus próprios agendamentos
+                  </p>
                 </div>
 
                 {/* Botões */}
