@@ -190,6 +190,26 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     }
   };
 
+  const handlePermissionsSave = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/staff/${staffId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(permissionsData),
+      });
+
+      if (!response.ok) throw new Error("Erro ao salvar permissões");
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      alert("Erro ao salvar permissões");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handlePermissionToggle = async (field: 'canEditSchedule' | 'canManageBlocks' | 'canConfirmBooking' | 'canCancelBooking', value: boolean) => {
     try {
       // Determinar onde atualizar (scheduleData ou permissionsData)
@@ -318,12 +338,6 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           phone: formData.phone || null,
           specialty: formData.specialty || null,
           active: formData.active,
-          loginEnabled: permissionsData.loginEnabled,
-          // Preservar permissões existentes
-          canEditSchedule: scheduleData.canEditSchedule,
-          canManageBlocks: scheduleData.canManageBlocks,
-          canConfirmBooking: permissionsData.canConfirmBooking,
-          canCancelBooking: permissionsData.canCancelBooking,
         }),
       });
 
@@ -332,8 +346,8 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
         throw new Error(error.error || "Erro ao atualizar profissional");
       }
 
-      router.push("/dashboard/profissionais");
-      router.refresh();
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     } catch (error) {
       console.error("Erro ao atualizar profissional:", error);
       alert(
@@ -429,6 +443,13 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           {/* Conteúdo das Abas */}
           {activeTab === "info" && (
             <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
+            {showSuccess && (
+              <div className="mb-4 p-3 sm:p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2 text-green-300 text-sm sm:text-base">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>Informações salvas com sucesso!</span>
+              </div>
+            )}
+            
             <div className="mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                 <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
@@ -521,19 +542,9 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 </Label>
               </div>
 
-              {/* Botões */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 sm:pt-6">
-                <GradientButton
-                  type="button"
-                  variant="primary"
-                  onClick={() => router.push("/dashboard/profissionais")}
-                  disabled={loading}
-                  className="flex-1 py-3 min-h-[48px] order-2 sm:order-1"
-                >
-                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Cancelar</span>
-                </GradientButton>
-                <GradientButton type="submit" variant="accent" disabled={loading} className="flex-1 py-3 min-h-[48px] order-1 sm:order-2">
+              {/* Botão Salvar */}
+              <div className="pt-4 sm:pt-6">
+                <GradientButton type="submit" variant="accent" disabled={loading} className="w-full py-3 min-h-[48px]">
                   {loading ? (
                     <>
                       <Sparkles className="h-4 w-4 animate-spin sm:mr-2" />
@@ -542,8 +553,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   ) : (
                     <>
                       <Save className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden xs:inline">Salvar Alterações</span>
-                      <span className="xs:hidden">Salvar</span>
+                      Salvar
                     </>
                   )}
                 </GradientButton>
@@ -911,7 +921,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   ) : (
                     <>
                       <Save className="h-4 w-4 sm:mr-2" />
-                      Salvar Horários
+                      Salvar
                     </>
                   )}
                 </GradientButton>
@@ -922,6 +932,13 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
           {/* Aba Permissões */}
           {activeTab === "permissions" && (
             <GlassCard glow="accent" className="max-w-2xl p-4 sm:p-6 md:p-8">
+              {showSuccess && (
+                <div className="mb-4 p-3 sm:p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-2 text-green-300 text-sm sm:text-base">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>Permissões salvas com sucesso!</span>
+                </div>
+              )}
+
               <div className="mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
                   <Calendar className="h-6 w-6 text-accent" />
@@ -1007,6 +1024,27 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     Profissional poderá cancelar seus próprios agendamentos
                   </p>
                 </div>
+
+                {/* Botão Salvar */}
+                <GradientButton
+                  type="button"
+                  variant="accent"
+                  onClick={handlePermissionsSave}
+                  disabled={loading}
+                  className="w-full py-3 min-h-[48px]"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 sm:mr-2" />
+                      Salvar
+                    </>
+                  )}
+                </GradientButton>
               </div>
             </GlassCard>
           )}
