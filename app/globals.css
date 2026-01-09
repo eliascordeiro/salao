@@ -117,42 +117,42 @@
     --info: 217 91% 60%;             /* #3B82F6 */
   }
 
-  /* Ultra Light Theme - Tom levemente mais escuro que o Light */
+  /* Ultra Light Theme - Tons azul-acinzentados intermediários */
   .ultra-light {
-    /* Ultra Light Background - Off-white mais acentuado */
-    --background: 220 12% 94%;       /* #edeef0 - Cinza bem claro */
-    --background-alt: 220 10% 90%;   /* #e3e4e7 - Cinza claro médio */
+    /* Ultra Light Background - Azul-acinzentado suave */
+    --background: 215 22% 82%;       /* #c5cdd8 - Azul-cinza claro */
+    --background-alt: 215 20% 75%;   /* #b0bac8 - Azul-cinza médio */
     
-    /* Foreground - Tom mais forte */
-    --foreground: 220 18% 12%;       /* #1e2228 - Cinza escuro forte */
-    --foreground-muted: 220 10% 45%; /* #6b7075 - Cinza médio */
+    /* Foreground - Contraste forte */
+    --foreground: 215 25% 15%;       /* #1d2530 - Azul escuro */
+    --foreground-muted: 215 12% 42%; /* #5d6570 - Cinza azulado médio */
     
-    /* Borders - Mais visíveis */
-    --border: 220 12% 85%;           /* #d4d6d9 - Borda clara */
-    --border-hover: 220 12% 75%;     /* #babdc2 - Hover mais escuro */
+    /* Borders - Azul-acinzentados visíveis */
+    --border: 215 18% 68%;           /* #9ba8b8 - Borda azul-cinza */
+    --border-hover: 215 20% 58%;     /* #7f8fa3 - Hover azulado */
     
-    /* Primary - Tons mais saturados */
-    --primary: 250 68% 55%;          /* #5f62ed - Roxo/Índigo mais forte */
-    --primary-light: 250 78% 65%;
-    --primary-dark: 250 68% 45%;
+    /* Primary - Azul vibrante */
+    --primary: 215 75% 52%;          /* #2276d7 - Azul forte */
+    --primary-light: 215 80% 62%;
+    --primary-dark: 215 75% 42%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Secondary - Roxo mais saturado */
-    --secondary: 280 65% 62%;        /* #ad6ff0 - Roxo médio forte */
-    --secondary-light: 280 75% 72%;
-    --secondary-dark: 280 65% 52%;
+    /* Secondary - Azul-índigo */
+    --secondary: 235 65% 58%;        /* #5869d6 - Índigo médio */
+    --secondary-light: 235 75% 68%;
+    --secondary-dark: 235 65% 48%;
     
-    /* Accent - Ciano mais saturado */
-    --accent: 193 78% 40%;           /* #23b5d3 - Ciano médio forte */
-    --accent-light: 193 82% 50%;
-    --accent-dark: 193 75% 30%;
+    /* Accent - Verde-azulado (teal) */
+    --accent: 175 65% 45%;           /* #2aa897 - Teal vibrante */
+    --accent-light: 175 70% 55%;
+    --accent-dark: 175 65% 35%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
-    /* Status colors - Mais saturados */
-    --success: 142 70% 40%;          /* #26c96f - Verde forte */
-    --error: 0 80% 60%;              /* #ed5858 - Vermelho forte */
-    --warning: 38 87% 53%;           /* #f5a123 - Amarelo forte */
-    --info: 217 87% 60%;             /* #4d95f3 - Azul forte */
+    /* Status colors - Saturados */
+    --success: 145 68% 42%;          /* #23b574 - Verde forte */
+    --error: 355 75% 58%;            /* #e84855 - Vermelho forte */
+    --warning: 35 90% 55%;           /* #f5a623 - Laranja forte */
+    --info: 210 85% 58%;             /* #3d8fe0 - Azul info forte */
   }
   
   * {
@@ -192,9 +192,9 @@
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
   }
 
-  /* Ultra Light theme shadows - Mais visíveis */
+  /* Ultra Light theme shadows - Azuladas e mais visíveis */
   .ultra-light .glass-card {
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(95, 98, 237, 0.15);
+    box-shadow: 0 4px 20px 0 rgba(34, 118, 215, 0.12), 0 0 1px rgba(34, 118, 215, 0.2);
   }
   
   .glass-card-hover {
