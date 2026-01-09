@@ -117,42 +117,42 @@
     --info: 217 91% 60%;             /* #3B82F6 */
   }
 
-  /* Ultra Light Theme - Tons azul-acinzentados intermediários */
+  /* Ultra Light Theme - Tons azul céu/lavanda luminosos e modernos */
   .ultra-light {
-    /* Ultra Light Background - Azul-acinzentado suave */
-    --background: 215 22% 82%;       /* #c5cdd8 - Azul-cinza claro */
-    --background-alt: 215 20% 75%;   /* #b0bac8 - Azul-cinza médio */
+    /* Ultra Light Background - Azul céu claro e brilhante */
+    --background: 210 35% 92%;       /* #dae6f4 - Azul céu luminoso */
+    --background-alt: 210 32% 86%;   /* #c4d7ed - Azul claro vibrante */
     
-    /* Foreground - Contraste forte */
-    --foreground: 215 25% 15%;       /* #1d2530 - Azul escuro */
-    --foreground-muted: 215 12% 42%; /* #5d6570 - Cinza azulado médio */
+    /* Foreground - Azul escuro profundo para contraste */
+    --foreground: 215 50% 18%;       /* #172b48 - Azul marinho escuro */
+    --foreground-muted: 215 20% 45%; /* #5d6f85 - Cinza azulado */
     
-    /* Borders - Azul-acinzentados visíveis */
-    --border: 215 18% 68%;           /* #9ba8b8 - Borda azul-cinza */
-    --border-hover: 215 20% 58%;     /* #7f8fa3 - Hover azulado */
+    /* Borders - Azul suave e visível */
+    --border: 210 28% 78%;           /* #b3cae3 - Borda azul suave */
+    --border-hover: 210 35% 68%;     /* #8eb5d9 - Hover azul vibrante */
     
-    /* Primary - Azul vibrante */
-    --primary: 215 75% 52%;          /* #2276d7 - Azul forte */
-    --primary-light: 215 80% 62%;
-    --primary-dark: 215 75% 42%;
+    /* Primary - Azul royal vibrante */
+    --primary: 215 85% 55%;          /* #1e7ce6 - Azul royal brilhante */
+    --primary-light: 215 88% 65%;
+    --primary-dark: 215 85% 45%;
     --primary-foreground: 0 0% 100%; /* #ffffff */
     
-    /* Secondary - Azul-índigo */
-    --secondary: 235 65% 58%;        /* #5869d6 - Índigo médio */
-    --secondary-light: 235 75% 68%;
-    --secondary-dark: 235 65% 48%;
+    /* Secondary - Roxo lavanda */
+    --secondary: 260 70% 62%;        /* #8a70e8 - Lavanda vibrante */
+    --secondary-light: 260 75% 72%;
+    --secondary-dark: 260 70% 52%;
     
-    /* Accent - Verde-azulado (teal) */
-    --accent: 175 65% 45%;           /* #2aa897 - Teal vibrante */
-    --accent-light: 175 70% 55%;
-    --accent-dark: 175 65% 35%;
+    /* Accent - Ciano elétrico */
+    --accent: 185 80% 48%;           /* #19b8d4 - Ciano brilhante */
+    --accent-light: 185 85% 58%;
+    --accent-dark: 185 80% 38%;
     --accent-foreground: 0 0% 100%;  /* #ffffff */
     
-    /* Status colors - Saturados */
-    --success: 145 68% 42%;          /* #23b574 - Verde forte */
-    --error: 355 75% 58%;            /* #e84855 - Vermelho forte */
-    --warning: 35 90% 55%;           /* #f5a623 - Laranja forte */
-    --info: 210 85% 58%;             /* #3d8fe0 - Azul info forte */
+    /* Status colors - Vibrantes e luminosos */
+    --success: 150 75% 45%;          /* #20c97a - Verde vibrante */
+    --error: 355 82% 60%;            /* #ed4a5a - Vermelho coral */
+    --warning: 38 95% 58%;           /* #faa829 - Laranja dourado */
+    --info: 210 90% 58%;             /* #3d94f5 - Azul info brilhante */
   }
   
   * {
@@ -192,9 +192,9 @@
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08), 0 0 1px rgba(99, 102, 241, 0.1);
   }
 
-  /* Ultra Light theme shadows - Azuladas e mais visíveis */
+  /* Ultra Light theme shadows - Suaves e luminosas */
   .ultra-light .glass-card {
-    box-shadow: 0 4px 20px 0 rgba(34, 118, 215, 0.12), 0 0 1px rgba(34, 118, 215, 0.2);
+    box-shadow: 0 4px 20px 0 rgba(30, 124, 230, 0.15), 0 0 2px rgba(30, 124, 230, 0.25);
   }
   
   .glass-card-hover {
