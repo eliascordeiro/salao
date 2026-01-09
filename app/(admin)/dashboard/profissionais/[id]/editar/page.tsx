@@ -746,7 +746,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                   {!showBlockForm && (
                     <GradientButton
                       type="button"
-                      variant="accent"
+                      variant="primary"
                       onClick={() => setShowBlockForm(true)}
                       className="w-full py-3 min-h-[48px]"
                     >
@@ -837,7 +837,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                       <div className="flex gap-2 sm:gap-3">
                         <GradientButton
                           type="button"
-                          variant="primary"
+                          variant="accent"
                           onClick={() => setShowBlockForm(false)}
                           className="flex-1 py-3 min-h-[48px]"
                         >
@@ -845,7 +845,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                         </GradientButton>
                         <GradientButton
                           type="submit"
-                          variant="accent"
+                          variant="primary"
                           disabled={loading}
                           className="flex-1 py-3 min-h-[48px]"
                         >
@@ -908,7 +908,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 {/* Botão Salvar */}
                 <GradientButton
                   type="button"
-                  variant="primary"
+                  variant="accent"
                   onClick={handleScheduleSave}
                   disabled={loading}
                   className="w-full py-3 min-h-[48px]"
