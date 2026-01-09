@@ -113,67 +113,65 @@ export default async function StaffPage() {
                   key={member.id} 
                   hover 
                   glow={member.active ? "success" : undefined}
-                  className="p-6 animate-fadeInUp"
+                  className="p-6 animate-fadeInUp flex flex-col"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
-                        <User className="h-5 w-5 text-accent" />
-                        {member.name}
+                  {/* Header - altura fixa */}
+                  <div className="flex items-start justify-between mb-4 min-h-[80px]">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2 truncate">
+                        <User className="h-5 w-5 text-accent flex-shrink-0" />
+                        <span className="truncate">{member.name}</span>
                       </h3>
                       {member.specialty && (
-                        <div className="flex items-center text-sm text-foreground-muted mb-2">
-                          <Briefcase className="h-4 w-4 mr-1" />
-                          {member.specialty}
+                        <div className="flex items-center text-sm text-foreground-muted">
+                          <Briefcase className="h-4 w-4 mr-1 flex-shrink-0" />
+                          <span className="truncate">{member.specialty}</span>
                         </div>
                       )}
                     </div>
                     {member.active ? (
-                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent">
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent flex-shrink-0 ml-2 h-fit">
                         <CheckCircle className="h-3 w-3" />
                         Ativo
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted">
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted flex-shrink-0 ml-2 h-fit">
                         <XCircle className="h-3 w-3" />
                         Inativo
                       </span>
                     )}
                   </div>
 
-                  {/* Detalhes */}
-                  <div className="space-y-3 mb-4">
-                    {/* Email */}
-                    <div className="flex items-center text-sm text-foreground-muted">
+                  {/* Detalhes - cresce para preencher espaço */}
+                  <div className="space-y-3 mb-4 flex-grow">
+                    {/* Email - altura fixa */}
+                    <div className="flex items-center text-sm text-foreground-muted min-h-[20px]">
                       <Mail className="h-4 w-4 mr-2 flex-shrink-0 text-primary" />
                       <span className="truncate">{member.email}</span>
                     </div>
 
-                    {/* Telefone */}
-                    {member.phone && (
-                      <div className="flex items-center text-sm text-foreground-muted">
-                        <Phone className="h-4 w-4 mr-2 flex-shrink-0 text-accent" />
-                        {member.phone}
-                      </div>
-                    )}
-
-                    {/* Salão */}
-                    <div className="flex items-center text-sm text-foreground-muted">
-                      <span className="font-semibold text-foreground">Salão:</span>
-                      <span className="ml-1">{member.salon.name}</span>
+                    {/* Telefone - altura fixa */}
+                    <div className="flex items-center text-sm text-foreground-muted min-h-[20px]">
+                      <Phone className="h-4 w-4 mr-2 flex-shrink-0 text-accent" />
+                      <span className="truncate">{member.phone || "—"}</span>
                     </div>
 
-                    {/* Serviços */}
-                    <div>
+                    {/* Salão - altura fixa */}
+                    <div className="flex items-center text-sm text-foreground-muted min-h-[20px]">
+                      <span className="font-semibold text-foreground mr-1">Salão:</span>
+                      <span className="truncate">{member.salon.name}</span>
+                    </div>
+
+                    {/* Serviços - altura fixa */}
+                    <div className="min-h-[72px]">
                       <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
                         <Sparkles className="h-3 w-3 text-primary" />
-                        Serviços prestados:
+                        Serviços:
                       </p>
                       {member.services.length === 0 ? (
                         <p className="text-sm text-foreground-muted/60 italic">
-                          Nenhum serviço associado
+                          Nenhum serviço
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-1">
@@ -194,19 +192,19 @@ export default async function StaffPage() {
                       )}
                     </div>
 
-                    {/* Estatísticas */}
-                    <div className="pt-3 border-t border-border">
+                    {/* Estatísticas - altura fixa */}
+                    <div className="pt-3 border-t border-border min-h-[48px]">
                       <p className="text-sm text-foreground-muted">
                         <span className="font-bold text-accent">
                           {member._count.bookings}
                         </span>{" "}
-                        agendamentos realizados
+                        agendamentos
                       </p>
                     </div>
                   </div>
 
-                  {/* Ações */}
-                  <div className="flex gap-2">
+                  {/* Ações - altura fixa no final */}
+                  <div className="flex gap-2 mt-auto">
                     <Link href={`/dashboard/profissionais/${member.id}/editar`} className="flex-1">
                       <GradientButton variant="accent" className="w-full text-xs">
                         Editar
