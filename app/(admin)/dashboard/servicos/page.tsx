@@ -95,56 +95,55 @@ export default async function ServicesPage() {
                   key={service.id} 
                   hover 
                   glow={service.active ? "success" : undefined}
-                  className="p-6 animate-fadeInUp"
+                  className="p-6 animate-fadeInUp flex flex-col"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
-                        {service.name}
+                  {/* Header - altura fixa */}
+                  <div className="flex justify-between items-start mb-4 min-h-[80px]">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2 truncate">
+                        <span className="truncate">{service.name}</span>
                       </h3>
-                      {service.category && (
-                        <span className="text-xs text-foreground-muted glass-card bg-background-alt/50 px-2 py-1 rounded-md inline-block">
-                          {service.category}
-                        </span>
-                      )}
+                      <span className="text-xs text-foreground-muted glass-card bg-background-alt/50 px-2 py-1 rounded-md inline-block">
+                        {service.category || "Sem categoria"}
+                      </span>
                     </div>
                     {service.active ? (
-                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent">
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent flex-shrink-0 ml-2 h-fit">
                         <CheckCircle className="h-3 w-3" />
                         Ativo
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted">
+                      <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted flex-shrink-0 ml-2 h-fit">
                         <XCircle className="h-3 w-3" />
                         Inativo
                       </span>
                     )}
                   </div>
 
-                  {service.description && (
-                    <p className="text-sm text-foreground-muted mb-4 line-clamp-2">
-                      {service.description}
+                  {/* Descrição - altura fixa */}
+                  <div className="mb-4 min-h-[40px]">
+                    <p className="text-sm text-foreground-muted line-clamp-2">
+                      {service.description || "—"}
                     </p>
-                  )}
+                  </div>
 
-                  {/* Preço e Duração */}
-                  <div className="flex justify-between items-center py-3 mb-4 border-t border-b border-border">
+                  {/* Preço e Duração - altura fixa */}
+                  <div className="flex justify-between items-center py-3 mb-4 border-t border-b border-border min-h-[56px]">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5 text-accent" />
+                      <DollarSign className="h-5 w-5 text-accent flex-shrink-0" />
                       <span className="font-bold text-xl text-primary">
                         R$ {service.price.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-foreground-muted">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="h-4 w-4 flex-shrink-0" />
                       <span className="text-sm font-medium">{service.duration} min</span>
                     </div>
                   </div>
 
-                  {/* Profissionais */}
-                  <div className="mb-4">
+                  {/* Profissionais - altura fixa */}
+                  <div className="mb-4 min-h-[72px] flex-grow">
                     <p className="text-xs text-foreground-muted mb-2 flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       Profissionais:
@@ -162,15 +161,15 @@ export default async function ServicesPage() {
                     )}
                   </div>
 
-                  {/* Estatísticas */}
-                  <div className="py-3 border-t border-border mb-4">
+                  {/* Estatísticas - altura fixa */}
+                  <div className="py-3 border-t border-border mb-4 min-h-[48px]">
                     <p className="text-xs text-foreground-muted">
-                      <span className="font-semibold text-primary">{service._count.bookings}</span> agendamentos realizados
+                      <span className="font-semibold text-primary">{service._count.bookings}</span> agendamentos
                     </p>
                   </div>
 
-                  {/* Ações */}
-                  <div className="flex gap-2">
+                  {/* Ações - altura fixa no final */}
+                  <div className="flex gap-2 mt-auto">
                     <Link href={`/dashboard/servicos/${service.id}/editar`} className="flex-1">
                       <GradientButton variant="accent" className="w-full text-sm group">
                         <Pencil className="h-3 w-3 group-hover:rotate-12 transition-transform" />
