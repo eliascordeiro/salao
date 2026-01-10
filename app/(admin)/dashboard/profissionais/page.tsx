@@ -143,8 +143,8 @@ export default async function StaffPage() {
                     )}
                   </div>
 
-                  {/* Detalhes - cresce para preencher espaço */}
-                  <div className="space-y-3 mb-4 flex-grow">
+                  {/* Detalhes - parte fixa */}
+                  <div className="space-y-3 mb-4">
                     {/* Email - altura fixa */}
                     <div className="flex items-center text-sm text-foreground-muted min-h-[20px]">
                       <Mail className="h-4 w-4 mr-2 flex-shrink-0 text-primary" />
@@ -162,45 +162,45 @@ export default async function StaffPage() {
                       <span className="font-semibold text-foreground mr-1">Salão:</span>
                       <span className="truncate">{member.salon.name}</span>
                     </div>
+                  </div>
 
-                    {/* Serviços - altura fixa */}
-                    <div className="min-h-[72px]">
-                      <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
-                        <Sparkles className="h-3 w-3 text-primary" />
-                        Serviços:
+                  {/* Serviços - área flexível que cresce */}
+                  <div className="mb-4 flex-grow">
+                    <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
+                      <Sparkles className="h-3 w-3 text-primary" />
+                      Serviços:
+                    </p>
+                    {member.services.length === 0 ? (
+                      <p className="text-sm text-foreground-muted/60 italic">
+                        Nenhum serviço
                       </p>
-                      {member.services.length === 0 ? (
-                        <p className="text-sm text-foreground-muted/60 italic">
-                          Nenhum serviço
-                        </p>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {member.services.slice(0, 3).map((s) => (
-                            <span
-                              key={s.serviceId}
-                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-primary/10 text-primary"
-                            >
-                              {s.service.name}
-                            </span>
-                          ))}
-                          {member.services.length > 3 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-background-alt/50 text-foreground-muted">
-                              +{member.services.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {member.services.slice(0, 3).map((s) => (
+                          <span
+                            key={s.serviceId}
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-primary/10 text-primary"
+                          >
+                            {s.service.name}
+                          </span>
+                        ))}
+                        {member.services.length > 3 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium glass-card bg-background-alt/50 text-foreground-muted">
+                            +{member.services.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-                    {/* Estatísticas - altura fixa */}
-                    <div className="pt-3 border-t border-border min-h-[48px] flex items-center">
-                      <p className="text-sm text-foreground-muted">
-                        <span className="font-bold text-accent">
-                          {member._count.bookings}
-                        </span>{" "}
-                        agendamentos
-                      </p>
-                    </div>
+                  {/* Estatísticas - fixo antes dos botões */}
+                  <div className="pt-3 border-t border-border mb-4 min-h-[48px] flex items-center">
+                    <p className="text-sm text-foreground-muted">
+                      <span className="font-bold text-accent">
+                        {member._count.bookings}
+                      </span>{" "}
+                      agendamentos
+                    </p>
                   </div>
 
                   {/* Ações - altura fixa no final */}
