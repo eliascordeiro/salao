@@ -193,7 +193,7 @@ export default async function StaffPage() {
                     </div>
 
                     {/* Estatísticas - altura fixa */}
-                    <div className="pt-3 border-t border-border min-h-[48px]">
+                    <div className="pt-3 border-t border-border min-h-[48px] flex items-center">
                       <p className="text-sm text-foreground-muted">
                         <span className="font-bold text-accent">
                           {member._count.bookings}
