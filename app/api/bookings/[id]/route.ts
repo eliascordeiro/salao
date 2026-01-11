@@ -86,11 +86,6 @@ export async function PUT(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // Apenas ADMIN pode atualizar agendamentos
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
-    }
-
     const body = await request.json();
     const { status, notes, date, serviceId, staffId } = body;
 
@@ -98,6 +93,62 @@ export async function PUT(
     const validStatuses = ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"];
     if (status && !validStatuses.includes(status)) {
       return NextResponse.json({ error: "Status inválido" }, { status: 400 });
+    }
+
+    // Verificar permissões
+    let hasPermission = false;
+
+    if (session.user.role === "ADMIN") {
+      // Admin tem permissão total
+      hasPermission = true;
+    } else if ((session.user as any).roleType === "STAFF") {
+      // Profissionais precisam de permissões específicas
+      const staffProfile = await prisma.staff.findFirst({
+        where: { userId: session.user.id },
+        select: { 
+          id: true,
+          canConfirmBooking: true, 
+          canCancelBooking: true 
+        },
+      });
+
+      if (!staffProfile) {
+        return NextResponse.json({ error: "Perfil de profissional não encontrado" }, { status: 404 });
+      }
+
+      // Verificar se o agendamento pertence a este profissional
+      const booking = await prisma.booking.findUnique({
+        where: { id: params.id },
+        select: { staffId: true },
+      });
+
+      if (!booking) {
+        return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
+      }
+
+      if (booking.staffId !== staffProfile.id) {
+        return NextResponse.json({ error: "Você só pode gerenciar seus próprios agendamentos" }, { status: 403 });
+      }
+
+      // Verificar permissão específica
+      if (status === "CONFIRMED" && !staffProfile.canConfirmBooking) {
+        return NextResponse.json({ error: "Você não tem permissão para confirmar agendamentos" }, { status: 403 });
+      }
+
+      if (status === "CANCELLED" && !staffProfile.canCancelBooking) {
+        return NextResponse.json({ error: "Você não tem permissão para cancelar agendamentos" }, { status: 403 });
+      }
+
+      // Profissionais só podem alterar status (não data, serviço, profissional)
+      if (date || serviceId || staffId) {
+        return NextResponse.json({ error: "Profissionais só podem alterar o status do agendamento" }, { status: 403 });
+      }
+
+      hasPermission = true;
+    }
+
+    if (!hasPermission) {
+      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
     // Validar data se fornecida

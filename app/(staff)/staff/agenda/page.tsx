@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar as CalendarIcon, Clock, User, Phone } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Phone, CheckCircle, XCircle } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -15,13 +16,37 @@ interface Booking {
   client: { name: string; phone?: string };
 }
 
+interface StaffProfile {
+  id: string;
+  name: string;
+  canConfirmBooking: boolean;
+  canCancelBooking: boolean;
+  canEditSchedule: boolean;
+  canManageBlocks: boolean;
+}
+
 export default function StaffAgendaPage() {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
+    fetchStaffProfile();
     fetchBookings();
   }, []);
+
+  const fetchStaffProfile = async () => {
+    try {
+      const response = await fetch("/api/staff/profile");
+      if (!response.ok) throw new Error("Erro ao carregar perfil");
+      
+      const data = await response.json();
+      setStaffProfile(data);
+    } catch (error) {
+      console.error("Erro ao carregar perfil:", error);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -60,6 +85,58 @@ export default function StaffAgendaPage() {
       CANCELLED: "Cancelado",
     };
     return labels[status] || status;
+  };
+
+  const handleConfirmBooking = async (bookingId: string) => {
+    if (!confirm("Deseja confirmar este agendamento?")) return;
+
+    setActionLoading(bookingId);
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CONFIRMED" }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao confirmar agendamento");
+
+      // Atualizar lista local
+      setBookings(bookings.map(b => 
+        b.id === bookingId ? { ...b, status: "CONFIRMED" } : b
+      ));
+      alert("Agendamento confirmado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao confirmar:", error);
+      alert("Erro ao confirmar agendamento");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!confirm("Deseja cancelar este agendamento?")) return;
+
+    setActionLoading(bookingId);
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CANCELLED" }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao cancelar agendamento");
+
+      // Atualizar lista local
+      setBookings(bookings.map(b => 
+        b.id === bookingId ? { ...b, status: "CANCELLED" } : b
+      ));
+      alert("Agendamento cancelado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao cancelar:", error);
+      alert("Erro ao cancelar agendamento");
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   if (loading) {
@@ -134,19 +211,65 @@ export default function StaffAgendaPage() {
                   )}
                 </div>
 
-                <div className="flex lg:flex-col items-start lg:items-end gap-3 sm:gap-4">
-                  <div className="text-left lg:text-right">
-                    <p className="text-xs sm:text-sm text-muted-foreground">Data</p>
-                    <p className="text-base sm:text-lg font-bold text-primary">
-                      {format(new Date(booking.date), "dd/MM/yyyy", { locale: ptBR })}
-                    </p>
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  <div className="flex lg:flex-col items-start lg:items-end gap-3 sm:gap-3">
+                    <div className="text-left lg:text-right">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Data</p>
+                      <p className="text-base sm:text-lg font-bold text-primary">
+                        {format(new Date(booking.date), "dd/MM/yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <div className="text-left lg:text-right">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Horário</p>
+                      <p className="text-base sm:text-lg font-bold text-accent">
+                        {format(new Date(booking.date), "HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-left lg:text-right">
-                    <p className="text-xs sm:text-sm text-muted-foreground">Horário</p>
-                    <p className="text-base sm:text-lg font-bold text-accent">
-                      {format(new Date(booking.date), "HH:mm", { locale: ptBR })}
-                    </p>
-                  </div>
+
+                  {/* Ações baseadas em permissões */}
+                  {booking.status === "PENDING" && staffProfile && (
+                    <div className="flex flex-col gap-2">
+                      {staffProfile.canConfirmBooking && (
+                        <Button
+                          onClick={() => handleConfirmBooking(booking.id)}
+                          disabled={actionLoading === booking.id}
+                          className="w-full bg-success hover:bg-success/90 text-white gap-2"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          {actionLoading === booking.id ? "Confirmando..." : "Confirmar"}
+                        </Button>
+                      )}
+                      {staffProfile.canCancelBooking && (
+                        <Button
+                          onClick={() => handleCancelBooking(booking.id)}
+                          disabled={actionLoading === booking.id}
+                          variant="outline"
+                          className="w-full border-error text-error hover:bg-error/10 gap-2"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          {actionLoading === booking.id ? "Cancelando..." : "Cancelar"}
+                        </Button>
+                      )}
+                      {!staffProfile.canConfirmBooking && !staffProfile.canCancelBooking && (
+                        <p className="text-xs text-muted-foreground text-center italic">
+                          Sem permissão para gerenciar agendamentos
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {booking.status === "CONFIRMED" && staffProfile?.canCancelBooking && (
+                    <Button
+                      onClick={() => handleCancelBooking(booking.id)}
+                      disabled={actionLoading === booking.id}
+                      variant="outline"
+                      className="w-full border-error text-error hover:bg-error/10 gap-2"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      {actionLoading === booking.id ? "Cancelando..." : "Cancelar"}
+                    </Button>
+                  )}
                 </div>
               </div>
             </GlassCard>
