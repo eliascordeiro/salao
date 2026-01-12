@@ -13,7 +13,7 @@ model User {
   email            String    @unique
   phone            String?
   password         String
-  role             String    @default("CLIENT") // "CLIENT", "ADMIN"
+  role             String    @default("CLIENT") // "CLIENT", "ADMIN", "PLATFORM_ADMIN"
   roleType         String? // "OWNER", "STAFF", "CUSTOM" (para usuários do salão)
   ownerId          String? // ID do usuário proprietário (se for STAFF ou CUSTOM)
   permissions      String[]  @default([]) // Array de permissões ["dashboard.view", "bookings.view", etc]

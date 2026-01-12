@@ -6,7 +6,22 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...')
 
-  // Criar usuário admin
+  // Criar usuário PLATFORM_ADMIN (super admin da plataforma)
+  const platformAdminPassword = await bcrypt.hash(process.env.PLATFORM_ADMIN_PASSWORD || 'SuperAdmin2026!', 10)
+  const platformAdmin = await prisma.user.upsert({
+    where: { email: process.env.PLATFORM_ADMIN_EMAIL || 'platform@salaoblza.com.br' },
+    update: {},
+    create: {
+      email: process.env.PLATFORM_ADMIN_EMAIL || 'platform@salaoblza.com.br',
+      name: 'Platform Administrator',
+      password: platformAdminPassword,
+      role: 'PLATFORM_ADMIN',
+      phone: '(11) 00000-0000'
+    }
+  })
+  console.log('✅ Platform Admin criado:', platformAdmin.email)
+
+  // Criar usuário admin (dono de salão)
   const adminPassword = await bcrypt.hash('admin123', 10)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@agendasalao.com.br' },
@@ -190,6 +205,7 @@ async function main() {
   console.log('🎉 Seed concluído com sucesso!')
   console.log('')
   console.log('📝 Credenciais de acesso:')
+  console.log('   Platform Admin: platform@salaoblza.com.br / SuperAdmin2026!')
   console.log('   Admin: admin@agendasalao.com.br / admin123')
   console.log('   Cliente: pedro@exemplo.com / cliente123')
   console.log('')

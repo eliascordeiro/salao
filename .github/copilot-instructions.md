@@ -34,6 +34,7 @@
 - [x] Sistema de seleção de serviços no caixa (checkboxes para pagamento parcial)
 - [x] Assistente Virtual Admin (IA contextual no painel administrativo)
 - [x] Sistema de Assinaturas com Mercado Pago (PIX + Cartão)
+- [x] Platform Admin Dashboard (controle total da plataforma)
 
 ## Stack Tecnológico
 - Next.js 14 (App Router)
@@ -67,6 +68,12 @@
 - Plan (planos de assinatura - Essencial/Profissional)
 - Subscription (assinaturas mensais via Mercado Pago)
 - SubscriptionPayment (histórico de pagamentos das assinaturas)
+
+## Roles de Usuário
+- **CLIENT**: Cliente final (agenda serviços)
+- **ADMIN**: Dono de salão (gerencia seu salão)
+- **PLATFORM_ADMIN**: Super admin (controla toda a plataforma)
+- **roleType**: OWNER, STAFF, CUSTOM (para multi-usuário no salão)
 
 ## Funcionalidades Implementadas
 ✅ Landing page responsiva
@@ -344,8 +351,21 @@
   - Documentação completa: docs/SISTEMA_ASSINATURAS_MERCADOPAGO.md
   - Guia de testes: docs/GUIA_TESTES_ASSINATURAS.md
   - ⏳ Falta implementar: Feature flags para bloquear recursos premium + Dashboard admin de assinatura
+✅ Platform Admin Dashboard (controle total da plataforma):
+  - Role PLATFORM_ADMIN no schema User
+  - Dashboard em /platform-admin com overview completo
+  - Estatísticas globais: salões, usuários, assinaturas, MRR
+  - APIs de gestão: /api/platform/salons, /api/platform/users, /api/platform/subscriptions, /api/platform/analytics
+  - Middleware protegendo rotas (verificação role PLATFORM_ADMIN)
+  - Credenciais: platform@salaoblza.com.br / SuperAdmin2026!
+  - Métricas: agendamentos, receita, churn rate, conversion rate
+  - Filtros e buscas em todas as listas
+  - Ativar/desativar salões e usuários
+  - Analytics com seletor de período (7d/30d/90d/1y)
+  - Documentação completa: docs/PLATFORM_ADMIN.md
 
 ## Credenciais de Teste
+- Platform Admin: platform@salaoblza.com.br / SuperAdmin2026!
 - Admin: admin@agendasalao.com.br / admin123
 - Cliente: pedro@exemplo.com / cliente123
 - Cartão de teste Stripe (agendamentos): 4242 4242 4242 4242

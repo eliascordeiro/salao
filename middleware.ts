@@ -121,6 +121,27 @@ export async function middleware(request: NextRequest) {
   // PROTEÇÃO DE ROTAS ESPECÍFICAS (todos os domínios)
   // ====================
   
+  // Platform Admin (super admin da plataforma)
+  if (pathname.startsWith("/platform-admin")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    // Permitir acesso APENAS para PLATFORM_ADMIN
+    const hasAccess = token.role === "PLATFORM_ADMIN"
+    
+    if (!hasAccess) {
+      // Se for ADMIN de salão, redirecionar para dashboard
+      if (token.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+      // Outros usuários vão para salões
+      return NextResponse.redirect(new URL("/saloes", request.url));
+    }
+  }
+  
   // Staff Dashboard (portal do profissional)
   if (pathname.startsWith("/staff")) {
     if (!token) {
