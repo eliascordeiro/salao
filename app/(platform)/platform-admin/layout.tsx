@@ -1,23 +1,30 @@
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+"use client"
+
+import { redirect, usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { LayoutDashboard, Store, Users, CreditCard, BarChart3, HeadphonesIcon, Settings } from "lucide-react"
 import Link from "next/link"
+import { useEffect } from "react"
 
-export default async function PlatformAdminLayout({
+export default function PlatformAdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
+  const { data: session, status } = useSession()
+  const pathname = usePathname()
 
   // Verificar se está autenticado e é PLATFORM_ADMIN
-  if (!session || session.user?.role !== "PLATFORM_ADMIN") {
-    redirect("/login")
-  }
+  useEffect(() => {
+    if (status === "loading") return
+    
+    if (!session || session.user?.role !== "PLATFORM_ADMIN") {
+      redirect("/login")
+    }
+  }, [session, status])
 
   const navItems = [
-    { href: "/platform-admin", icon: LayoutDashboard, label: "Overview" },
+    { href: "/platform-admin", icon: LayoutDashboard, label: "Overview", exact: true },
     { href: "/platform-admin/saloes", icon: Store, label: "Salões" },
     { href: "/platform-admin/usuarios", icon: Users, label: "Usuários" },
     { href: "/platform-admin/assinaturas", icon: CreditCard, label: "Assinaturas" },
@@ -25,6 +32,14 @@ export default async function PlatformAdminLayout({
     { href: "/platform-admin/suporte", icon: HeadphonesIcon, label: "Suporte" },
     { href: "/platform-admin/configuracoes", icon: Settings, label: "Configurações" },
   ]
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,16 +76,26 @@ export default async function PlatformAdminLayout({
         {/* Sidebar */}
         <aside className="w-64 shrink-0">
           <nav className="sticky top-20 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = item.exact 
+                ? pathname === item.href
+                : pathname.startsWith(item.href) && item.href !== "/platform-admin"
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              )
+            })}
           </nav>
         </aside>
 
