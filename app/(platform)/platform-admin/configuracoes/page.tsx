@@ -26,7 +26,6 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 
 interface PlatformSettings {
   // Features
@@ -71,10 +70,10 @@ interface PlatformSettings {
 }
 
 export default function ConfiguracoesPage() {
-  const { toast } = useToast()
   const [settings, setSettings] = useState<PlatformSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   useEffect(() => {
     fetchSettings()
@@ -135,6 +134,7 @@ export default function ConfiguracoesPage() {
     if (!settings) return
 
     setSaving(true)
+    setSaveSuccess(false)
     try {
       const response = await fetch("/api/platform/settings", {
         method: "PUT",
@@ -143,20 +143,14 @@ export default function ConfiguracoesPage() {
       })
 
       if (response.ok) {
-        toast({
-          title: "Configurações salvas",
-          description: "As configurações da plataforma foram atualizadas com sucesso.",
-        })
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 3000)
       } else {
         throw new Error("Erro ao salvar configurações")
       }
     } catch (error) {
       console.error("Erro ao salvar configurações:", error)
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações. Tente novamente.",
-        variant: "destructive",
-      })
+      alert("Erro ao salvar configurações. Tente novamente.")
     } finally {
       setSaving(false)
     }
@@ -180,10 +174,18 @@ export default function ConfiguracoesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
           <p className="text-muted-foreground">Configure a plataforma globalmente</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} size="lg">
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? "Salvando..." : "Salvar Alterações"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {saveSuccess && (
+            <div className="flex items-center gap-2 text-green-600 bg-green-50 dark:bg-green-950 px-4 py-2 rounded-md">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-sm font-medium">Configurações salvas!</span>
+            </div>
+          )}
+          <Button onClick={handleSave} disabled={saving} size="lg">
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Salvando..." : "Salvar Alterações"}
+          </Button>
+        </div>
       </div>
 
       {/* Maintenance Mode Alert */}
