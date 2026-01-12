@@ -81,17 +81,17 @@
 
   /* Light Theme */
   .light {
-    /* Light Background */
+    /* Light Background - Branco puro e clean */
     --background: 0 0% 100%;         /* #ffffff - Branco puro */
-    --background-alt: 260 20% 97%;   /* #f8f7f9 - Branco com leve toque roxo */
+    --background-alt: 0 0% 98%;      /* #fafafa - Branco levemente off-white */
     
-    /* Foreground */
-    --foreground: 260 15% 10%;       /* #1a1820 - Preto com toque roxo */
-    --foreground-muted: 260 5% 45%;  /* #6e6a73 - Cinza médio */
+    /* Foreground - Preto neutro para máximo contraste */
+    --foreground: 0 0% 13%;          /* #212121 - Preto suave neutro */
+    --foreground-muted: 0 0% 46%;    /* #757575 - Cinza médio neutro */
     
-    /* Borders */
-    --border: 260 10% 90%;           /* #e5e4e7 - Borda clara com toque roxo */
-    --border-hover: 260 8% 80%;      /* #cfcdd2 - Hover mais escuro */
+    /* Borders - Cinza neutro claro */
+    --border: 0 0% 90%;              /* #e5e5e5 - Borda cinza clara neutra */
+    --border-hover: 0 0% 80%;        /* #cccccc - Hover cinza médio */
     
     /* Primary - will be overridden by theme */
     --primary: 250 70% 55%;          /* #5558e3 */
