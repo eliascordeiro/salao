@@ -266,7 +266,7 @@ export function AdminAIChatWidget({
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-border bg-background">
+          <div className="p-3 sm:p-4 border-t border-border bg-background">
             <div className="flex gap-2">
               <Input
                 value={input}
@@ -274,18 +274,17 @@ export function AdminAIChatWidget({
                 onKeyPress={handleKeyPress}
                 placeholder="Digite sua pergunta..."
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 min-h-[44px]"
               />
               <Button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
-                size="icon"
-                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-90"
+                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-90 min-w-[44px] min-h-[44px] px-3 shrink-0"
               >
                 {loading ? (
-                  <Sparkles className="h-4 w-4 animate-spin" />
+                  <Sparkles className="h-5 w-5 sm:h-4 sm:w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5 sm:h-4 sm:w-4" />
                 )}
               </Button>
             </div>
