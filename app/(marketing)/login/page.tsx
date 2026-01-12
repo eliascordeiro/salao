@@ -173,6 +173,7 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  autoComplete="current-password"
                   className="bg-background-alt border-border-hover focus:border-primary transition-colors"
                 />
               </div>
