@@ -58,8 +58,12 @@ function LoginForm() {
             // Determinar rota de redirecionamento
             let redirectRoute = "/dashboard"
             
+            // Se for PLATFORM_ADMIN, redireciona para platform-admin
+            if (role === "PLATFORM_ADMIN") {
+              redirectRoute = "/platform-admin"
+            } 
             // Se for STAFF, redireciona para dashboard de profissional
-            if (roleType === "STAFF" || role === "STAFF") {
+            else if (roleType === "STAFF" || role === "STAFF") {
               redirectRoute = "/staff/dashboard"
             } else {
               // Para ADMIN/OWNER, usa a primeira rota acessível baseada em permissões
@@ -198,7 +202,9 @@ function LoginForm() {
                   
                   // Determinar callbackUrl baseado no tipo de usuário
                   let redirectUrl = callbackUrl || "/dashboard"
-                  if (roleType === "STAFF" || role === "STAFF") {
+                  if (role === "PLATFORM_ADMIN") {
+                    redirectUrl = "/platform-admin"
+                  } else if (roleType === "STAFF" || role === "STAFF") {
                     redirectUrl = "/staff/dashboard"
                   }
                   

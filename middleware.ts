@@ -98,12 +98,17 @@ export async function middleware(request: NextRequest) {
       "/ajuda",
       "/favoritos",
       "/perfil",
+      "/platform-admin", // Protegido por verificação de PLATFORM_ADMIN mais abaixo
     ];
     
     const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
     
     // Se não for rota pública, redirecionar baseado no usuário
     if (!isPublicRoute) {
+      // PLATFORM_ADMIN vai para platform-admin
+      if (token && token.role === "PLATFORM_ADMIN") {
+        return NextResponse.redirect(new URL("/platform-admin", request.url));
+      }
       // Apenas ADMIN tem acesso ao dashboard
       if (token && token.role === "ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
