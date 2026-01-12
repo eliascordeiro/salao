@@ -1,113 +1,67 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+"use client"
+
+import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
 import { Card } from "@/components/ui/card"
-import { Store, Users, CreditCard, TrendingUp, CheckCircle2, XCircle, Clock, DollarSign } from "lucide-react"
+import { Store, Users, CreditCard, TrendingUp, CheckCircle2, XCircle, Clock, DollarSign, BarChart3, Calendar, Settings } from "lucide-react"
+import { useEffect, useState } from "react"
+import Link from "next/link"
 
-// Forçar renderização dinâmica (não tentar gerar estático em build time)
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-export const metadata = {
-  title: "Platform Admin - SalãoBlza",
-  description: "Dashboard administrativo da plataforma SalãoBlza",
+interface PlatformStats {
+  salons: { total: number; active: number }
+  users: { total: number; byRole: Array<{ role: string; _count: number }> }
+  bookings: { total: number; byStatus: Array<{ status: string; _count: number }> }
+  revenue: number
+  subscriptions: { total: number; active: number; byPlan: Array<{ planId: string; _count: number }>; mrr: number }
 }
 
-async function getPlatformStats() {
-  try {
-    // Verificar se prisma está disponível
-    if (!prisma) {
-      console.error('Prisma client not available')
-      return {
-        salons: { total: 0, active: 0 },
-        users: { total: 0, byRole: [] },
-        bookings: { total: 0, byStatus: [] },
-        revenue: 0,
-        subscriptions: { total: 0, active: 0, byPlan: [], mrr: 0 }
+export default function PlatformAdminPage() {
+  const { data: session, status } = useSession()
+  const [stats, setStats] = useState<PlatformStats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch("/api/platform/overview")
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data)
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setLoading(false)
       }
     }
 
-    // Total de salões
-    const totalSalons = await prisma.salon.count()
-    const activeSalons = await prisma.salon.count({ where: { active: true } })
-
-    // Total de usuários
-    const totalUsers = await prisma.user.count()
-    const usersByRole = await prisma.user.groupBy({
-      by: ['role'],
-      _count: true
-    })
-
-    // Total de agendamentos
-    const totalBookings = await prisma.booking.count()
-    const bookingsByStatus = await prisma.booking.groupBy({
-      by: ['status'],
-      _count: true
-    })
-
-    // Receita total (Stripe payments)
-    const payments = await prisma.payment.aggregate({
-      where: { status: 'succeeded' },
-      _sum: { amount: true }
-    })
-
-    // Assinaturas
-    const activeSubscriptions = await prisma.subscription.count({
-      where: { status: 'ACTIVE' }
-    })
-
-    const totalSubscriptions = await prisma.subscription.count()
-
-    // Assinaturas por plano
-    const subscriptionsByPlan = await prisma.subscription.groupBy({
-      by: ['planId'],
-      where: { status: 'ACTIVE' },
-      _count: true
-    })
-
-    // Receita mensal recorrente (MRR)
-    const plans = await prisma.plan.findMany()
-    let mrr = 0
-    for (const sub of subscriptionsByPlan) {
-      const plan = plans.find(p => p.id === sub.planId)
-      if (plan) {
-        mrr += plan.price * sub._count
-      }
+    if (status === "authenticated") {
+      fetchStats()
     }
+  }, [status])
 
-    return {
-      salons: { total: totalSalons, active: activeSalons },
-      users: { total: totalUsers, byRole: usersByRole },
-      bookings: { total: totalBookings, byStatus: bookingsByStatus },
-      revenue: payments._sum.amount || 0,
-      subscriptions: { 
-        total: totalSubscriptions, 
-        active: activeSubscriptions,
-        byPlan: subscriptionsByPlan,
-        mrr 
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching platform stats:', error)
-    return {
-      salons: { total: 0, active: 0 },
-      users: { total: 0, byRole: [] },
-      bookings: { total: 0, byStatus: [] },
-      revenue: 0,
-      subscriptions: { total: 0, active: 0, byPlan: [], mrr: 0 }
-    }
+  if (status === "loading" || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    )
   }
-}
 
-export default async function PlatformAdminPage() {
-  const session = await getServerSession(authOptions)
-
-  if (!session || session.user?.role !== "PLATFORM_ADMIN") {
+  if (status === "unauthenticated" || session?.user?.role !== "PLATFORM_ADMIN") {
     redirect("/login")
   }
 
-  const stats = await getPlatformStats()
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-muted-foreground">Erro ao carregar dados</p>
+      </div>
+    )
+  }
 
   const confirmedBookings = stats.bookings.byStatus.find(s => s.status === 'CONFIRMED')?._count || 0
   const pendingBookings = stats.bookings.byStatus.find(s => s.status === 'PENDING')?._count || 0
