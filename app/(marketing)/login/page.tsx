@@ -65,9 +65,17 @@ function LoginForm() {
             // Se for STAFF, redireciona para dashboard de profissional
             else if (roleType === "STAFF" || role === "STAFF") {
               redirectRoute = "/staff/dashboard"
+            } else if (roleType === "OWNER" || role === "ADMIN") {
+              // Para ADMIN/OWNER, redireciona para dashboard
+              redirectRoute = "/dashboard"
             } else {
-              // Para ADMIN/OWNER, usa a primeira rota acessível baseada em permissões
-              redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+              // Para CUSTOM e outros, usa a primeira rota acessível baseada em permissões
+              try {
+                redirectRoute = getFirstAccessibleRoute(permissions as Permission[], roleType)
+              } catch (error) {
+                console.error("Error getting accessible route:", error)
+                redirectRoute = "/dashboard" // Fallback seguro
+              }
             }
             
             console.log("🔐 Login successful:", {
@@ -273,7 +281,14 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Carregando...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    }>
       <LoginForm />
     </Suspense>
   )

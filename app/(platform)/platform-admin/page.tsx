@@ -5,6 +5,10 @@ import { prisma } from "@/lib/prisma"
 import { Card } from "@/components/ui/card"
 import { Store, Users, CreditCard, TrendingUp, CheckCircle2, XCircle, Clock, DollarSign } from "lucide-react"
 
+// Forçar renderização dinâmica (não tentar gerar estático em build time)
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata = {
   title: "Platform Admin - SalãoBlza",
   description: "Dashboard administrativo da plataforma SalãoBlza",
