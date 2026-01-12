@@ -77,10 +77,10 @@ export default function RelatoriosPage() {
             <button
               key={key}
               onClick={() => setPeriod(key)}
-              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm md:text-base ${
+              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm md:text-base font-medium ${
                 period === key
-                  ? "bg-black text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-transparent border-2 border-primary/20 text-foreground hover:border-primary/40 hover:bg-primary/5"
               }`}
             >
               {label}
