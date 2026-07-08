@@ -356,10 +356,11 @@ export async function PUT(
       }
     }
 
-    // Enviar notificações híbridas (WhatsApp + Email) baseadas no plano
+    // Enviar notificações híbridas (WhatsApp + Email + Push) baseadas no plano
     if (status && previousBooking && status !== previousBooking.status) {
       const notificationData = {
         salonId: booking.salonId,
+        clientId: booking.clientId,
         clientName: booking.client.name,
         clientEmail: booking.client.email,
         clientPhone: booking.client.phone || null,

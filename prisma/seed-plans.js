@@ -1,68 +1,80 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// Preço por cadeira (profissional) por mês, em reais.
+const PRICE_PER_SEAT = 39.9;
+
 async function main() {
-  console.log("🎯 Criando planos de assinatura...");
+  console.log("🎯 Configurando plano único Premium (por cadeira)...");
 
-  // Limpar planos existentes
-  await prisma.plan.deleteMany({});
-
-  // Plano Essencial
-  const essencial = await prisma.plan.create({
-    data: {
-      name: "Essencial",
-      slug: "essencial",
-      description: "Ideal para salões pequenos e independentes que estão começando",
-      price: 49.00,
-      maxStaff: 2,
-      maxUsers: 1,
-      features: [
-        "Até 2 profissionais",
-        "Agendamentos ilimitados",
-        "Catálogo de serviços",
-        "Calendário e horários",
-        "Perfil público do salão",
-        "Notificações por email",
-        "Suporte por email",
-      ],
-      active: true,
-    },
+  // Desativar planos antigos (mantém histórico das assinaturas existentes)
+  await prisma.plan.updateMany({
+    where: { slug: { not: "premium" } },
+    data: { active: false },
   });
 
-  // Plano Profissional
-  const profissional = await prisma.plan.create({
-    data: {
-      name: "Profissional",
-      slug: "profissional",
-      description: "Para salões estabelecidos que querem crescer e escalar",
-      price: 149.00,
+  const featuresTodas = {
+    email: true,
+    whatsapp: true,
+    sms: true,
+    maps: true,
+    geolocation: true,
+    basicReports: true,
+    advancedReports: true,
+    financialReports: true,
+    multiUser: true,
+    userPermissions: true,
+    aiChat: true,
+    customBranding: true,
+    apiAccess: true,
+    prioritySupport: true,
+  };
+
+  const featuresList = [
+    "Profissionais ilimitados (cobrança por cadeira)",
+    "Todas as funcionalidades liberadas",
+    "Pagamentos online",
+    "WhatsApp Business integrado",
+    "Relatórios financeiros avançados",
+    "Multi-usuários com permissões",
+    "Chat IA (assistente virtual)",
+    "Suporte prioritário",
+  ];
+
+  const premium = await prisma.plan.upsert({
+    where: { slug: "premium" },
+    update: {
+      name: "Premium",
+      description:
+        "Todas as funcionalidades liberadas. Cobrança por cadeira de profissional.",
+      price: PRICE_PER_SEAT,
       maxStaff: null, // ilimitado
-      maxUsers: 5,
-      features: [
-        "Profissionais ilimitados",
-        "Pagamentos online (Stripe)",
-        "WhatsApp Business integrado",
-        "Relatórios financeiros avançados",
-        "Controle de despesas/receitas",
-        "Multi-usuários (até 5)",
-        "Permissões personalizadas",
-        "Chat IA (assistente virtual)",
-        "Suporte prioritário",
-        "Analytics e insights",
-      ],
+      maxUsers: 999,
+      features: featuresTodas,
+      featuresList,
+      active: true,
+    },
+    create: {
+      name: "Premium",
+      slug: "premium",
+      description:
+        "Todas as funcionalidades liberadas. Cobrança por cadeira de profissional.",
+      price: PRICE_PER_SEAT,
+      maxStaff: null,
+      maxUsers: 999,
+      features: featuresTodas,
+      featuresList,
       active: true,
     },
   });
 
-  console.log("✅ Planos criados com sucesso!");
-  console.log("\n📋 Planos disponíveis:");
-  console.log(`   • ${essencial.name} - R$ ${essencial.price}/mês`);
-  console.log(`   • ${profissional.name} - R$ ${profissional.price}/mês`);
+  console.log("✅ Plano Premium configurado!");
+  console.log(`   • ${premium.name} - R$ ${premium.price.toFixed(2)}/cadeira/mês`);
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Erro ao criar planos:", e);
+    console.error("❌ Erro ao configurar plano:", e);
     process.exit(1);
   })
   .finally(async () => {

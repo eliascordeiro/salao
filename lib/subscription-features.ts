@@ -1,6 +1,27 @@
 import { prisma } from "@/lib/prisma";
 
 /**
+ * Verifica se uma assinatura está liberada (ativa ou em período de trial).
+ * No modelo de plano único por cadeira, isso libera TODAS as features.
+ */
+export function isSubscriptionUnlocked(subscription: {
+  status: string;
+  trialEndsAt?: Date | null;
+} | null | undefined): boolean {
+  if (!subscription) return false;
+  if (subscription.status === "ACTIVE") return true;
+  // Trial ainda válido também libera o acesso
+  if (
+    subscription.status === "PENDING" &&
+    subscription.trialEndsAt &&
+    new Date(subscription.trialEndsAt) > new Date()
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Features disponíveis no sistema
  */
 export const FEATURES = {
@@ -58,6 +79,26 @@ export const PLAN_FEATURES = {
 } as const;
 
 /**
+ * Plano único "Premium": todas as features liberadas para assinantes ativos.
+ */
+export const ALL_FEATURES_ENABLED: Record<string, boolean> = {
+  email: true,
+  whatsapp: true,
+  sms: true,
+  maps: true,
+  geolocation: true,
+  basicReports: true,
+  advancedReports: true,
+  financialReports: true,
+  multiUser: true,
+  userPermissions: true,
+  aiChat: true,
+  customBranding: true,
+  apiAccess: true,
+  prioritySupport: true,
+};
+
+/**
  * Labels amigáveis para features
  */
 export const FEATURE_LABELS: Record<string, string> = {
@@ -108,15 +149,14 @@ export async function hasFeature(
              feature === FEATURES.BASIC_REPORTS;
     }
 
-    // Verificar se assinatura está ativa
-    if (salon.subscription.status !== "ACTIVE") {
-      return feature === FEATURES.EMAIL_NOTIFICATIONS || 
-             feature === FEATURES.BASIC_REPORTS;
+    // Plano único (por cadeira): assinatura ativa ou em trial libera TODAS as features
+    if (isSubscriptionUnlocked(salon.subscription)) {
+      return true;
     }
 
-    // Verificar feature no plano
-    const planFeatures = salon.subscription.plan.features as Record<string, boolean>;
-    return planFeatures[feature] === true;
+    // Assinatura inativa/expirada = apenas features básicas
+    return feature === FEATURES.EMAIL_NOTIFICATIONS || 
+           feature === FEATURES.BASIC_REPORTS;
   } catch (error) {
     console.error("Erro ao verificar feature:", error);
     // Em caso de erro, permitir apenas features básicas
@@ -180,7 +220,7 @@ export async function getSalonFeatures(salonId: string): Promise<Record<string, 
       },
     });
 
-    if (!salon || !salon.subscription || salon.subscription.status !== "ACTIVE") {
+    if (!salon || !salon.subscription || !isSubscriptionUnlocked(salon.subscription)) {
       // Features básicas apenas
       return {
         email: true,
@@ -196,7 +236,8 @@ export async function getSalonFeatures(salonId: string): Promise<Record<string, 
       };
     }
 
-    return salon.subscription.plan.features as Record<string, boolean>;
+    // Plano único: assinatura desbloqueada libera todas as features
+    return ALL_FEATURES_ENABLED;
   } catch (error) {
     console.error("Erro ao buscar features do salão:", error);
     return {

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { resolveSeats, calculateAmount } from "@/lib/seat-pricing";
 
 // Configurar cliente do Mercado Pago
 const client = new MercadoPagoConfig({ 
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planSlug, paymentMethodId, cardToken } = await request.json();
+    const { planSlug, paymentMethodId, cardToken, seats: requestedSeats } = await request.json();
 
     console.log("📥 Criando assinatura recorrente:", { planSlug, paymentMethodId });
 
@@ -77,6 +78,10 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
+
+    // Calcular cadeiras e valor mensal (cobrança por cadeira)
+    const seats = await resolveSeats(salon.id, requestedSeats);
+    const amount = calculateAmount(plan.price, seats);
 
     // PASSO 1: Buscar ou criar Customer no Mercado Pago
     console.log("👤 Buscando/criando customer no MP...");
@@ -133,7 +138,7 @@ export async function POST(request: NextRequest) {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: plan.price,
+        transaction_amount: amount,
         currency_id: "BRL",
         free_trial: {
           frequency: 14,
@@ -202,6 +207,8 @@ export async function POST(request: NextRequest) {
       where: { salonId: salon.id },
       update: {
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: preapproval.id,
         paymentMethod: 'credit_card',
         status: preapproval.status === 'authorized' ? 'ACTIVE' : 'PENDING',
@@ -212,6 +219,8 @@ export async function POST(request: NextRequest) {
       create: {
         salonId: salon.id,
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: preapproval.id,
         paymentMethod: 'credit_card',
         status: preapproval.status === 'authorized' ? 'ACTIVE' : 'PENDING',

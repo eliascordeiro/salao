@@ -20,6 +20,7 @@ interface Plan {
   description: string;
   price: number;
   features: string[];
+  featuresList?: string[];
 }
 
 function CheckoutContent() {
@@ -29,6 +30,7 @@ function CheckoutContent() {
 
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seats, setSeats] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit_card">("credit_card");
   const [processing, setProcessing] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
@@ -190,13 +192,46 @@ function CheckoutContent() {
               </div>
 
               <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-muted-foreground">Mensalidade</span>
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-muted-foreground">Cadeiras (profissionais)</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setSeats((s) => Math.max(1, s - 1))}
+                      disabled={seats <= 1}
+                    >
+                      -
+                    </Button>
+                    <span className="w-8 text-center font-semibold">{seats}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setSeats((s) => s + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mb-2 text-sm">
+                  <span className="text-muted-foreground">
+                    R$ {plan.price.toFixed(2)} x {seats} cadeira(s)
+                  </span>
                   <span className="font-semibold">
-                    R$ {plan.price.toFixed(2)}
+                    R$ {(plan.price * seats).toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Mensalidade</span>
+                  <span className="font-semibold">
+                    R$ {(plan.price * seats).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm mt-2">
                   <span className="text-muted-foreground">Período trial</span>
                   <Badge variant="secondary">14 dias grátis</Badge>
                 </div>
@@ -249,8 +284,9 @@ function CheckoutContent() {
                   </Button>
                   <MercadoPagoCardForm
                     publicKey={process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || ""}
-                    amount={plan.price}
+                    amount={plan.price * seats}
                     planSlug={plan.slug}
+                    seats={seats}
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                   />
@@ -259,7 +295,8 @@ function CheckoutContent() {
                 <PixPayment
                   planSlug={plan.slug}
                   planName={plan.name}
-                  amount={plan.price}
+                  amount={plan.price * seats}
+                  seats={seats}
                   onSuccess={() => handlePaymentSuccess("pix")}
                   onCancel={() => setShowPixPayment(false)}
                 />

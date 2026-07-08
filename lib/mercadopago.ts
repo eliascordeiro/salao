@@ -19,13 +19,15 @@ export const preferenceClient = new Preference(mercadopago);
 // Helper: Criar preferência de pagamento (PIX ou Cartão)
 export async function createSubscriptionPreference({
   planName,
-  planPrice,
+  pricePerSeat,
+  seats,
   salonId,
   salonName,
   paymentMethod, // 'pix' ou 'credit_card'
 }: {
   planName: string;
-  planPrice: number;
+  pricePerSeat: number;
+  seats: number;
   salonId: string;
   salonName: string;
   paymentMethod: 'pix' | 'credit_card';
@@ -36,9 +38,9 @@ export async function createSubscriptionPreference({
         {
           id: salonId,
           title: `Assinatura ${planName} - ${salonName}`,
-          description: `Plano ${planName} (mensal)`,
-          quantity: 1,
-          unit_price: planPrice,
+          description: `Plano ${planName} - ${seats} cadeira(s) (mensal)`,
+          quantity: seats,
+          unit_price: pricePerSeat,
           currency_id: 'BRL',
           category_id: 'services', // Categoria obrigatória
         },

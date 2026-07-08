@@ -18,6 +18,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "AgendaSalão - Sistema de Agendamento para Salões & Barbearias",
   description: "Plataforma completa de agendamento online para salões de beleza e barbearias. Gerencie sua agenda, clientes e serviços em um só lugar.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AgendaSalão",
+  },
 };
 
 export const viewport = {
@@ -25,6 +31,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  themeColor: "#a855f7",
 };
 
 export default function RootLayout({

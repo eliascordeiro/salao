@@ -13,9 +13,11 @@ import {
   sendBookingReminderEmail,
   sendBookingCancelledEmail,
 } from "@/lib/email";
+import { sendPushToUser, pushEnabled } from "@/lib/push";
 
 interface BookingNotificationData {
   salonId: string;
+  clientId?: string; // ID do usuário cliente (para Web Push)
   clientName: string;
   clientEmail: string;
   clientPhone?: string | null;
@@ -117,52 +119,49 @@ export async function sendBookingNotification(
     switch (type) {
       case "created":
         await sendBookingCreatedEmail({
-          to: data.clientEmail,
+          clientEmail: data.clientEmail,
           clientName: data.clientName,
           serviceName: data.serviceName,
           staffName: data.staffName,
           date: data.date,
-          time: data.time,
           salonName: data.salonName,
           salonAddress: data.salonAddress,
-          salonPhone: data.salonPhone,
+          price: data.price,
         });
         break;
       case "confirmed":
         await sendBookingConfirmedEmail({
-          to: data.clientEmail,
+          clientEmail: data.clientEmail,
           clientName: data.clientName,
           serviceName: data.serviceName,
           staffName: data.staffName,
           date: data.date,
-          time: data.time,
           salonName: data.salonName,
           salonAddress: data.salonAddress,
-          salonPhone: data.salonPhone,
+          price: data.price,
         });
         break;
       case "reminder":
         await sendBookingReminderEmail({
-          to: data.clientEmail,
+          clientEmail: data.clientEmail,
           clientName: data.clientName,
           serviceName: data.serviceName,
           staffName: data.staffName,
           date: data.date,
-          time: data.time,
           salonName: data.salonName,
           salonAddress: data.salonAddress,
-          salonPhone: data.salonPhone,
+          price: data.price,
         });
         break;
       case "cancelled":
         await sendBookingCancelledEmail({
-          to: data.clientEmail,
+          clientEmail: data.clientEmail,
           clientName: data.clientName,
           serviceName: data.serviceName,
+          staffName: data.staffName,
           date: data.date,
-          time: data.time,
           salonName: data.salonName,
-        });
+        }, "admin");
         break;
       // 'completed' não tem email ainda, apenas WhatsApp
     }
@@ -174,10 +173,45 @@ export async function sendBookingNotification(
     console.error(`❌ Erro ao enviar email:`, error);
   }
 
-  // 4. Log do resultado final
+  // 4. Web Push (se cliente tem ID e push está configurado)
+  if (data.clientId && pushEnabled()) {
+    const pushMessages: Record<typeof type, { title: string; body: string }> = {
+      created: {
+        title: "✅ Agendamento recebido!",
+        body: `${data.serviceName} com ${data.staffName} em ${data.time} — ${data.salonName}`,
+      },
+      confirmed: {
+        title: "🎉 Agendamento confirmado!",
+        body: `${data.serviceName} confirmado para ${data.time} — ${data.salonName}`,
+      },
+      reminder: {
+        title: "⏰ Lembrete de agendamento",
+        body: `Amanhã: ${data.serviceName} às ${data.time} — ${data.salonName}`,
+      },
+      cancelled: {
+        title: "❌ Agendamento cancelado",
+        body: `Seu agendamento de ${data.serviceName} foi cancelado.`,
+      },
+      completed: {
+        title: "⭐ Como foi seu atendimento?",
+        body: `Avalie ${data.serviceName} em ${data.salonName}`,
+      },
+    };
+
+    const msg = pushMessages[type];
+    sendPushToUser(data.clientId, {
+      title: msg.title,
+      body: msg.body,
+      url: "/meus-agendamentos",
+      tag: `booking-${data.bookingId}`,
+    }).catch((err) => console.error("❌ Erro ao enviar push:", err));
+  }
+
+  // 5. Log do resultado final
   console.log('📊 Resultado do envio:', {
     whatsapp: results.whatsapp.sent ? '✅ Enviado' : (results.whatsapp.error || '❌ Não enviado'),
     email: results.email.sent ? '✅ Enviado' : '❌ Falhou',
+    push: data.clientId && pushEnabled() ? '✅ Disparado' : '⏭ Ignorado',
   });
 
   return results;

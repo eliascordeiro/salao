@@ -57,6 +57,8 @@ export async function GET(request: NextRequest) {
         status: subscription.status,
         planName: subscription.plan?.name || "Sem nome",
         planPrice: subscription.plan?.price || 0,
+        seats: subscription.seats,
+        amount: subscription.amount ?? (subscription.plan?.price || 0) * subscription.seats,
         startDate: subscription.startDate,
         trialEndsAt: subscription.trialEndsAt,
         nextBillingDate: subscription.nextBillingDate,

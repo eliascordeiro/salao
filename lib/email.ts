@@ -26,8 +26,8 @@ interface BookingEmailData {
   salonName: string;
   salonAddress?: string;
   date: Date;
-  duration: number;
-  price: number;
+  duration?: number;
+  price?: number;
   notes?: string;
 }
 
@@ -185,7 +185,7 @@ export async function sendBookingCreatedEmail(
       </div>
       <div class="info-row">
         <span class="info-label">Duração:</span>
-        <span class="info-value">${data.duration} minutos</span>
+        <span class="info-value">${data.duration ?? '—'} minutos</span>
       </div>
       <div class="info-row">
         <span class="info-label">Local:</span>
@@ -195,7 +195,7 @@ export async function sendBookingCreatedEmail(
       </div>
     </div>
     
-    <div class="price">R$ ${data.price.toFixed(2)}</div>
+    <div class="price">R$ ${(data.price ?? 0).toFixed(2)}</div>
     
     ${
       data.notes
@@ -302,7 +302,7 @@ export async function sendBookingConfirmedEmail(
       </div>
       <div class="info-row">
         <span class="info-label">Duração:</span>
-        <span class="info-value">${data.duration} minutos</span>
+        <span class="info-value">${data.duration ?? '—'} minutos</span>
       </div>
       <div class="info-row">
         <span class="info-label">Local:</span>
@@ -312,7 +312,7 @@ export async function sendBookingConfirmedEmail(
       </div>
     </div>
     
-    <div class="price">R$ ${data.price.toFixed(2)}</div>
+    <div class="price">R$ ${(data.price ?? 0).toFixed(2)}</div>
     
     <div class="alert">
       <p><strong>📅 Lembre-se</strong></p>
@@ -402,7 +402,7 @@ export async function sendBookingReminderEmail(
       </div>
       <div class="info-row">
         <span class="info-label">Duração:</span>
-        <span class="info-value">${data.duration} minutos</span>
+        <span class="info-value">${data.duration ?? '—'} minutos</span>
       </div>
       <div class="info-row">
         <span class="info-label">Local:</span>

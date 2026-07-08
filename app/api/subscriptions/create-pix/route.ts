@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { resolveSeats, calculateAmount } from "@/lib/seat-pricing";
 
 // Configurar cliente do Mercado Pago
 const client = new MercadoPagoConfig({ 
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planSlug } = await request.json();
+    const { planSlug, seats: requestedSeats } = await request.json();
 
     console.log("📥 Criando pagamento PIX:", { planSlug });
 
@@ -78,6 +79,10 @@ export async function POST(request: NextRequest) {
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
 
+    // Calcular cadeiras e valor mensal (cobrança por cadeira)
+    const seats = await resolveSeats(salon.id, requestedSeats);
+    const amount = calculateAmount(plan.price, seats);
+
     // Criar pagamento PIX
     console.log("📱 Criando pagamento PIX...");
     
@@ -85,8 +90,8 @@ export async function POST(request: NextRequest) {
     
     const pixPayment = await paymentClient.create({
       body: {
-        transaction_amount: plan.price,
-        description: `Assinatura ${plan.name} - ${salon.name}`,
+        transaction_amount: amount,
+        description: `Assinatura ${plan.name} - ${salon.name} (${seats} cadeira(s))`,
         payment_method_id: "pix",
         payer: {
           email: session.user.email!,
@@ -118,6 +123,8 @@ export async function POST(request: NextRequest) {
       where: { salonId: salon.id },
       update: {
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: String(pixPayment.id),
         paymentMethod: 'pix',
         status: 'PENDING',
@@ -128,6 +135,8 @@ export async function POST(request: NextRequest) {
       create: {
         salonId: salon.id,
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: String(pixPayment.id),
         paymentMethod: 'pix',
         status: 'PENDING',
@@ -149,7 +158,8 @@ export async function POST(request: NextRequest) {
       qrCode: qrCode, // Código PIX (copia e cola)
       qrCodeBase64: qrCodeBase64, // Imagem QR Code em base64
       ticketUrl: ticketUrl, // URL alternativa
-      amount: plan.price,
+      amount: amount,
+      seats: seats,
       status: pixPayment.status,
       expirationDate: pixPayment.date_of_expiration,
     });

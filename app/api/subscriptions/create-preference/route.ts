@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createSubscriptionPreference } from "@/lib/mercadopago";
+import { resolveSeats, calculateAmount } from "@/lib/seat-pricing";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planSlug, paymentMethod } = await request.json();
+    const { planSlug, paymentMethod, seats: requestedSeats } = await request.json();
 
     if (!planSlug || !paymentMethod) {
       return NextResponse.json(
@@ -67,10 +68,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calcular cadeiras e valor mensal (cobrança por cadeira)
+    const seats = await resolveSeats(salon.id, requestedSeats);
+    const amount = calculateAmount(plan.price, seats);
+
     // Criar preferência no Mercado Pago
     const preference = await createSubscriptionPreference({
       planName: plan.name,
-      planPrice: plan.price,
+      pricePerSeat: plan.price,
+      seats,
       salonId: salon.id,
       salonName: salon.name,
       paymentMethod: paymentMethod as 'pix' | 'credit_card',
@@ -81,6 +87,8 @@ export async function POST(request: NextRequest) {
       where: { salonId: salon.id },
       update: {
         planId: plan.id,
+        seats,
+        amount,
         mpPreferenceId: preference.id,
         paymentMethod,
         status: 'PENDING',
@@ -89,6 +97,8 @@ export async function POST(request: NextRequest) {
       create: {
         salonId: salon.id,
         planId: plan.id,
+        seats,
+        amount,
         mpPreferenceId: preference.id,
         paymentMethod,
         status: 'PENDING',

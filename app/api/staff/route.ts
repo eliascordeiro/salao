@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getUserSalonId } from "@/lib/salon-helper"
+import { canAddStaff } from "@/lib/seat-pricing"
 import crypto from "crypto"
 
 // GET - Listar todos os profissionais do salão do usuário
@@ -111,6 +112,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Nome é obrigatório" },
         { status: 400 }
+      )
+    }
+
+    // Enforcement de cadeiras: não permitir mais profissionais que o contratado
+    const seatCheck = await canAddStaff(userSalonId)
+    if (!seatCheck.allowed) {
+      console.log('⛔ [POST /api/staff] Limite de cadeiras atingido:', seatCheck)
+      return NextResponse.json(
+        {
+          error: `Você atingiu o limite de ${seatCheck.seats} cadeira(s) da sua assinatura. Adicione mais cadeiras para cadastrar novos profissionais.`,
+          code: "SEAT_LIMIT_REACHED",
+          seats: seatCheck.seats,
+          activeStaff: seatCheck.activeStaff,
+        },
+        { status: 402 }
       )
     }
 

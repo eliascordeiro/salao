@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { resolveSeats, calculateAmount } from "@/lib/seat-pricing";
 
 // Configurar cliente do Mercado Pago
 const client = new MercadoPagoConfig({ 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planSlug, paymentMethodId, cardToken } = await request.json();
+    const { planSlug, paymentMethodId, cardToken, seats: requestedSeats } = await request.json();
 
     console.log("📥 Criando assinatura (método simplificado):", { planSlug, paymentMethodId });
 
@@ -84,7 +85,9 @@ export async function POST(request: NextRequest) {
     const trialEnd = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 dias
     const firstBilling = new Date(trialEnd.getTime() + 1 * 24 * 60 * 60 * 1000); // 1 dia após trial
 
-    // Criar pagamento de validação R$ 0.50 (mínimo do MP)
+    // Calcular cadeiras e valor mensal (cobrança por cadeira)
+    const seats = await resolveSeats(salon.id, requestedSeats);
+    const amount = calculateAmount(plan.price, seats);
     console.log("💳 Criando pagamento de validação (R$ 0.50)...");
     
     const paymentClient = new Payment(client);
@@ -119,6 +122,8 @@ export async function POST(request: NextRequest) {
       where: { salonId: salon.id },
       update: {
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: null, // Não usamos Preapproval
         paymentMethod: 'credit_card',
         status: 'ACTIVE',
@@ -129,6 +134,8 @@ export async function POST(request: NextRequest) {
       create: {
         salonId: salon.id,
         planId: plan.id,
+        seats,
+        amount,
         mpSubscriptionId: null,
         paymentMethod: 'credit_card',
         status: 'ACTIVE',

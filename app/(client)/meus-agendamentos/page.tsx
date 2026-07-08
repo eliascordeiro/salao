@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { GridBackground } from "@/components/ui/grid-background";
 import { AddToCalendarButton } from "@/components/ui/add-to-calendar-button";
+import { PushOptIn } from "@/components/push/PushOptIn";
 
 interface Booking {
   id: string;
@@ -263,6 +264,11 @@ function MyBookingsContent() {
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </GradientButton>
             </Link>
+          </div>
+
+          {/* Web Push Opt-In */}
+          <div className="mb-6 animate-fadeInUp" style={{ animationDelay: "100ms" }}>
+            <PushOptIn />
           </div>
 
         {/* Filter Tabs Railway */}

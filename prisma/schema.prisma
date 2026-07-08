@@ -36,6 +36,7 @@ model User {
   ticketMessages         TicketMessage[]
   platformTickets        PlatformTicket[]
   platformTicketMessages PlatformTicketMessage[]
+  pushSubscriptions      PushSubscription[]
 
   @@index([ownerId])
   @@index([roleType])
@@ -450,15 +451,15 @@ model PlatformTicketMessage {
 
 model Plan {
   id          String  @id @default(cuid())
-  name        String // "Essencial", "Profissional"
-  slug        String? @unique // "essencial", "profissional" (opcional para compatibilidade com dados antigos)
+  name        String // "Premium"
+  slug        String? @unique // "premium" (opcional para compatibilidade com dados antigos)
   description String? // Opcional para compatibilidade com dados antigos
-  price       Float // Preço mensal em reais
+  price       Float // Preço mensal por cadeira/profissional em reais
 
   // Limites e Features
-  maxStaff     Int? // null = ilimitado
+  maxStaff     Int? // null = ilimitado (não usado no modelo por cadeira)
   maxUsers     Int      @default(1) // Usuários administrativos
-  features     Json // { whatsapp: true, maps: true, multiUser: true, advancedReports: true }
+  features     Json // Mantido por compatibilidade; no plano único todas as features são liberadas
   featuresList String[] @default([]) // Lista simples para queries (deprecated, usar features Json)
 
   // Status
@@ -483,6 +484,10 @@ model Subscription {
 
   // Plano
   planId String
+
+  // Cobrança por cadeira
+  seats  Int    @default(1) // Nº de cadeiras/profissionais contratados
+  amount Float? // Valor mensal total = seats * plan.price (snapshot)
 
   // Mercado Pago
   mpSubscriptionId String? @unique // ID da assinatura no MP (se cartão recorrente)
@@ -681,4 +686,18 @@ model Commission {
   @@index([status])
   @@index([createdAt])
   @@index([paidAt])
+}
+
+// ─── Web Push / PWA ───────────────────────────────────────────────────────────
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

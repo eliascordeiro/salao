@@ -400,10 +400,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Enviar notificação híbrida (WhatsApp + Email) baseada no plano
+    // Enviar notificação híbrida (WhatsApp + Email + Push) baseada no plano
     sendBookingNotification(
       {
         salonId: booking.salonId,
+        clientId: booking.clientId,
         clientName: booking.client.name,
         clientEmail: booking.client.email,
         clientPhone: booking.client.phone,

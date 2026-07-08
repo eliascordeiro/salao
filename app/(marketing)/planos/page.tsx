@@ -15,6 +15,7 @@ interface Plan {
   description: string;
   price: number;
   features: string[];
+  featuresList?: string[];
   active: boolean;
 }
 
@@ -62,9 +63,9 @@ export default function PlanosPage() {
         </div>
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid gap-8 max-w-md mx-auto">
           {plans.map((plan) => {
-            const isPopular = plan.slug === "profissional";
+            const isPopular = true;
             
             return (
               <Card
@@ -90,10 +91,13 @@ export default function PlanosPage() {
                   
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-bold">
-                      R$ {plan.price.toFixed(0)}
+                      R$ {plan.price.toFixed(2)}
                     </span>
-                    <span className="text-muted-foreground">/mês</span>
+                    <span className="text-muted-foreground">/cadeira/mês</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Pague apenas pelo número de profissionais do seu salão.
+                  </p>
                 </div>
 
                 <ul className="space-y-3 mb-8">

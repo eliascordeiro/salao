@@ -10,6 +10,7 @@ interface PixPaymentProps {
   planSlug: string;
   planName: string;
   amount: number;
+  seats?: number;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -22,7 +23,7 @@ interface PixData {
   expirationDate?: string;
 }
 
-export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: PixPaymentProps) {
+export function PixPayment({ planSlug, planName, amount, seats, onSuccess, onCancel }: PixPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [pixData, setPixData] = useState<PixData | null>(null);
   const [copied, setCopied] = useState(false);
@@ -48,7 +49,7 @@ export function PixPayment({ planSlug, planName, amount, onSuccess, onCancel }: 
       const response = await fetch("/api/subscriptions/create-pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planSlug }),
+        body: JSON.stringify({ planSlug, seats }),
       });
 
       if (!response.ok) {

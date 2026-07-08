@@ -15,6 +15,7 @@ interface MercadoPagoCardFormProps {
   publicKey: string;
   amount: number;
   planSlug: string;
+  seats?: number;
   onSuccess: (paymentId: string) => void;
   onError: (error: string) => void;
 }
@@ -23,6 +24,7 @@ export function MercadoPagoCardForm({
   publicKey,
   amount,
   planSlug,
+  seats,
   onSuccess,
   onError,
 }: MercadoPagoCardFormProps) {
@@ -143,6 +145,7 @@ export function MercadoPagoCardForm({
                 planSlug,
                 paymentMethodId: payment_method_id,
                 cardToken: token,
+                seats,
               }),
             });
 
@@ -169,7 +172,7 @@ export function MercadoPagoCardForm({
     return () => {
       // Cleanup
     };
-  }, [mp, loading, amount, planSlug, onSuccess, onError]);
+  }, [mp, loading, amount, planSlug, seats, onSuccess, onError]);
 
   if (loading) {
     return (
