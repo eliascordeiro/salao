@@ -37,6 +37,8 @@ model User {
   platformTickets        PlatformTicket[]
   platformTicketMessages PlatformTicketMessage[]
   pushSubscriptions      PushSubscription[]
+  chatConversations      ChatConversation[]      @relation("ClientConversations")
+  chatMessages           ChatMessage[]
 
   @@index([ownerId])
   @@index([roleType])
@@ -86,6 +88,7 @@ model Salon {
   platformTickets PlatformTicket[] // Tickets de suporte da plataforma
   whatsappSession WhatsAppSession? // Sessão WhatsApp do salão
   commissions     Commission[] // Comissões calculadas no salão
+  chatConversations ChatConversation[]
 }
 
 model Staff {
@@ -700,4 +703,48 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ─── Chat interno Cliente ↔ Dono do Salão ────────────────────────────────────
+model ChatConversation {
+  id       String @id @default(cuid())
+  salonId  String
+  clientId String
+
+  lastMessageAt      DateTime?
+  lastMessagePreview String?
+
+  // Contadores de não lidas por lado (zerados ao abrir a conversa)
+  clientUnreadCount Int @default(0)
+  ownerUnreadCount  Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  salon    Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  client   User          @relation("ClientConversations", fields: [clientId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@unique([salonId, clientId])
+  @@index([salonId])
+  @@index([clientId])
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id             String @id @default(cuid())
+  conversationId String
+  senderId       String
+  senderRole     String // "CLIENT" | "ADMIN"
+  content        String @db.Text
+  read           Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
 }

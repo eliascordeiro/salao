@@ -70,3 +70,27 @@ export async function sendPushToUser(
 export function generateVapidKeys() {
   return webpush.generateVAPIDKeys();
 }
+
+/**
+ * Envia notificação push para o dono de um salão (busca o ownerId pelo salonId).
+ * Best-effort: nunca lança erro, apenas loga falhas.
+ */
+export async function sendPushToSalonOwner(
+  salonId: string,
+  payload: PushPayload
+): Promise<void> {
+  if (!ensureConfigured()) return;
+
+  try {
+    const salon = await prisma.salon.findUnique({
+      where: { id: salonId },
+      select: { ownerId: true },
+    });
+    if (!salon?.ownerId) return;
+
+    await sendPushToUser(salon.ownerId, payload);
+  } catch (err) {
+    console.error("❌ Erro ao enviar push para o dono do salão:", err);
+  }
+}
+

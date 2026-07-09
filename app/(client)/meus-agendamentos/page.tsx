@@ -25,6 +25,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 import { GridBackground } from "@/components/ui/grid-background";
 import { AddToCalendarButton } from "@/components/ui/add-to-calendar-button";
 import { PushOptIn } from "@/components/push/PushOptIn";
+import { SalonChatWidget } from "@/components/chat/salon-chat-widget";
 
 interface Booking {
   id: string;
@@ -41,6 +42,7 @@ interface Booking {
     specialty?: string;
   };
   salon: {
+    id: string;
     name: string;
     address?: string;
     phone?: string;
@@ -506,6 +508,11 @@ function MyBookingsContent() {
                         {/* Add to Calendar Button */}
                         {(booking.status === "CONFIRMED" || booking.status === "PENDING") && (
                           <AddToCalendarButton booking={booking} />
+                        )}
+
+                        {/* Chat com o salão */}
+                        {booking.status !== "CANCELLED" && (
+                          <SalonChatWidget salonId={booking.salon.id} salonName={booking.salon.name} />
                         )}
 
                         {/* Cancel Button */}

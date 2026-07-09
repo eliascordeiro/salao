@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
           },
           salon: {
             select: {
+              id: true,
               name: true,
               address: true,
               phone: true,

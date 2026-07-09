@@ -7,6 +7,7 @@ import {
   Wallet,
   BarChart3,
   CreditCard,
+  MessageCircle,
 } from "lucide-react"
 import { MenuModule } from "../types"
 
@@ -75,12 +76,20 @@ export const coreModule: MenuModule = {
       group: "main",
     },
     {
+      id: "messages",
+      label: "Mensagens",
+      icon: MessageCircle,
+      href: "/dashboard/mensagens",
+      order: 7,
+      group: "main",
+    },
+    {
       id: "reports",
       label: "Relatórios",
       icon: BarChart3,
       href: "/dashboard/relatorios",
       permission: "reports.view",
-      order: 7,
+      order: 8,
       group: "main",
     },
     {
@@ -89,7 +98,7 @@ export const coreModule: MenuModule = {
       icon: CreditCard,
       href: "/dashboard/assinatura",
       ownerOnly: true,
-      order: 8,
+      order: 9,
       group: "main",
     },
   ],

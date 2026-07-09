@@ -13,7 +13,7 @@ import {
   sendBookingReminderEmail,
   sendBookingCancelledEmail,
 } from "@/lib/email";
-import { sendPushToUser, pushEnabled } from "@/lib/push";
+import { sendPushToUser, sendPushToSalonOwner, pushEnabled } from "@/lib/push";
 
 interface BookingNotificationData {
   salonId: string;
@@ -205,6 +205,18 @@ export async function sendBookingNotification(
       url: "/meus-agendamentos",
       tag: `booking-${data.bookingId}`,
     }).catch((err) => console.error("❌ Erro ao enviar push:", err));
+  }
+
+  // 4.1 Push para o DONO DO SALÃO quando o cliente cria um novo agendamento
+  // (evento inequivocamente iniciado pelo cliente — evita notificar o próprio
+  // admin quando ele mesmo confirma/cancela/completa pelo painel)
+  if (pushEnabled() && type === "created") {
+    sendPushToSalonOwner(data.salonId, {
+      title: "📅 Novo agendamento recebido",
+      body: `${data.clientName} agendou ${data.serviceName} com ${data.staffName} em ${data.time}`,
+      url: "/dashboard/agendamentos",
+      tag: `owner-booking-${data.bookingId}`,
+    }).catch((err) => console.error("❌ Erro ao enviar push ao dono do salão:", err));
   }
 
   // 5. Log do resultado final

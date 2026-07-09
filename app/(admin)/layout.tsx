@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar"
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context"
 import { cn } from "@/lib/utils"
 import { AdminAIChatWidget } from "@/components/chat/admin-ai-chat-widget"
+import { PushOptIn } from "@/components/push/PushOptIn"
 import { useSession } from "next-auth/react"
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           collapsed ? "lg:ml-16" : "lg:ml-64"
         )}
       >
-        <div className="p-4 md:p-6 lg:p-8 xl:px-12 pt-16 lg:pt-8">
+        <div className="p-4 md:p-6 lg:p-8 xl:px-12 pt-16 lg:pt-8 space-y-4">
+          <PushOptIn />
           {children}
         </div>
       </main>
