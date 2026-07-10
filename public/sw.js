@@ -24,6 +24,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// ─── Fetch (passthrough) ──────────────────────────────────────────────────────
+// Necessário para os critérios de instalabilidade (PWA / "Adicionar à tela
+// inicial") em diversos navegadores — não faz cache agressivo, apenas
+// repassa a requisição direto para a rede.
+self.addEventListener("fetch", (event) => {
+  event.respondWith(fetch(event.request));
+});
+
 // ─── Web Push ─────────────────────────────────────────────────────────────────
 self.addEventListener("push", (event) => {
   let data = {};
