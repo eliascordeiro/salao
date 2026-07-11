@@ -78,7 +78,7 @@ export function BottomSheet({
                 variant="ghost"
                 size="sm"
                 onClick={() => onOpenChange(false)}
-                className="h-8 w-8 p-0 rounded-full"
+                className="h-11 w-11 p-0 rounded-full shrink-0"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -87,7 +87,7 @@ export function BottomSheet({
         )}
 
         {/* Content */}
-        <div className="px-6 py-6">{children}</div>
+        <div className="px-6 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">{children}</div>
       </div>
     </>
   );

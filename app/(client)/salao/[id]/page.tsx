@@ -201,7 +201,7 @@ export default function SalaoPage() {
               size="sm"
               onClick={() => setIsFavorite(!isFavorite)}
               className={cn(
-                "transition-all duration-300 h-9 w-9 p-0",
+                "transition-all duration-300 h-11 w-11 p-0",
                 isFavorite && "bg-red-500/10 border-red-500 text-red-500"
               )}
             >
@@ -213,13 +213,13 @@ export default function SalaoPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowShareMenu(!showShareMenu)}
-                className="h-9 w-9 p-0"
+                className="h-11 w-11 p-0"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
               
               {showShareMenu && (
-                <div className="absolute right-0 top-12 bg-background/95 backdrop-blur-md border border-primary/20 rounded-lg shadow-xl p-3 space-y-2 z-50 min-w-[200px]">
+                <div className="absolute right-0 top-12 bg-background/95 backdrop-blur-md border border-primary/20 rounded-lg shadow-xl p-3 space-y-2 z-50 w-56 max-w-[calc(100vw-2rem)]">
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(window.location.href);
@@ -385,17 +385,16 @@ export default function SalaoPage() {
         </GlassCard>
         
         {/* Tabs Melhorados */}
-        <GlassCard className="p-2">
-          <div className="flex gap-2 overflow-x-auto">
+        <GlassCard className="p-2 relative">
+          <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide">
             <Button
               variant={activeTab === "servicos" ? "default" : "ghost"}
               onClick={() => setActiveTab("servicos")}
               className={cn(
-                "flex-shrink-0 transition-all duration-300",
+                "flex-shrink-0 snap-start transition-all duration-300",
                 activeTab === "servicos" && "bg-gradient-to-r from-primary to-purple-500"
               )}
             >
-              <Briefcase className="h-4 w-4 mr-2" />
               <Briefcase className="h-4 w-4 mr-2" />
               Serviços ({salon.stats.totalServices})
             </Button>
@@ -403,7 +402,7 @@ export default function SalaoPage() {
               variant={activeTab === "profissionais" ? "default" : "ghost"}
               onClick={() => setActiveTab("profissionais")}
               className={cn(
-                "flex-shrink-0 transition-all duration-300",
+                "flex-shrink-0 snap-start transition-all duration-300",
                 activeTab === "profissionais" && "bg-gradient-to-r from-primary to-purple-500"
               )}
             >
@@ -414,7 +413,7 @@ export default function SalaoPage() {
               variant={activeTab === "sobre" ? "default" : "ghost"}
               onClick={() => setActiveTab("sobre")}
               className={cn(
-                "flex-shrink-0 transition-all duration-300",
+                "flex-shrink-0 snap-start transition-all duration-300",
                 activeTab === "sobre" && "bg-gradient-to-r from-primary to-purple-500"
               )}
             >
@@ -424,7 +423,7 @@ export default function SalaoPage() {
               variant={activeTab === "avaliacoes" ? "default" : "ghost"}
               onClick={() => setActiveTab("avaliacoes")}
               className={cn(
-                "flex-shrink-0 transition-all duration-300",
+                "flex-shrink-0 snap-start transition-all duration-300",
                 activeTab === "avaliacoes" && "bg-gradient-to-r from-primary to-purple-500"
               )}
             >
@@ -432,6 +431,8 @@ export default function SalaoPage() {
               Avaliações ({salon.reviewsCount})
             </Button>
           </div>
+          {/* Indicador visual de que há mais abas para o lado (scroll horizontal) */}
+          <div className="pointer-events-none absolute right-2 top-2 bottom-2 w-8 bg-gradient-to-l from-background-alt/90 to-transparent rounded-r-lg sm:hidden" />
         </GlassCard>
         
         {/* Tab Content */}
