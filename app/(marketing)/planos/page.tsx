@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Crown, Loader2 } from "lucide-react";
+import { Check, Sparkles, Crown, Loader2, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -22,6 +22,7 @@ interface Plan {
 export default function PlanosPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seats, setSeats] = useState(2);
   const router = useRouter();
 
   useEffect(() => {
@@ -52,13 +53,13 @@ export default function PlanosPage() {
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
             <Sparkles className="h-3 w-3 mr-1" />
-            Planos e Preços
+            Um único plano, sem letras miúdas
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Escolha o plano ideal para seu salão
+            Você paga só pelo tamanho da sua equipe
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comece com 14 dias grátis. Cancele quando quiser, sem compromisso.
+            Todas as funcionalidades liberadas para qualquer assinante. 14 dias grátis. Cancele quando quiser.
           </p>
         </div>
 
@@ -66,6 +67,7 @@ export default function PlanosPage() {
         <div className="grid gap-8 max-w-md mx-auto">
           {plans.map((plan) => {
             const isPopular = true;
+            const total = plan.price * seats;
             
             return (
               <Card
@@ -79,7 +81,7 @@ export default function PlanosPage() {
                 {isPopular && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Crown className="h-3 w-3 mr-1" />
-                    Mais Popular
+                    Plano único
                   </Badge>
                 )}
 
@@ -100,6 +102,45 @@ export default function PlanosPage() {
                   </p>
                 </div>
 
+                {/* Calculadora de cadeiras */}
+                <div className="bg-background-alt/50 rounded-xl p-4 mb-6 border border-border/50">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">
+                    Quantos profissionais tem seu salão?
+                  </p>
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 p-0 shrink-0"
+                      onClick={() => setSeats((s) => Math.max(1, s - 1))}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <div className="text-center min-w-[90px]">
+                      <div className="text-2xl font-bold">{seats}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        profissional{seats > 1 ? "is" : ""}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 p-0 shrink-0"
+                      onClick={() => setSeats((s) => s + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-center mt-3 pt-3 border-t border-border/50">
+                    <span className="text-xs text-muted-foreground">Sua mensalidade: </span>
+                    <span className="text-xl font-bold text-primary">
+                      R$ {total.toFixed(2)}/mês
+                    </span>
+                  </div>
+                </div>
+
                 <ul className="space-y-3 mb-8">
                   {plan.featuresList?.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
@@ -109,7 +150,7 @@ export default function PlanosPage() {
                   ))}
                 </ul>
 
-                <Link href={`/checkout?plan=${plan.slug}`}>
+                <Link href={`/checkout?plan=${plan.slug}&seats=${seats}`}>
                   <Button
                     size="lg"
                     className="w-full"
@@ -125,6 +166,18 @@ export default function PlanosPage() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Fair Pricing */}
+        <div className="max-w-md mx-auto mt-6">
+          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <p className="text-sm text-center">
+              <span className="font-semibold">💡 Como funciona:</span> a
+              mensalidade é recalculada automaticamente conforme o número de
+              profissionais ativos no seu salão. Cresceu a equipe? O valor sobe.
+              Diminuiu? Você paga menos, sem precisar trocar de plano.
+            </p>
+          </div>
         </div>
 
         {/* FAQ */}

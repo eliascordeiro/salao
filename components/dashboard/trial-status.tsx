@@ -11,6 +11,8 @@ interface TrialStatusProps {
   isEnding: boolean;
   isExpired: boolean;
   endsAt: Date;
+  pricePerSeat?: number;
+  seats?: number;
   className?: string;
 }
 
@@ -20,6 +22,8 @@ export function TrialStatus({
   isEnding,
   isExpired,
   endsAt,
+  pricePerSeat,
+  seats,
   className,
 }: TrialStatusProps) {
   const getStatusColor = () => {
@@ -149,8 +153,18 @@ export function TrialStatus({
                 <span className="text-2xl mr-2">💡</span>
                 <strong className="text-orange-800 dark:text-orange-200">Lembre-se:</strong>{" "}
                 <span className="text-orange-700 dark:text-orange-300">
-                  Após o trial, você só pagará <strong>R$ 39/mês</strong> se seu
-                  faturamento ultrapassar <strong>R$ 1.000</strong> no mês. Abaixo disso, é grátis para sempre!
+                  {pricePerSeat && seats ? (
+                    <>
+                      Após o trial, a cobrança será de <strong>R$ {pricePerSeat.toFixed(2)}/profissional/mês</strong> —
+                      hoje isso equivale a <strong>R$ {(pricePerSeat * seats).toFixed(2)}/mês</strong> para
+                      {" "}{seats} profissiona{seats > 1 ? "is" : "l"} ativo{seats > 1 ? "s" : ""}.
+                    </>
+                  ) : (
+                    <>
+                      Após o trial, a cobrança é feita por profissional ativo no seu salão —
+                      sem taxas escondidas, sem plano fixo que não faz sentido pro tamanho da sua equipe.
+                    </>
+                  )}
                 </span>
               </p>
             </div>

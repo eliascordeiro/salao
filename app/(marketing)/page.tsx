@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -25,10 +26,35 @@ import {
   Sparkles,
   Crown,
   Check,
+  Minus,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 
+interface PlanInfo {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  featuresList?: string[];
+}
+
 export default function LandingPage() {
+  const [plan, setPlan] = useState<PlanInfo | null>(null);
+  const [seats, setSeats] = useState(2);
+
+  useEffect(() => {
+    fetch("/api/plans")
+      .then((res) => res.json())
+      .then((plans: PlanInfo[]) => {
+        if (plans && plans.length > 0) setPlan(plans[0]);
+      })
+      .catch(() => {});
+  }, []);
+
+  const pricePerSeat = plan?.price ?? 39.9;
+  const total = pricePerSeat * seats;
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -265,132 +291,123 @@ export default function LandingPage() {
               </GlassCard>
             </div>
             
-            {/* Pricing Section Before CTA */}
+            {/* Cobrança — Simples, transparente e por cadeira */}
             <div className="mt-12 sm:mt-16 md:mt-20 mb-12 sm:mb-16">
               <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 px-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4">
+                  <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span>Cobrança 100% transparente</span>
+                </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-                  Planos{" "}
-                  <span className="text-primary">
-                    simples e transparentes
-                  </span>
+                  Um único plano, <span className="text-primary">todos os recursos liberados</span>
                 </h2>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-                  Sem surpresas. Pague apenas pelo que usar com cobrança condicional inteligente.
+                  Você paga só pelo número de profissionais (cadeiras) do seu salão.
+                  Sem letras miúdas, sem taxa escondida.
                 </p>
               </div>
 
-              <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6 mb-8">
-                {/* Free Trial */}
-                <GlassCard className="p-6 sm:p-7 md:p-8 hover:shadow-2xl transition-all duration-300">
-                  <div className="mb-4 sm:mb-5 md:mb-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs sm:text-sm font-medium mb-3 sm:mb-4">
-                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span>Recomendado para começar</span>
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2">Trial Gratuito</h3>
-                    <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
-                      <span className="text-3xl sm:text-4xl font-bold">R$ 0</span>
-                      <span className="text-sm sm:text-base text-muted-foreground">por 30 dias</span>
-                    </div>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      Teste todas as funcionalidades premium sem compromisso. Cancele quando quiser.
-                    </p>
-                  </div>
-                  <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="text-sm sm:text-base">Acesso completo a todas as funcionalidades</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="text-sm sm:text-base">Sistema de frente de caixa</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="text-sm sm:text-base">Relatórios e analytics</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="text-sm sm:text-base">Suporte por email</span>
-                    </li>
-                  </ul>
-                  <Link href="/cadastro-salao" className="block">
-                    <Button className="w-full" size="lg">
-                      Começar Grátis
-                    </Button>
-                  </Link>
-                </GlassCard>
+              <div className="max-w-3xl mx-auto">
+                <GlassCard className="p-6 sm:p-8 md:p-10 border-2 border-primary/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/20 to-accent/20 blur-3xl rounded-full -z-10" />
 
-                {/* Paid Plan */}
-                <GlassCard className="p-6 sm:p-7 md:p-8 hover:shadow-2xl transition-all duration-300 border-2 border-primary/20 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-accent/20 blur-3xl rounded-full -z-10" />
-                  <div className="mb-4 sm:mb-5 md:mb-6">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3 sm:mb-4">
-                      <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span>Plano Pro</span>
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-6 sm:mb-8">
+                    <div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-3">
+                        <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span>Plano {plan?.name || "Premium"}</span>
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl sm:text-4xl font-bold">
+                          R$ {pricePerSeat.toFixed(2)}
+                        </span>
+                        <span className="text-sm sm:text-base text-muted-foreground">
+                          / profissional / mês
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                        Ex.: 1 profissional = R$ {pricePerSeat.toFixed(2)}/mês. 5 profissionais = R$ {(pricePerSeat * 5).toFixed(2)}/mês.
+                      </p>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2">Assinatura Mensal</h3>
-                    <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
-                      <span className="text-3xl sm:text-4xl font-bold">R$ 39</span>
-                      <span className="text-sm sm:text-base text-muted-foreground">por mês</span>
+
+                    {/* Calculadora rápida de cadeiras */}
+                    <div className="w-full md:w-auto bg-background-alt/50 rounded-xl p-4 sm:p-5 border border-border/50">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 text-center md:text-left">
+                        Simule para o seu salão
+                      </p>
+                      <div className="flex items-center justify-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 w-9 p-0 shrink-0"
+                          onClick={() => setSeats((s) => Math.max(1, s - 1))}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <div className="text-center min-w-[90px]">
+                          <div className="text-2xl font-bold">{seats}</div>
+                          <div className="text-[10px] sm:text-xs text-muted-foreground">
+                            profissional{seats > 1 ? "is" : ""}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-9 w-9 p-0 shrink-0"
+                          onClick={() => setSeats((s) => s + 1)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="text-center mt-3 pt-3 border-t border-border/50">
+                        <span className="text-xs sm:text-sm text-muted-foreground">Total: </span>
+                        <span className="text-lg sm:text-xl font-bold text-primary">
+                          R$ {total.toFixed(2)}/mês
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      Cobrança inteligente: pague apenas se faturar mais de R$ 1.000 no mês.
-                    </p>
                   </div>
-                  <ul className="space-y-2.5 sm:space-y-3 mb-6 sm:mb-7 md:mb-8">
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-sm sm:text-base">Tudo do plano gratuito</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-sm sm:text-base">Agendamentos ilimitados</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-sm sm:text-base">Profissionais ilimitados</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-sm sm:text-base">Suporte prioritário</span>
-                    </li>
-                    <li className="flex items-start gap-2.5 sm:gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="h-3 w-3 text-primary" />
-                      </div>
-                      <span className="text-sm sm:text-base font-semibold">Cobrança condicional: só paga se faturar R$ 1.000+</span>
-                    </li>
+
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6 sm:mb-8">
+                    {[
+                      "Todas as funcionalidades liberadas, sem plano limitado",
+                      "Agendamentos e profissionais ilimitados",
+                      "Pagamentos online, WhatsApp e relatórios avançados",
+                      "Chat com IA e suporte prioritário",
+                      "PIX (sem taxa) ou cartão de crédito via Mercado Pago",
+                      "14 dias grátis para testar tudo antes de pagar",
+                    ].map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5 sm:gap-3">
+                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="h-3 w-3 text-primary" />
+                        </div>
+                        <span className="text-sm sm:text-base">{feature}</span>
+                      </li>
+                    ))}
                   </ul>
-                  <Link href="/cadastro-salao" className="block">
-                    <Button className="w-full" size="lg" variant="default">
-                      Iniciar Trial de 30 Dias
-                    </Button>
-                  </Link>
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link href="/cadastro-salao" className="flex-1">
+                      <Button className="w-full" size="lg">
+                        Começar grátis por 14 dias
+                      </Button>
+                    </Link>
+                    <Link href="/planos" className="flex-1">
+                      <Button className="w-full" size="lg" variant="outline">
+                        Ver detalhes do plano
+                      </Button>
+                    </Link>
+                  </div>
                 </GlassCard>
               </div>
 
               {/* Fair Pricing Alert */}
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-3xl mx-auto mt-6">
                 <div className="p-4 sm:p-5 rounded-xl bg-primary/5 border border-primary/20">
                   <p className="text-sm sm:text-base text-center">
-                    <span className="font-semibold">💡 Sistema Justo:</span> Nos primeiros 30 dias é grátis. Depois, você só paga R$ 39/mês se seu salão faturar mais de R$ 1.000 no período. Faturou menos? Não paga nada naquele mês!
+                    <span className="font-semibold">💡 Como funciona:</span> você cresce, a cadeira acompanha — cadastrou mais um profissional, o valor do mês seguinte é recalculado automaticamente. Diminuiu a equipe? Paga menos. Sem plano fixo que não faz sentido pro tamanho do seu salão.
                   </p>
                 </div>
               </div>
@@ -400,12 +417,12 @@ export default function LandingPage() {
               <Link href="/cadastro-salao">
                 <Button size="lg" className="gap-2 group w-full sm:w-auto">
                   <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
-                  Começar Grátis por 30 Dias
+                  Começar Grátis por 14 Dias
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4">
-                🎉 Sem cartão de crédito. Acesso completo por 30 dias. Cancele quando quiser.
+                🎉 Sem cartão de crédito para começar. Acesso completo por 14 dias. Cancele quando quiser.
               </p>
             </div>
           </div>

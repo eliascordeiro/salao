@@ -54,10 +54,14 @@ function CheckoutContent() {
     */
   }, []);
 
-  // Pegar planSlug apenas no cliente
+  // Pegar planSlug e seats apenas no cliente
   useEffect(() => {
     const slug = searchParams.get("plan");
     setPlanSlug(slug);
+    const seatsParam = Number(searchParams.get("seats"));
+    if (Number.isFinite(seatsParam) && seatsParam > 0) {
+      setSeats(Math.floor(seatsParam));
+    }
   }, [searchParams]);
 
   useEffect(() => {

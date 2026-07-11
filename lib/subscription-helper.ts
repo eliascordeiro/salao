@@ -7,7 +7,7 @@ import { addDays, differenceInDays, isAfter, isBefore } from "date-fns";
  */
 export async function createTrialSubscription(salonId: string) {
   // Buscar plano Free
-  const freePlan = await prisma.plan.findUnique({
+  const freePlan = await prisma.plan.findFirst({
     where: { name: "Free" },
   });
 
@@ -147,7 +147,7 @@ export async function handleTrialExpired(subscriptionId: string) {
  */
 export function formatTrialInfo(subscription: {
   status: string;
-  trialStartedAt: Date | null;
+  trialStartedAt?: Date | null;
   trialEndsAt: Date | null;
 }) {
   if (!subscription.trialEndsAt) {
@@ -161,7 +161,7 @@ export function formatTrialInfo(subscription: {
   }
 
   const daysLeft = getDaysLeftInTrial(subscription.trialEndsAt);
-  const totalDays = 30;
+  const totalDays = 14; // Trial gratuito atual: 14 dias
   const percentage = Math.max(0, Math.min(100, (daysLeft / totalDays) * 100));
 
   return {

@@ -193,6 +193,8 @@ export default async function DashboardPage() {
                 isEnding={trialInfo.isEnding}
                 isExpired={trialInfo.isExpired}
                 endsAt={trialInfo.endsAt}
+                pricePerSeat={subscription?.plan?.price}
+                seats={subscription?.seats}
               />
             </div>
           )}
