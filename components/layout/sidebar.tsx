@@ -14,10 +14,12 @@ import { useSidebar } from "@/contexts/sidebar-context"
 import { usePermissions } from "@/hooks/use-permissions"
 import { getMenuItems } from "@/lib/sidebar"
 import type { MenuItem } from "@/lib/sidebar"
+import { useUnreadMessages } from "@/hooks/use-unread-messages"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
+  const unreadMessages = useUnreadMessages()
   const { hasPermission, hasAllPermissions, hasAnyPermission, isOwner } = usePermissions()
 
   // Obtém itens de menu do sistema dinâmico
@@ -222,10 +224,20 @@ export function Sidebar() {
                 
                 {!collapsed && (
                   <span className={cn(
-                    "font-medium text-sm lg:text-base transition-all relative z-10",
+                    "font-medium text-sm lg:text-base transition-all relative z-10 flex-1",
                     isActive && "text-primary font-semibold"
                   )}>
                     {item.label}
+                  </span>
+                )}
+
+                {/* Badge de não lidas para Mensagens */}
+                {item.id === "messages" && unreadMessages > 0 && (
+                  <span className={cn(
+                    "ml-auto flex-shrink-0 z-10 min-w-[20px] h-5 rounded-full bg-primary text-primary-foreground",
+                    "text-[10px] font-bold flex items-center justify-center px-1"
+                  )}>
+                    {unreadMessages > 99 ? "99+" : unreadMessages}
                   </span>
                 )}
                 
@@ -244,8 +256,8 @@ export function Sidebar() {
                   </div>
                 )}
 
-                {/* Badge de notificação (exemplo - pode ser usado no futuro) */}
-                {!collapsed && isActive && (
+                {/* Ponto ativo apenas quando nao ha badge de nao lidas */}
+                {!collapsed && isActive && item.id !== "messages" && (
                   <div className="ml-auto">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   </div>

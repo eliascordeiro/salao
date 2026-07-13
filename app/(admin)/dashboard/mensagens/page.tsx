@@ -32,6 +32,7 @@ export default function MensagensPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedIdRef = useRef<string | null>(null);
 
   const loadConversations = useCallback(async () => {
     try {
@@ -51,9 +52,9 @@ export default function MensagensPage() {
     return () => clearInterval(interval);
   }, [loadConversations]);
 
-  const openConversation = async (id: string) => {
-    setSelectedId(id);
-    setLoadingMessages(true);
+  // Polling de mensagens novas na conversa aberta (a cada 5s)
+  const loadMessages = useCallback(async (id: string, silent = false) => {
+    if (!silent) setLoadingMessages(true);
     try {
       const res = await fetch(`/api/chat/conversations/${id}/messages`);
       if (res.ok) {
@@ -64,8 +65,22 @@ export default function MensagensPage() {
         );
       }
     } finally {
-      setLoadingMessages(false);
+      if (!silent) setLoadingMessages(false);
     }
+  }, []);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    if (!selectedId) return;
+    const interval = setInterval(() => {
+      if (selectedIdRef.current) loadMessages(selectedIdRef.current, true);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [selectedId, loadMessages]);
+
+  const openConversation = async (id: string) => {
+    setSelectedId(id);
+    await loadMessages(id);
   };
 
   useEffect(() => {
@@ -168,13 +183,24 @@ export default function MensagensPage() {
                     <div
                       key={m.id}
                       className={cn(
-                        "max-w-[75%] rounded-2xl px-4 py-2 text-sm",
-                        m.senderRole === "ADMIN"
-                          ? "ml-auto bg-primary text-primary-foreground"
-                          : "bg-background-alt"
+                        "flex flex-col max-w-[75%]",
+                        m.senderRole === "ADMIN" ? "ml-auto items-end" : "items-start"
                       )}
                     >
-                      {m.content}
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-2 text-sm",
+                          m.senderRole === "ADMIN"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background-alt"
+                        )}
+                      >
+                        {m.content}
+                      </div>
+                      <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
+                        {new Date(m.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        {m.senderRole === "ADMIN" && " ✓"}
+                      </span>
                     </div>
                   ))
                 )}

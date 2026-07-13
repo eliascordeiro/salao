@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -31,10 +31,31 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Polling de respostas do salão (a cada 5s quando o chat está aberto)
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+    if (!conversationId || !open) return;
+    const interval = setInterval(async () => {
+      const id = conversationIdRef.current;
+      if (!id) return;
+      try {
+        const res = await fetch(`/api/chat/conversations/${id}/messages`);
+        if (res.ok) {
+          const data = await res.json();
+          setMessages(data);
+        }
+      } catch {
+        // silencioso
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [conversationId, open]);
 
   const openChat = async () => {
     setOpen(true);
@@ -113,13 +134,24 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
             <div
               key={m.id}
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
-                m.senderRole === "CLIENT"
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "bg-background-alt"
+                "flex flex-col",
+                m.senderRole === "CLIENT" ? "items-end" : "items-start"
               )}
             >
-              {m.content}
+              <div
+                className={cn(
+                  "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+                  m.senderRole === "CLIENT"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background-alt"
+                )}
+              >
+                {m.content}
+              </div>
+              <span className="text-[10px] text-muted-foreground mt-0.5 px-1 flex items-center gap-1">
+                {new Date(m.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                {m.senderRole === "CLIENT" && <CheckCheck className="h-3 w-3 text-primary" />}
+              </span>
             </div>
           ))
         )}
