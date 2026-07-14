@@ -28,6 +28,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,13 +61,18 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const openChat = async () => {
     setOpen(true);
     setLoading(true);
+    setError(null);
     try {
       const convRes = await fetch("/api/chat/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ salonId }),
       });
-      if (!convRes.ok) return;
+      if (!convRes.ok) {
+        const errData = await convRes.json().catch(() => ({}));
+        setError(errData.error || `Erro ${convRes.status} ao iniciar conversa`);
+        return;
+      }
       const conv = await convRes.json();
       setConversationId(conv.id);
 
@@ -74,6 +80,8 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
       if (msgsRes.ok) {
         setMessages(await msgsRes.json());
       }
+    } catch (e) {
+      setError("Falha de conexão. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -125,6 +133,13 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
+        ) : error ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center p-4">
+            <p className="text-sm text-destructive">{error}</p>
+            <Button size="sm" variant="outline" onClick={openChat}>
+              Tentar novamente
+            </Button>
+          </div>
         ) : messages.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground mt-8">
             Envie uma mensagem para {salonName}.
@@ -169,7 +184,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
             }
           }}
           placeholder="Digite sua mensagem..."
-          disabled={sending || loading}
+          disabled={sending || loading || !conversationId}
         />
         <Button
           onClick={handleSend}

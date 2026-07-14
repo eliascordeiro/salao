@@ -16,6 +16,7 @@ export async function GET() {
     }
 
     if (session.user.role === "CLIENT") {
+      // Clientes puros: lista apenas as conversas onde são o cliente
       const conversations = await prisma.chatConversation.findMany({
         where: { clientId: session.user.id },
         include: {
@@ -35,7 +36,7 @@ export async function GET() {
       );
     }
 
-    // ADMIN / STAFF
+    // ADMIN / STAFF: tenta buscar as conversas do salão que gerencia
     const salonId = await getUserSalonId();
     if (!salonId) {
       return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 });
@@ -64,19 +65,12 @@ export async function GET() {
   }
 }
 
-// POST /api/chat/conversations — cliente inicia (ou reabre) uma conversa com um salão
+// POST /api/chat/conversations — qualquer usuário autenticado pode iniciar uma conversa com um salão como cliente
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    if (session.user.role !== "CLIENT") {
-      return NextResponse.json(
-        { error: "Apenas clientes podem iniciar uma conversa por este endpoint" },
-        { status: 403 }
-      );
     }
 
     const { salonId } = await request.json();

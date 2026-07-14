@@ -12,15 +12,18 @@ async function getAuthorizedConversation(conversationId: string, session: any) {
   });
   if (!conversation) return { conversation: null, role: null as null };
 
-  if (session.user.role === "CLIENT") {
-    if (conversation.clientId !== session.user.id) return { conversation: null, role: null };
+  // É o cliente desta conversa?
+  if (conversation.clientId === session.user.id) {
     return { conversation, role: "CLIENT" as const };
   }
 
-  // ADMIN / STAFF: precisa ser do salão da conversa
+  // É o dono do salão desta conversa?
   const salonId = await getUserSalonId();
-  if (!salonId || salonId !== conversation.salonId) return { conversation: null, role: null };
-  return { conversation, role: "ADMIN" as const };
+  if (salonId && salonId === conversation.salonId) {
+    return { conversation, role: "ADMIN" as const };
+  }
+
+  return { conversation: null, role: null };
 }
 
 // GET /api/chat/conversations/[id]/messages — lista mensagens e marca como lidas
