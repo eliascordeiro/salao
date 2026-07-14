@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         maxUsers: 5,
         features: [
           'Profissionais ilimitados',
-          'Pagamentos online (Stripe)',
+          'Pagamentos online via Mercado Pago',
           'WhatsApp Business',
           'Relatórios financeiros',
           'Controle de despesas',
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         maxUsers: 5,
         features: [
           'Profissionais ilimitados',
-          'Pagamentos online (Stripe)',
+          'Pagamentos online via Mercado Pago',
           'WhatsApp Business',
           'Relatórios financeiros',
           'Controle de despesas',

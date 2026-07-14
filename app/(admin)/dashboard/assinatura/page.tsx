@@ -355,7 +355,7 @@ export default function AssinaturaPage() {
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Pagamentos online via Stripe</span>
+                <span>Pagamentos online via Mercado Pago</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />

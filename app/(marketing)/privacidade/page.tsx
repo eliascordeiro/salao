@@ -30,7 +30,7 @@ export default function PrivacidadePage() {
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Dados de Cadastro:</strong> Nome, email, telefone, senha</li>
                 <li><strong>Dados de Perfil:</strong> Foto, preferências de serviços</li>
-                <li><strong>Dados de Pagamento:</strong> Informações de cartão (processadas via Stripe)</li>
+                <li><strong>Dados de Pagamento:</strong> Informações de pagamento (processadas via Mercado Pago para assinaturas)</li>
                 <li><strong>Dados de Estabelecimento:</strong> Nome, endereço, CNPJ, horários (para proprietários)</li>
                 <li><strong>Comunicações:</strong> Mensagens de suporte, avaliações, comentários</li>
               </ul>
@@ -99,7 +99,7 @@ export default function PrivacidadePage() {
 
               <h3 className="text-xl font-semibold">4.2 Com Prestadores de Serviços</h3>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Stripe:</strong> Processamento de pagamentos</li>
+                <li><strong>Mercado Pago:</strong> Processamento de assinaturas e pagamentos</li>
                 <li><strong>Provedores de Email:</strong> Envio de notificações</li>
                 <li><strong>Hospedagem:</strong> Armazenamento de dados (Railway)</li>
                 <li><strong>Analytics:</strong> Análise de uso da plataforma</li>
@@ -207,8 +207,8 @@ export default function PrivacidadePage() {
               <h2 className="text-2xl font-bold">10. Transferência Internacional</h2>
               <p>
                 Seus dados são armazenados em servidores no Brasil. Alguns parceiros 
-                (como Stripe) podem processar dados internacionalmente, sempre com 
-                garantias adequadas de proteção conforme LGPD.
+              (como Mercado Pago) podem processar dados internacionalmente, sempre com 
+              garantias adequadas de proteção conforme LGPD.
               </p>
             </section>
 

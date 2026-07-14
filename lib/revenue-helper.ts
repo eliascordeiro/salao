@@ -162,11 +162,10 @@ export async function processMonthlyBilling() {
 
       if (shouldCharge) {
         results.charged++;
-        // Aqui será integrado com Stripe Billing na Fase 5
-        console.log(`✅ Invoice criada para cobrança: R$ ${amount.toFixed(2)}`);
+        console.log(`✅ Cobrança a processar: R$ ${amount.toFixed(2)}`);
       } else {
         results.free++;
-        console.log(`✅ Salão continua no plano FREE (receita < R$ 1.000)`);
+        console.log(`✅ Salão continua no plano gratuito (receita < R$ 1.000)`);
       }
     } catch (error) {
       console.error(`❌ Erro ao processar salão ${subscription.salon.name}:`, error);

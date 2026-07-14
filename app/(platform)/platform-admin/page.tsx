@@ -192,7 +192,7 @@ export default function PlatformAdminPage() {
         <Card className="glass-card p-6">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
-            Receita (Stripe)
+            Receita de Assinaturas
           </h3>
           <div className="space-y-3">
             <div>
@@ -206,7 +206,7 @@ export default function PlatformAdminPage() {
             </div>
             <div className="pt-3 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                Pagamentos bem-sucedidos via Stripe (agendamentos)
+                Assinaturas processadas via Mercado Pago
               </p>
             </div>
           </div>

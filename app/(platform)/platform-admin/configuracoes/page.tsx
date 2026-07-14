@@ -53,7 +53,6 @@ interface PlatformSettings {
   }
   // Payment
   payment: {
-    stripeEnabled: boolean
     mercadoPagoEnabled: boolean
     currency: string
   }
@@ -112,7 +111,6 @@ export default function ConfiguracoesPage() {
           replyTo: "suporte@salaoblza.com.br",
         },
         payment: {
-          stripeEnabled: true,
           mercadoPagoEnabled: true,
           currency: "BRL",
         },
@@ -279,7 +277,7 @@ export default function ConfiguracoesPage() {
               <div className="space-y-0.5">
                 <Label>Pagamentos Online</Label>
                 <p className="text-sm text-muted-foreground">
-                  Habilitar sistema de pagamentos (Stripe)
+                  Habilitar sistema de pagamentos online
                 </p>
               </div>
               <Switch
@@ -444,24 +442,6 @@ export default function ConfiguracoesPage() {
             <CardDescription>Configure os provedores de pagamento</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Stripe</Label>
-                <p className="text-sm text-muted-foreground">
-                  Pagamentos de agendamentos via Stripe
-                </p>
-              </div>
-              <Switch
-                checked={settings.payment.stripeEnabled}
-                onCheckedChange={(checked) =>
-                  setSettings({
-                    ...settings,
-                    payment: { ...settings.payment, stripeEnabled: checked },
-                  })
-                }
-              />
-            </div>
-
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Mercado Pago</Label>

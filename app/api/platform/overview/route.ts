@@ -41,7 +41,7 @@ export async function GET() {
       _count: true
     })
 
-    // Receita total (Stripe payments)
+    // Receita total (assinaturas)
     const payments = await prisma.payment.aggregate({
       where: { status: 'succeeded' },
       _sum: { amount: true }

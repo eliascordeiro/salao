@@ -1,41 +1,6 @@
 // Helper functions para gerenciar subscriptions e trials
 import { prisma } from "./prisma";
-import { addDays, differenceInDays, isAfter, isBefore } from "date-fns";
-
-/**
- * Cria uma subscription para um salão novo (trial de 30 dias)
- */
-export async function createTrialSubscription(salonId: string) {
-  // Buscar plano Free
-  const freePlan = await prisma.plan.findFirst({
-    where: { name: "Free" },
-  });
-
-  if (!freePlan) {
-    throw new Error("Plano Free não encontrado. Execute o seed primeiro.");
-  }
-
-  const now = new Date();
-  const trialEnds = addDays(now, 30);
-
-  // Criar subscription com trial de 30 dias
-  const subscription = await prisma.subscription.create({
-    data: {
-      salonId,
-      planId: freePlan.id,
-      status: "trialing",
-      stripeCustomerId: `temp_${salonId}`, // Será atualizado quando criar no Stripe
-      trialStartedAt: now,
-      trialEndsAt: trialEnds,
-      currentPeriodStart: now,
-      currentPeriodEnd: trialEnds,
-    },
-  });
-
-  console.log(`✅ Trial criado para salão ${salonId} - expira em ${trialEnds.toLocaleDateString()}`);
-  
-  return subscription;
-}
+import { differenceInDays, isAfter, isBefore } from "date-fns";
 
 /**
  * Verifica se uma subscription está em trial

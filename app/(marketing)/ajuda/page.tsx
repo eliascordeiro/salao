@@ -27,7 +27,7 @@ const FAQ_DATA = [
       },
       {
         q: "Como faço o pagamento?",
-        a: "Você pode pagar online via cartão de crédito/débito através do Stripe, ou diretamente no salão após o atendimento.",
+        a: "O pagamento pode ser feito diretamente no salão após o atendimento (dinheiro, PIX ou cartão na maquininha). Pagamentos online em breve.",
       },
       {
         q: "Não recebi email de confirmação. O que fazer?",
@@ -73,11 +73,11 @@ const FAQ_DATA = [
     questions: [
       {
         q: "Quais formas de pagamento são aceitas?",
-        a: "Aceitamos cartões de crédito e débito via Stripe. Pagamentos presenciais também podem ser registrados no sistema.",
+        a: "Os salões aceitam pagamentos presenciais: dinheiro, PIX e cartão. A forma de pagamento varia por estabelecimento.",
       },
       {
         q: "O pagamento é seguro?",
-        a: "Sim! Usamos Stripe, uma das plataformas de pagamento mais seguras do mundo, com criptografia de ponta.",
+        a: "Sim! Todos os dados tráfegam com criptografia SSL/TLS. Para assinaturas da plataforma, usamos Mercado Pago.",
       },
       {
         q: "Posso solicitar reembolso?",
@@ -85,7 +85,7 @@ const FAQ_DATA = [
       },
       {
         q: "Como recebo os pagamentos do meu salão?",
-        a: "Os pagamentos são processados via Stripe e transferidos para sua conta bancária automaticamente.",
+        a: "Pagamentos presenciais ficam registrados no caixa do sistema para controle financeiro completo.",
       },
     ],
   },

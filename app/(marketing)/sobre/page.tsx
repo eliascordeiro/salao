@@ -219,7 +219,7 @@ export default function SobrePage() {
                 },
                 {
                   title: "Pagamentos Integrados",
-                  desc: "Receba online de forma segura com Stripe, eliminando inadimplência e facilitando o controle financeiro"
+                  desc: "Aceite pagamentos online com PIX e cartão de forma segura via Mercado Pago, eliminando inadimplência e facilitando o controle financeiro"
                 },
                 {
                   title: "Relatórios Estratégicos",

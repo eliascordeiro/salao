@@ -106,8 +106,9 @@ export default function TermosPage() {
               <h2 className="text-2xl font-bold">6. Pagamentos</h2>
               <h3 className="text-xl font-semibold">6.1 Processamento de Pagamentos</h3>
               <p>
-                Pagamentos são processados através do Stripe, um serviço terceirizado seguro. 
-                Aceitamos cartões de crédito e débito.
+                Pagamentos presenciais são registrados no sistema para controle financeiro. Assinaturas da plataforma
+                são processadas de forma segura via Mercado Pago.
+                Aceitamos PIX e cartão de crédito.
               </p>
 
               <h3 className="text-xl font-semibold">6.2 Preços</h3>

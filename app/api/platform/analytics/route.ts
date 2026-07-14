@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Receita do período (Stripe)
+    // Receita do período
     const revenue = await prisma.payment.aggregate({
       where: {
         status: "succeeded",
