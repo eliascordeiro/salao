@@ -34,19 +34,6 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
 
-  // Trava o scroll da página enquanto o chat está aberto (evita "pulos" no
-  // mobile quando o teclado virtual abre/fecha)
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -132,12 +119,11 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex flex-col bg-background",
+        "fixed inset-0 z-50 flex h-[100dvh] flex-col bg-background",
         // Desktop/tablet: vira um painel flutuante no canto inferior direito
         "sm:inset-auto sm:bottom-6 sm:right-6 sm:left-auto sm:top-auto",
         "sm:h-[70dvh] sm:max-w-sm sm:rounded-2xl sm:border sm:border-border/50 sm:shadow-2xl"
       )}
-      style={{ height: "100dvh" }}
     >
       <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 sm:rounded-t-2xl">
         <div>
