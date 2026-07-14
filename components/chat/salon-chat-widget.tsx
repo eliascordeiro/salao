@@ -34,6 +34,19 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
 
+  // Trava o scroll da página enquanto o chat está aberto (evita "pulos" no
+  // mobile quando o teclado virtual abre/fecha)
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -117,18 +130,26 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   }
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 mx-auto flex h-[70vh] max-w-sm flex-col rounded-2xl border border-border/50 bg-background shadow-2xl sm:right-6 sm:left-auto sm:bottom-6">
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex flex-col bg-background",
+        // Desktop/tablet: vira um painel flutuante no canto inferior direito
+        "sm:inset-auto sm:bottom-6 sm:right-6 sm:left-auto sm:top-auto",
+        "sm:h-[70dvh] sm:max-w-sm sm:rounded-2xl sm:border sm:border-border/50 sm:shadow-2xl"
+      )}
+      style={{ height: "100dvh" }}
+    >
+      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 sm:rounded-t-2xl">
         <div>
           <p className="font-semibold text-sm">{salonName}</p>
           <p className="text-xs text-muted-foreground">Chat direto com o salão</p>
         </div>
-        <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
+        <button onClick={() => setOpen(false)} className="p-2 -m-2 text-muted-foreground hover:text-foreground">
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div className="flex-1 min-h-0 space-y-3 overflow-y-auto overscroll-contain p-4">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -173,7 +194,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex items-center gap-2 border-t border-border/50 p-3">
+      <div className="flex items-center gap-2 border-t border-border/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shrink-0">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
