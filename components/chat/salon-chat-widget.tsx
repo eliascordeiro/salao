@@ -34,6 +34,32 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
 
+  // Trava o scroll do fundo (página) enquanto o chat está aberto no mobile,
+  // igual ao comportamento de um modal — a lista por trás não deve rolar.
+  // Usa a técnica "position: fixed no body" (em vez de overflow:hidden puro)
+  // porque é robusta no iOS Safari e não trava o repaint quando o teclado
+  // virtual abre/fecha.
+  useEffect(() => {
+    if (!open) return;
+
+    const scrollY = window.scrollY;
+    const { body } = document;
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
