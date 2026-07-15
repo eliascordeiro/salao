@@ -34,32 +34,6 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
 
-  // Trava o scroll do fundo (página) enquanto o chat está aberto no mobile,
-  // igual ao comportamento de um modal — a lista por trás não deve rolar.
-  // Usa a técnica "position: fixed no body" (em vez de overflow:hidden puro)
-  // porque é robusta no iOS Safari e não trava o repaint quando o teclado
-  // virtual abre/fecha.
-  useEffect(() => {
-    if (!open) return;
-
-    const scrollY = window.scrollY;
-    const { body } = document;
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
-
-    return () => {
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, [open]);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -150,9 +124,9 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col animate-fadeIn overflow-hidden">
+    <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background animate-fadeIn overflow-hidden sm:inset-auto sm:bottom-6 sm:right-6 sm:left-auto sm:top-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] sm:w-96 sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl">
       {/* Header */}
-      <div className="p-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white rounded-t-2xl flex justify-between items-center">
+      <div className="shrink-0 p-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white flex justify-between items-center sm:rounded-t-2xl">
         <div className="flex items-center gap-3">
           <div className="relative">
             <Store className="h-6 w-6" />
@@ -176,7 +150,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-background-alt/30 space-y-4">
+      <div className="flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain bg-background-alt/30 space-y-4">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -234,7 +208,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-border bg-background">
+      <div className="shrink-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border bg-background">
         <div className="flex gap-2">
           <Input
             value={input}
