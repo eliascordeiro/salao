@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MessageCircle, X, Send, Loader2, Store, User, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +32,13 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -124,7 +130,14 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background animate-fadeIn overflow-hidden sm:inset-auto sm:bottom-6 sm:right-6 sm:left-auto sm:top-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] sm:w-96 sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl">
+    <>
+      <Button variant="outline" size="sm" onClick={openChat} className="gap-2 w-full">
+        <MessageCircle className="h-4 w-4" />
+        Falar com o salão
+      </Button>
+      {mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex h-[100dvh] w-full flex-col bg-background animate-fadeIn overflow-hidden sm:inset-auto sm:bottom-6 sm:right-6 sm:left-auto sm:top-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] sm:w-96 sm:max-w-[calc(100vw-3rem)] sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl">
       {/* Header */}
       <div className="shrink-0 p-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white flex justify-between items-center sm:rounded-t-2xl">
         <div className="flex items-center gap-3">
@@ -227,7 +240,10 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
           </Button>
         </div>
       </div>
-    </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 
