@@ -240,6 +240,16 @@
 				"rm -f 'app/agenda@salon-booking.com.br' && git add -A && git status --short"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "git-commit-salon-detail-fix",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git commit -m \"fix: align public salon detail visibility filter with listing (drop publishedAt requirement); remove stray file\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
 		}
 	]
 }
