@@ -51,6 +51,9 @@ const nextConfig = {
   // Experimentally support server components
   experimental: {
     serverComponentsExternalPackages: ['@wppconnect-team/wppconnect', 'puppeteer', 'puppeteer-core'],
+    // Evita crash (SIGSEGV) do worker de build em containers com pouca memória
+    workerThreads: false,
+    cpus: 1,
   },
 };
 

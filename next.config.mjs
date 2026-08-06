@@ -38,6 +38,11 @@ const nextConfig = {
     
     return config;
   },
+  experimental: {
+    // Evita crash (SIGSEGV) do worker de build em containers com pouca memória
+    workerThreads: false,
+    cpus: 1,
+  },
 };
 
 export default nextConfig;
