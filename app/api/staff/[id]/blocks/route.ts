@@ -17,6 +17,19 @@ export async function GET(
       );
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
+    const staff = await prisma.staff.findFirst({
+      where: { id: params.id, salonId: session.user.salonId },
+      select: { id: true },
+    });
+
+    if (!staff) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
+    }
+
     const blocks = await prisma.block.findMany({
       where: {
         staffId: params.id,
@@ -55,6 +68,19 @@ export async function POST(
         { error: "Não autorizado" },
         { status: 401 }
       );
+    }
+
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
+    const staff = await prisma.staff.findFirst({
+      where: { id: params.id, salonId: session.user.salonId },
+      select: { id: true },
+    });
+
+    if (!staff) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
     }
 
     const body = await request.json();

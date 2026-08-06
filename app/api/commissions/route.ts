@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 
 // Função auxiliar para calcular comissão
 function calculateCommission(
@@ -27,12 +26,12 @@ function calculateCommission(
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -42,7 +41,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    const where: any = { salonId: salon.id };
+    const where: any = { salonId };
 
     if (status) where.status = status;
     if (staffId) where.staffId = staffId;
@@ -107,12 +106,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -127,7 +126,7 @@ export async function POST(req: NextRequest) {
     const booking = await prisma.booking.findFirst({
       where: {
         id: bookingId,
-        salonId: salon.id,
+        salonId,
       },
       include: {
         service: true,
@@ -190,7 +189,7 @@ export async function POST(req: NextRequest) {
       data: {
         bookingId,
         staffId: booking.staffId,
-        salonId: salon.id,
+        salonId,
         serviceId: booking.serviceId,
         servicePrice: booking.totalPrice,
         commissionType: config.commissionType,

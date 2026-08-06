@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 
 /**
  * POST /api/cashier/close-session
@@ -30,11 +29,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Busca o salão do usuário logado
-    const salon = await getUserSalon();
-    console.log('🏪 Salão encontrado:', salon?.name);
-    
-    if (!salon) {
+    const salonId = session.user.salonId;
+    console.log('🏪 Salão encontrado:', salonId);
+
+    if (!salonId) {
       console.log('❌ Salão não encontrado');
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
@@ -65,7 +63,7 @@ export async function POST(request: Request) {
       console.log('📋 Bookings selecionados para pagamento:', bookingIds);
       
       const existingSession = await prisma.cashierSession.findUnique({
-        where: { id: sessionId, salonId: salon.id },
+        where: { id: sessionId, salonId },
         include: {
           items: true,
           client: {
@@ -118,7 +116,7 @@ export async function POST(request: Request) {
       // Cria nova sessão CLOSED com apenas os itens pagos
       const closedSession = await prisma.cashierSession.create({
         data: {
-          salonId: salon.id,
+          salonId,
           clientId,
           subtotal: subtotalSelected,
           discount,
@@ -233,7 +231,7 @@ export async function POST(request: Request) {
             data: {
               bookingId: booking.id,
               staffId: booking.staffId,
-              salonId: salon.id,
+              salonId,
               serviceId: booking.serviceId,
               servicePrice: booking.totalPrice,
               commissionType: config.commissionType,
@@ -309,7 +307,7 @@ export async function POST(request: Request) {
     const bookings = await prisma.booking.findMany({
       where: {
         id: { in: bookingIds },
-        salonId: salon.id,
+        salonId,
         clientId,
         status: { in: ["CONFIRMED", "COMPLETED"] }, // Aceita ambos os status
       },
@@ -333,7 +331,7 @@ export async function POST(request: Request) {
     // Cria nova sessão de caixa
     const cashierSession = await prisma.cashierSession.create({
       data: {
-        salonId: salon.id,
+        salonId,
         clientId,
         subtotal,
         discount,
@@ -446,7 +444,7 @@ export async function POST(request: Request) {
           data: {
             bookingId: booking.id,
             staffId: booking.staffId,
-            salonId: salon.id,
+            salonId,
             serviceId: booking.serviceId,
             servicePrice: booking.totalPrice,
             commissionType: config.commissionType,
@@ -492,8 +490,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -510,7 +508,7 @@ export async function GET(request: Request) {
     const cashierSession = await prisma.cashierSession.findUnique({
       where: {
         id: sessionId,
-        salonId: salon.id,
+        salonId,
       },
       include: {
         items: true,

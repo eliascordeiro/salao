@@ -10,7 +10,6 @@ import {
 } from "@/lib/email";
 import { sendBookingNotification } from "@/lib/whatsapp/notifications";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getUserSalon } from "@/lib/salon-helper";
 
 // Helper para verificar se usuário tem permissão
 async function hasPermission(session: any, permission: string): Promise<boolean> {
@@ -82,9 +81,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 🔒 FILTRO MULTI-TENANT: Obter salão do usuário
-    const userSalon = await getUserSalon();
-    
-    if (!userSalon) {
+    const userSalonId = session.user.salonId;
+
+    if (!userSalonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -95,7 +94,7 @@ export async function GET(request: NextRequest) {
 
     // Construir filtros dinamicamente
     const where: any = {
-      salonId: userSalon.id, // 🔒 FILTRO CRÍTICO: Apenas agendamentos do salão
+      salonId: userSalonId, // 🔒 FILTRO CRÍTICO: Apenas agendamentos do salão
     };
 
     if (status) {
@@ -189,6 +188,10 @@ export async function POST(request: NextRequest) {
     console.log("[bookings POST] Session user:", session.user);
     
     const { clientId, serviceId, staffId, salonId, date, notes } = body;
+    const isPrivilegedUser =
+      session.user.role === "ADMIN" ||
+      session.user.role === "STAFF" ||
+      (session.user as any).roleType === "STAFF";
 
     // Determinar qual clientId usar
     // Se admin/staff está criando para outro cliente, usa o clientId do body
@@ -211,33 +214,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar o salão do profissional se não foi fornecido
-    let finalSalonId = salonId;
+    // Determinar tenant efetivo com base na sessão e validar consistência com o profissional.
+    let finalSalonId = isPrivilegedUser ? session.user.salonId : salonId || null;
+
+    if (isPrivilegedUser && !finalSalonId) {
+      return NextResponse.json(
+        { error: "Usuário sem salão associado na sessão" },
+        { status: 400 }
+      );
+    }
+
+    const staff = await prisma.staff.findUnique({
+      where: { id: staffId },
+      select: { id: true, salonId: true },
+    });
+
+    if (!staff) {
+      return NextResponse.json(
+        { error: "Profissional não encontrado" },
+        { status: 404 }
+      );
+    }
+
     if (!finalSalonId) {
-      const staff = await prisma.staff.findUnique({
-        where: { id: staffId },
-        select: { salonId: true },
-      });
-      
-      if (!staff) {
-        return NextResponse.json(
-          { error: "Profissional não encontrado" },
-          { status: 404 }
-        );
-      }
-      
       finalSalonId = staff.salonId;
     }
 
+    if (staff.salonId !== finalSalonId) {
+      return NextResponse.json(
+        { error: "Profissional não pertence ao salão informado" },
+        { status: 409 }
+      );
+    }
+
     // Buscar o serviço para pegar o preço
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId },
+    const service = await prisma.service.findFirst({
+      where: {
+        id: serviceId,
+        salonId: finalSalonId,
+      },
       select: { price: true, duration: true },
     });
 
     if (!service) {
       return NextResponse.json(
-        { error: "Serviço não encontrado" },
+        { error: "Serviço não encontrado para este salão" },
         { status: 404 }
       );
     }

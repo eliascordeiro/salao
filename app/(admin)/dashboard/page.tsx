@@ -11,7 +11,6 @@ import { TrialStatus } from "@/components/dashboard/trial-status"
 import { ExpenseSummary } from "@/components/dashboard/expense-summary"
 import { subDays, subMonths } from "date-fns"
 import Link from "next/link"
-import { getUserSalonId } from "@/lib/salon-helper"
 import { getSalonSubscription, formatTrialInfo } from "@/lib/subscription-helper"
 
 export default async function DashboardPage() {
@@ -21,8 +20,7 @@ export default async function DashboardPage() {
     redirect("/login")
   }
 
-  // Obter salão do usuário logado
-  const userSalonId = await getUserSalonId()
+  const userSalonId = session.user.salonId
   
   if (!userSalonId) {
     redirect("/login")

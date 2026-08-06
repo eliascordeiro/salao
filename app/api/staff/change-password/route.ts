@@ -21,6 +21,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     const { currentPassword, newPassword } = await request.json();
 
     if (!currentPassword || !newPassword) {
@@ -38,6 +42,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar usuário
+    const staffProfile = await prisma.staff.findFirst({
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
+      select: { userId: true },
+    });
+
+    if (!staffProfile) {
+      return NextResponse.json(
+        { error: "Perfil não encontrado" },
+        { status: 404 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     });

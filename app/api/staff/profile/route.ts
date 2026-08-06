@@ -20,9 +20,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Buscar perfil do staff
     const staffProfile = await prisma.staff.findFirst({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
       include: {
         salon: {
           select: {
@@ -82,9 +89,16 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Buscar perfil do staff
     const staffProfile = await prisma.staff.findFirst({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
     });
 
     if (!staffProfile) {

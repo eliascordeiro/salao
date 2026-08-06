@@ -7,6 +7,11 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     
     const status = searchParams.get("status");
@@ -25,8 +30,8 @@ export async function GET(request: NextRequest) {
     }
     
     // Se não for admin, mostrar apenas tickets do usuário
-    if (session?.user?.role !== "ADMIN") {
-      where.userId = session?.user?.id;
+    if (session.user.role !== "ADMIN") {
+      where.userId = session.user.id;
     } else if (userId) {
       where.userId = userId;
     }

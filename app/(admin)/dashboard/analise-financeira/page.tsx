@@ -8,7 +8,6 @@ import { ExpensesTrendChart } from "@/components/dashboard/expenses-trend-chart"
 import { GlassCard } from "@/components/ui/glass-card"
 import { TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react"
 import { prisma } from "@/lib/prisma"
-import { getUserSalonId } from "@/lib/salon-helper"
 import { getProfitStats, getProfitComparison } from "@/lib/expense-helper"
 import { startOfMonth, endOfMonth, format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -20,7 +19,7 @@ export default async function FinancialAnalysisPage() {
     redirect("/login")
   }
 
-  const userSalonId = await getUserSalonId()
+  const userSalonId = session.user.salonId
 
   if (!userSalonId) {
     redirect("/login")

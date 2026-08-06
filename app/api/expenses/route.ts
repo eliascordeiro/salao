@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalonId } from "@/lib/salon-helper";
 
 /**
  * GET /api/expenses
@@ -20,8 +19,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obter salão do usuário logado
-    const userSalonId = await getUserSalonId();
+    const userSalonId = session.user.salonId;
     
     if (!userSalonId) {
       return NextResponse.json(
@@ -95,8 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obter salão do usuário logado
-    const userSalonId = await getUserSalonId();
+    const userSalonId = session.user.salonId;
     
     if (!userSalonId) {
       return NextResponse.json(

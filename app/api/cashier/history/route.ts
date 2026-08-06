@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 
 export const dynamic = 'force-dynamic';
 
@@ -21,8 +20,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -60,7 +59,7 @@ export async function GET(request: Request) {
     // Busca todas as sessões FECHADAS (pagas hoje)
     const cashierSessions = await prisma.cashierSession.findMany({
       where: {
-        salonId: salon.id,
+        salonId,
         status: "CLOSED",
         paidAt: {
           gte: startDate,

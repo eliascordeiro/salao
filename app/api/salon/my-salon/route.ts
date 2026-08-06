@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getUserSalon } from "@/lib/salon-helper"
 import { prisma } from "@/lib/prisma"
 
 // Força renderização dinâmica
@@ -15,11 +14,13 @@ export async function GET() {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    const salon = await getUserSalon()
+    const salonId = session.user.salonId
     
-    if (!salon) {
+    if (!salonId) {
       return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 404 })
     }
+
+    const salon = await prisma.salon.findUnique({ where: { id: salonId } })
 
     return NextResponse.json(salon)
   } catch (error) {
@@ -39,9 +40,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    const salon = await getUserSalon()
+    const salonId = session.user.salonId
     
-    if (!salon) {
+    if (!salonId) {
       return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 404 })
     }
 
@@ -96,7 +97,7 @@ export async function PUT(request: Request) {
 
     // Atualizar salão
     const updatedSalon = await prisma.salon.update({
-      where: { id: salon.id },
+      where: { id: salonId },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(description !== undefined && { description: description?.trim() || null }),

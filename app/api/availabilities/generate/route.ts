@@ -6,9 +6,15 @@ import { prisma } from "@/lib/prisma";
 // POST - Gerar slots automaticamente (substitui todos os existentes)
 export async function POST(request: Request) {
   try {
+    const availability = (prisma as any).availability;
+
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
     }
 
     const { staffId, slots, force } = await request.json();
@@ -22,7 +28,10 @@ export async function POST(request: Request) {
 
     // Verificar se o profissional existe
     const staff = await prisma.staff.findUnique({
-      where: { id: staffId },
+      where: {
+        id: staffId,
+        salonId: session.user.salonId,
+      },
       select: { id: true, name: true },
     });
 
@@ -110,7 +119,7 @@ export async function POST(request: Request) {
     }
 
     // Buscar slots existentes
-    const existingSlots = await prisma.availability.findMany({
+    const existingSlots = await availability.findMany({
       where: {
         staffId,
         type: "RECURRING",
@@ -120,8 +129,10 @@ export async function POST(request: Request) {
 
     // Executar regeneração em transação
     const result = await prisma.$transaction(async (tx) => {
+      const txAvailability = (tx as any).availability;
+
       // 1. Deletar todos os slots recorrentes existentes
-      const deleted = await tx.availability.deleteMany({
+      const deleted = await txAvailability.deleteMany({
         where: {
           staffId,
           type: "RECURRING",
@@ -129,7 +140,7 @@ export async function POST(request: Request) {
       });
 
       // 2. Criar novos slots
-      const created = await tx.availability.createMany({
+      const created = await txAvailability.createMany({
         data: slots.map((slot: { dayOfWeek: number; startTime: string; endTime: string }) => ({
           staffId,
           dayOfWeek: slot.dayOfWeek,

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalonId } from "@/lib/salon-helper";
 import { getOrCreateConversation } from "@/lib/chat";
 
 // GET /api/chat/conversations
@@ -37,7 +36,7 @@ export async function GET() {
     }
 
     // ADMIN / STAFF: tenta buscar as conversas do salão que gerencia
-    const salonId = await getUserSalonId();
+    const salonId = session.user.salonId;
     if (!salonId) {
       return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 });
     }

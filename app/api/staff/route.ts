@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getUserSalonId } from "@/lib/salon-helper"
 import { canAddStaff } from "@/lib/seat-pricing"
 import crypto from "crypto"
 
@@ -17,8 +16,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    // Obter salão do usuário logado automaticamente
-    const userSalonId = await getUserSalonId()
+    const userSalonId = session.user.salonId
     console.log('🏪 [GET /api/staff] Salão do usuário:', userSalonId)
     
     if (!userSalonId) {
@@ -68,8 +66,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    // Obter salão do usuário logado automaticamente
-    const userSalonId = await getUserSalonId()
+    const userSalonId = session.user.salonId
     console.log('🏪 [POST /api/staff] Salão do usuário:', userSalonId)
     
     if (!userSalonId) {

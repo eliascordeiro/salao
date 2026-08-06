@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 
 // PATCH - Marcar comissão como paga
 export async function PATCH(
@@ -11,12 +10,12 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -35,7 +34,7 @@ export async function PATCH(
     const commission = await prisma.commission.findFirst({
       where: {
         id: params.id,
-        salonId: salon.id,
+        salonId,
       },
     });
 
@@ -71,7 +70,7 @@ export async function PATCH(
     if (status === "PAID" && commission.status !== "PAID") {
       await prisma.expense.create({
         data: {
-          salonId: salon.id,
+          salonId,
           description: `Comissão - ${updated.staff.name} - ${updated.service.name}`,
           amount: updated.calculatedValue,
           category: "SALARIES",
@@ -98,12 +97,12 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -111,7 +110,7 @@ export async function DELETE(
     const commission = await prisma.commission.findFirst({
       where: {
         id: params.id,
-        salonId: salon.id,
+        salonId,
       },
     });
 

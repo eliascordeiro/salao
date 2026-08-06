@@ -11,6 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
     const staffId = searchParams.get("staffId");
     const startDate = searchParams.get("startDate"); // YYYY-MM-DD
@@ -22,6 +26,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: "staffId é obrigatório" },
         { status: 400 }
+      );
+    }
+
+    const staff = await prisma.staff.findFirst({
+      where: {
+        id: staffId,
+        salonId: session.user.salonId,
+      },
+      select: { id: true },
+    });
+
+    if (!staff) {
+      return NextResponse.json(
+        { error: "Profissional não encontrado" },
+        { status: 404 }
       );
     }
 
@@ -80,6 +99,10 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
     }
 
     const data = await request.json();
@@ -142,8 +165,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se o profissional existe
-    const staff = await prisma.staff.findUnique({
-      where: { id: staffId },
+    const staff = await prisma.staff.findFirst({
+      where: {
+        id: staffId,
+        salonId: session.user.salonId,
+      },
+      select: { id: true },
     });
 
     if (!staff) {

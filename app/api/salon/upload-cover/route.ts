@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 import { v2 as cloudinary } from "cloudinary";
 
 // Configurar Cloudinary
@@ -33,9 +32,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar salão do usuário usando helper
-    const salon = await getUserSalon();
+    const salonId = session.user.salonId;
 
-    if (!salon) {
+    if (!salonId) {
       return NextResponse.json(
         { error: "Salão não encontrado" },
         { status: 404 }
@@ -80,7 +79,7 @@ export async function POST(request: NextRequest) {
     // Upload para Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(dataURI, {
       folder: 'salao/covers',
-      public_id: `${salon.id}-${Date.now()}`,
+      public_id: `${salonId}-${Date.now()}`,
       overwrite: true,
       resource_type: 'image',
     });
@@ -91,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     // Atualizar banco de dados
     await prisma.salon.update({
-      where: { id: salon.id },
+      where: { id: salonId },
       data: { coverPhoto: coverPhotoUrl },
     });
 
@@ -120,9 +119,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Buscar salão do usuário usando helper
-    const salon = await getUserSalon();
+    const salonId = session.user.salonId;
 
-    if (!salon) {
+    if (!salonId) {
       return NextResponse.json(
         { error: "Salão não encontrado" },
         { status: 404 }
@@ -130,7 +129,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Se tiver foto no Cloudinary, deletar
-    if (salon.coverPhoto && salon.coverPhoto.includes('cloudinary.com')) {
+    const salon = await prisma.salon.findUnique({ where: { id: salonId } });
+
+    if (salon && salon.coverPhoto && salon.coverPhoto.includes('cloudinary.com')) {
       try {
         // Extrair public_id da URL do Cloudinary
         const urlParts = salon.coverPhoto.split('/');
@@ -146,7 +147,7 @@ export async function DELETE(request: NextRequest) {
 
     // Atualizar banco de dados (remover foto)
     await prisma.salon.update({
-      where: { id: salon.id },
+      where: { id: salonId },
       data: { coverPhoto: null },
     });
 

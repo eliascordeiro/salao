@@ -1,0 +1,55 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "git-status-check",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"status",
+				"--short"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-branch-check",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"branch",
+				"--show-current"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-remote-check",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"remote",
+				"-v"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-publish-all",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add -A && git commit -m \"Harden multi-tenant auth and public endpoint security\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-publish-all",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add -A && git commit -m \"Harden multi-tenant auth and public endpoint security\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
+		}
+	]
+}

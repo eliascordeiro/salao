@@ -22,9 +22,10 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     
     // Verificar se salão existe e está publicado
-    const salon = await prisma.salon.findUnique({
+    const salon = await prisma.salon.findFirst({
       where: {
         id,
+        active: true,
         publishedAt: {
           not: null,
         },
@@ -50,8 +51,10 @@ export async function GET(
     // Parâmetros de busca
     const sort = searchParams.get("sort") || "newest"; // newest, oldest, highest, lowest
     const ratingFilter = searchParams.get("rating");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const page = parseInt(searchParams.get("page") || "1");
+    const rawLimit = parseInt(searchParams.get("limit") || "10");
+    const rawPage = parseInt(searchParams.get("page") || "1");
+    const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(rawLimit, 1), 50) : 10;
+    const page = Number.isFinite(rawPage) ? Math.max(rawPage, 1) : 1;
     
     // Construir where clause
     const where: any = {
@@ -102,7 +105,7 @@ export async function GET(
           },
           booking: {
             select: {
-              scheduledDate: true,
+              date: true,
               service: {
                 select: {
                   name: true,
@@ -222,7 +225,7 @@ export async function POST(
       );
     }
 
-    if (booking.userId !== session.user.id) {
+    if (booking.clientId !== session.user.id) {
       return NextResponse.json(
         { error: "Você não tem permissão para avaliar este agendamento" },
         { status: 403 }

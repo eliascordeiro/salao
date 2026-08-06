@@ -214,6 +214,23 @@ Adicionado novo item no menu de ADMIN:
 
 ## 🔒 Segurança e Isolamento
 
+### Atualização de Hardening (2026-08)
+
+O isolamento multi-tenant foi reforçado para usar `session.user.salonId` como fonte de verdade no backend.
+
+Regras aplicadas:
+- APIs administrativas e de staff não confiam em `salonId` vindo do body/query para mutações.
+- Toda mutação valida que a entidade (`staff`, `service`, `booking`, `availability`) pertence ao salão da sessão.
+- Rotas por ID (`[id]`) fazem verificação de posse antes de `update/delete`.
+- Sessões antigas podem precisar novo login para propagar `salonId` no token/sessão.
+
+Checklist de revisão para novas rotas:
+- Exigir sessão válida.
+- Derivar tenant de `session.user.salonId`.
+- Rejeitar quando `session.user.salonId` estiver ausente.
+- Validar ownership da entidade antes de mutar.
+- Não permitir troca de `salonId` em updates.
+
 ### Multi-Tenancy Garantido
 
 **Nível de API:**

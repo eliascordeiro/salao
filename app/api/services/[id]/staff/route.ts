@@ -10,11 +10,27 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     const serviceId = params.id;
+
+    const service = await prisma.service.findFirst({
+      where: {
+        id: serviceId,
+        salonId: session.user.salonId,
+      },
+      select: { id: true },
+    });
+
+    if (!service) {
+      return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
+    }
 
     // Buscar profissionais associados a este serviço
     const serviceStaff = await prisma.serviceStaff.findMany({

@@ -65,6 +65,18 @@ export async function GET(
       );
     }
 
+    const isClientOwner = booking.clientId === session.user.id;
+    const isAdmin = session.user.role === "ADMIN";
+    const isStaffRole = session.user.role === "STAFF" || (session.user as any).roleType === "STAFF";
+
+    if (isAdmin || isStaffRole) {
+      if (!session.user.salonId || booking.salonId !== session.user.salonId) {
+        return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      }
+    } else if (!isClientOwner) {
+      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    }
+
     return NextResponse.json(booking);
   } catch (error) {
     console.error("Erro ao buscar agendamento:", error);
@@ -89,6 +101,15 @@ export async function PUT(
     const body = await request.json();
     const { status, notes, date, serviceId, staffId } = body;
 
+    const targetBooking = await prisma.booking.findUnique({
+      where: { id: params.id },
+      select: { id: true, salonId: true, staffId: true },
+    });
+
+    if (!targetBooking) {
+      return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
+    }
+
     // Validar status
     const validStatuses = ["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"];
     if (status && !validStatuses.includes(status)) {
@@ -100,11 +121,17 @@ export async function PUT(
 
     if (session.user.role === "ADMIN") {
       // Admin tem permissão total
+      if (!session.user.salonId || targetBooking.salonId !== session.user.salonId) {
+        return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      }
       hasPermission = true;
     } else if ((session.user as any).roleType === "STAFF") {
       // Profissionais precisam de permissões específicas
       const staffProfile = await prisma.staff.findFirst({
-        where: { userId: session.user.id },
+        where: {
+          userId: session.user.id,
+          salonId: session.user.salonId || undefined,
+        },
         select: { 
           id: true,
           canConfirmBooking: true, 
@@ -117,16 +144,7 @@ export async function PUT(
       }
 
       // Verificar se o agendamento pertence a este profissional
-      const booking = await prisma.booking.findUnique({
-        where: { id: params.id },
-        select: { staffId: true },
-      });
-
-      if (!booking) {
-        return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
-      }
-
-      if (booking.staffId !== staffProfile.id) {
+      if (targetBooking.staffId !== staffProfile.id) {
         return NextResponse.json({ error: "Você só pode gerenciar seus próprios agendamentos" }, { status: 403 });
       }
 
@@ -161,8 +179,11 @@ export async function PUT(
 
     // Validar se serviceId existe (se fornecido)
     if (serviceId) {
-      const service = await prisma.service.findUnique({
-        where: { id: serviceId },
+      const service = await prisma.service.findFirst({
+        where: {
+          id: serviceId,
+          salonId: targetBooking.salonId,
+        },
       });
       if (!service) {
         return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
@@ -171,8 +192,11 @@ export async function PUT(
 
     // Validar se staffId existe (se fornecido)
     if (staffId) {
-      const staff = await prisma.staff.findUnique({
-        where: { id: staffId },
+      const staff = await prisma.staff.findFirst({
+        where: {
+          id: staffId,
+          salonId: targetBooking.salonId,
+        },
       });
       if (!staff) {
         return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
@@ -413,6 +437,19 @@ export async function DELETE(
 
     // Apenas ADMIN pode deletar agendamentos
     if (session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: params.id },
+      select: { salonId: true },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
+    }
+
+    if (!session.user.salonId || booking.salonId !== session.user.salonId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 

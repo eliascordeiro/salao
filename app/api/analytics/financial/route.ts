@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalonId } from "@/lib/salon-helper";
 import { startOfMonth, endOfMonth, subMonths, format } from "date-fns";
 
 export const dynamic = 'force-dynamic';
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userSalonId = await getUserSalonId();
+    const userSalonId = session.user.salonId;
     
     if (!userSalonId) {
       return NextResponse.json(

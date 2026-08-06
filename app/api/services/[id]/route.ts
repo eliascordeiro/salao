@@ -14,8 +14,17 @@ export async function GET(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    const service = await prisma.service.findUnique({
-      where: { id: params.id },
+    const where: any = { id: params.id }
+
+    if (session.user.role === "ADMIN") {
+      if (!session.user.salonId) {
+        return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+      }
+      where.salonId = session.user.salonId
+    }
+
+    const service = await prisma.service.findFirst({
+      where,
       include: {
         salon: true,
         staff: {
@@ -60,8 +69,40 @@ export async function PUT(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
     const data = await request.json()
-    const { name, description, duration, price, category, salonId, active, staffIds } = data
+    const { name, description, duration, price, category, active, staffIds } = data
+
+    const existingService = await prisma.service.findFirst({
+      where: {
+        id: params.id,
+        salonId: session.user.salonId,
+      },
+      select: { id: true },
+    })
+
+    if (!existingService) {
+      return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 })
+    }
+
+    if (staffIds !== undefined && staffIds.length > 0) {
+      const staffCount = await prisma.staff.count({
+        where: {
+          id: { in: staffIds },
+          salonId: session.user.salonId,
+        },
+      })
+
+      if (staffCount !== staffIds.length) {
+        return NextResponse.json(
+          { error: "Um ou mais profissionais não pertencem ao seu salão" },
+          { status: 400 }
+        )
+      }
+    }
 
     // Atualizar serviço
     const service = await prisma.service.update({
@@ -72,7 +113,6 @@ export async function PUT(
         duration: parseInt(duration),
         price: parseFloat(price),
         category: category || null,
-        salonId,
         active: active !== undefined ? active : true,
       }
     })
@@ -130,6 +170,22 @@ export async function DELETE(
     const session = await getServerSession(authOptions)
     if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+    }
+
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
+    const existingService = await prisma.service.findFirst({
+      where: {
+        id: params.id,
+        salonId: session.user.salonId,
+      },
+      select: { id: true },
+    })
+
+    if (!existingService) {
+      return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 })
     }
 
     await prisma.service.delete({

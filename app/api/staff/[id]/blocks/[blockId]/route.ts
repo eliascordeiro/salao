@@ -17,6 +17,19 @@ export async function DELETE(
       );
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
+    const staff = await prisma.staff.findFirst({
+      where: { id: params.id, salonId: session.user.salonId },
+      select: { id: true },
+    });
+
+    if (!staff) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 });
+    }
+
     await prisma.block.delete({
       where: {
         id: params.blockId,

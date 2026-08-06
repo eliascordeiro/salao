@@ -12,9 +12,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Buscar staff profile
     const staffProfile = await prisma.staff.findFirst({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
     });
 
     if (!staffProfile) {
@@ -53,9 +60,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Buscar staff profile
     const staffProfile = await prisma.staff.findFirst({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
     });
 
     if (!staffProfile) {

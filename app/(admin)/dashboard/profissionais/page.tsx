@@ -9,7 +9,6 @@ import { GradientButton } from "@/components/ui/gradient-button";
 import { GridBackground } from "@/components/ui/grid-background";
 import { prisma } from "@/lib/prisma";
 import { DeleteStaffButton } from "@/components/dashboard/delete-staff-button";
-import { getUserSalonId } from "@/lib/salon-helper";
 
 export default async function StaffPage() {
   const session = await getServerSession(authOptions);
@@ -18,8 +17,7 @@ export default async function StaffPage() {
     redirect("/login");
   }
 
-  // Obter salão do usuário logado
-  const userSalonId = await getUserSalonId();
+  const userSalonId = session.user.salonId;
   
   if (!userSalonId) {
     redirect("/dashboard");

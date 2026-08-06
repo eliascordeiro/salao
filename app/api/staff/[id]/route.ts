@@ -15,10 +15,14 @@ export async function GET(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
     const { id } = await context.params
 
     const staff = await prisma.staff.findUnique({
-      where: { id },
+      where: { id, salonId: session.user.salonId },
       include: {
         salon: true,
         services: {
@@ -64,13 +68,17 @@ export async function PUT(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
     const { id } = await context.params
     const data = await request.json()
     const { name, email, phone, specialty, active, serviceIds, loginEnabled, canEditSchedule, canManageBlocks, canConfirmBooking, canCancelBooking } = data
 
     // Buscar profissional atual
     const currentStaff = await prisma.staff.findUnique({
-      where: { id },
+      where: { id, salonId: session.user.salonId },
       select: { userId: true, email: true }
     })
 
@@ -221,6 +229,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
     const { id } = await context.params
     const data = await request.json()
     const { workDays, workStart, workEnd, lunchStart, lunchEnd, slotInterval, canEditSchedule, canManageBlocks, canConfirmBooking, canCancelBooking } = data
@@ -312,6 +324,15 @@ export async function PATCH(
     }
 
     // Atualizar dados do profissional
+    const staffToUpdate = await prisma.staff.findUnique({
+      where: { id, salonId: session.user.salonId },
+      select: { id: true },
+    })
+
+    if (!staffToUpdate) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 })
+    }
+
     const staff = await prisma.staff.update({
       where: { id },
       data: updateData,
@@ -356,7 +377,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 })
+    }
+
     const { id } = await context.params
+
+    const staffToDelete = await prisma.staff.findUnique({
+      where: { id, salonId: session.user.salonId },
+      select: { id: true },
+    })
+
+    if (!staffToDelete) {
+      return NextResponse.json({ error: "Profissional não encontrado" }, { status: 404 })
+    }
 
     await prisma.staff.delete({
       where: { id }

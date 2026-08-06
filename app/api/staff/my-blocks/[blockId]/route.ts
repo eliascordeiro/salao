@@ -15,11 +15,18 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     const { blockId } = await context.params;
 
     // Buscar staff profile
     const staffProfile = await prisma.staff.findFirst({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        salonId: session.user.salonId,
+      },
     });
 
     if (!staffProfile) {

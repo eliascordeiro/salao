@@ -14,9 +14,13 @@ export async function GET(
     const { id } = params;
     
     // Buscar salão com todos os detalhes
-    const salon = await prisma.salon.findUnique({
+    const salon = await prisma.salon.findFirst({
       where: {
         id,
+        active: true,
+        publishedAt: {
+          not: null,
+        },
       },
       include: {
         // Serviços ativos

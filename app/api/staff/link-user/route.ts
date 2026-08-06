@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Verificar permissão de gestão de profissionais
     const hasPermission = 
       session.user.roleType === "OWNER" ||
@@ -41,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar se profissional existe
     const staff = await prisma.staff.findUnique({
-      where: { id: staffId },
+      where: { id: staffId, salonId: session.user.salonId },
       include: { user: true },
     });
 
@@ -129,6 +133,10 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Verificar permissão
     const hasPermission = 
       session.user.roleType === "OWNER" ||
@@ -150,7 +158,7 @@ export async function PATCH(request: NextRequest) {
 
     // Buscar profissional
     const staff = await prisma.staff.findUnique({
-      where: { id: staffId },
+      where: { id: staffId, salonId: session.user.salonId },
     });
 
     if (!staff) {
@@ -198,6 +206,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
     // Verificar permissão
     const hasPermission = 
       session.user.roleType === "OWNER" ||
@@ -220,7 +232,7 @@ export async function DELETE(request: NextRequest) {
 
     // Buscar profissional
     const staff = await prisma.staff.findUnique({
-      where: { id: staffId },
+      where: { id: staffId, salonId: session.user.salonId },
     });
 
     if (!staff) {

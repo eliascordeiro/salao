@@ -14,6 +14,24 @@ export async function DELETE(
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
+    if (!session.user.salonId) {
+      return NextResponse.json({ error: "Salão não associado à sessão" }, { status: 400 });
+    }
+
+    const availability = await prisma.availability.findFirst({
+      where: {
+        id: params.id,
+        staff: {
+          salonId: session.user.salonId,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!availability) {
+      return NextResponse.json({ error: "Bloqueio não encontrado" }, { status: 404 });
+    }
+
     await prisma.availability.delete({
       where: { id: params.id },
     });

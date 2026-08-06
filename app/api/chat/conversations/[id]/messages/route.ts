@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalonId } from "@/lib/salon-helper";
 import { sendChatMessage, markConversationRead } from "@/lib/chat";
 
 async function getAuthorizedConversation(conversationId: string, session: any) {
@@ -18,7 +17,7 @@ async function getAuthorizedConversation(conversationId: string, session: any) {
   }
 
   // É o dono do salão desta conversa?
-  const salonId = await getUserSalonId();
+  const salonId = session.user.salonId;
   if (salonId && salonId === conversation.salonId) {
     return { conversation, role: "ADMIN" as const };
   }

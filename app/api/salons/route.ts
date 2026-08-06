@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getUserSalon } from "@/lib/salon-helper"
 
 // Força renderização dinâmica (usa headers para auth)
 export const dynamic = 'force-dynamic';
@@ -14,15 +13,16 @@ export async function GET() {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
     }
 
-    // Obter salão do usuário logado automaticamente
-    const userSalon = await getUserSalon()
-    
-    if (!userSalon) {
+    const userSalonId = session.user.salonId
+
+    if (!userSalonId) {
       return NextResponse.json({ error: "Usuário não possui salão associado" }, { status: 400 })
     }
 
+    const userSalon = await prisma.salon.findUnique({ where: { id: userSalonId } })
+
     // Retornar apenas o salão do usuário em formato de array (compatibilidade)
-    return NextResponse.json([userSalon])
+    return NextResponse.json(userSalon ? [userSalon] : [])
   } catch (error) {
     console.error("Erro ao buscar salões:", error)
     return NextResponse.json(

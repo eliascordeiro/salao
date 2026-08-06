@@ -15,7 +15,6 @@ import {
   format,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getUserSalon } from "@/lib/salon-helper";
 
 // Força renderização dinâmica (usa headers para auth)
 export const dynamic = 'force-dynamic';
@@ -35,8 +34,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 🔒 FILTRO MULTI-TENANT
-    const userSalon = await getUserSalon();
-    if (!userSalon) {
+    const userSalonId = session.user.salonId;
+    if (!userSalonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -50,7 +49,7 @@ export async function GET(request: NextRequest) {
     // Buscar todos os agendamentos do período
     const bookings = await prisma.booking.findMany({
       where: {
-        salonId: userSalon.id, // 🔒 FILTRO CRÍTICO
+        salonId: userSalonId, // 🔒 FILTRO CRÍTICO
         createdAt: {
           gte: startDate,
           lte: endDate,

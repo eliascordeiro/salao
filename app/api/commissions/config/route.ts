@@ -2,18 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserSalon } from "@/lib/salon-helper";
 
 // GET - Obter configuração de comissão de um profissional
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -28,7 +27,7 @@ export async function GET(req: NextRequest) {
     const staff = await prisma.staff.findFirst({
       where: {
         id: staffId,
-        salonId: salon.id,
+        salonId,
       },
     });
 
@@ -68,12 +67,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -118,7 +117,7 @@ export async function POST(req: NextRequest) {
     const staff = await prisma.staff.findFirst({
       where: {
         id: staffId,
-        salonId: salon.id,
+        salonId,
       },
     });
 
@@ -195,12 +194,12 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const salon = await getUserSalon();
-    if (!salon) {
+    const salonId = session.user.salonId;
+    if (!salonId) {
       return NextResponse.json({ error: "Salão não encontrado" }, { status: 404 });
     }
 
@@ -215,7 +214,7 @@ export async function DELETE(req: NextRequest) {
     const staff = await prisma.staff.findFirst({
       where: {
         id: staffId,
-        salonId: salon.id,
+        salonId,
       },
     });
 

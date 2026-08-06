@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Briefcase, Lock, Mail } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -13,11 +13,27 @@ import Link from "next/link";
 
 export default function StaffLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const tenantHint = useMemo(() => {
+    const salonId = searchParams.get("salonId");
+    const salonSlug = searchParams.get("salonSlug");
+
+    if (salonSlug) {
+      return { label: salonSlug, salonId }
+    }
+
+    if (salonId) {
+      return { label: salonId.slice(0, 8), salonId }
+    }
+
+    return null
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +58,11 @@ export default function StaffLoginPage() {
       const session = await response.json();
 
       if (session?.user?.roleType === "STAFF" || session?.user?.role === "STAFF") {
-        router.push("/staff/dashboard");
+        const callbackUrl = tenantHint?.salonId
+          ? `/staff/dashboard?salonId=${encodeURIComponent(tenantHint.salonId)}`
+          : "/staff/dashboard";
+
+        router.push(callbackUrl);
       } else {
         setError("Acesso negado. Esta área é exclusiva para profissionais.");
         await signIn("credentials", { redirect: false }); // Logout
@@ -70,6 +90,11 @@ export default function StaffLoginPage() {
               <p className="mt-2 text-sm text-foreground-muted">
                 Acesse seu painel para gerenciar agenda e comissões
               </p>
+              {tenantHint && (
+                <p className="mt-3 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-primary">
+                  Salão detectado: {tenantHint.label}
+                </p>
+              )}
             </div>
 
             {error && (
