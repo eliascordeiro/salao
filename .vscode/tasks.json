@@ -32,52 +32,12 @@
 			"isBackground": false
 		},
 		{
-			"label": "git-publish-all",
+			"label": "git-publish-tasks-clean",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"Harden multi-tenant auth and public endpoint security\" && git push origin $(git branch --show-current)"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "git-postpush-status",
-			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"git status --short && echo '---' && git log --oneline -n 3"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "git-publish-tasks-fix",
-			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"git add .vscode/tasks.json && git commit -m \"chore: deduplicate vscode tasks config\" && git push origin $(git branch --show-current)"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "git-status-check",
-			"type": "shell",
-			"command": "git",
-			"args": [
-				"status",
-				"--short"
-			],
-			"isBackground": false
-		},
-		{
-			"label": "git-publish-all",
-			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"git add .vscode/tasks.json && git commit -m \"chore: deduplicate vscode tasks config\" && git push origin $(git branch --show-current)"
+				"git add .vscode/tasks.json && git commit -m \"chore: clean vscode tasks config\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}
