@@ -26,9 +26,6 @@ export async function GET(
       where: {
         id,
         active: true,
-        publishedAt: {
-          not: null,
-        },
       },
       select: {
         id: true,

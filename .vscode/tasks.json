@@ -220,6 +220,26 @@
 				"git add -A && git commit -m \"fix: wrap useSearchParams in Suspense on staff-login; track all prisma migrations\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "git-commit-nextconfig-fix",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add next.config.js next.config.mjs && git commit -m \"fix: limit build workers to 1 to prevent SIGSEGV OOM crash on Railway\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "cleanup-stray-file",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"rm -f 'app/agenda@salon-booking.com.br' && git add -A && git status --short"
+			],
+			"isBackground": false
 		}
 	]
 }
