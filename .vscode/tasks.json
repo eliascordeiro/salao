@@ -40,6 +40,186 @@
 				"git add .vscode/tasks.json && git commit -m \"chore: clean vscode tasks config\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "railway-migrate-deploy",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate deploy"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-apply-availability-sql",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma db execute --file prisma/migrations/20260805190000_recreate_availability_table/migration.sql --schema prisma/schema.prisma"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-verify-availability",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma db execute --stdin --schema prisma/schema.prisma <<'SQL'\nSELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name='Availability';\nSELECT indexname FROM pg_indexes WHERE schemaname='public' AND tablename='Availability' ORDER BY indexname;\nSQL"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-verify-availability-v2",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma db execute --stdin --schema prisma/schema.prisma <<'SQL'\nSELECT to_regclass('public.\"Availability\"');\nSQL"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-migration",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260101155307_add_staff_user_relation"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-migrate-deploy",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate deploy"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-migration",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260105231557_add_can_edit_schedule_to_staff"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-2",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260105231557_add_can_edit_schedule_to_staff"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-3",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260106000459_add_can_manage_blocks_to_staff"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-4",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260107002103_split_booking_permissions"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-resolve-5",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate resolve --applied 20260630214237_add_push_subscriptions"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-deploy-2",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma migrate deploy"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-check-tables",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' npx prisma db execute --file scripts/check-tables.sql --schema prisma/schema.prisma"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "railway-check-tables-node",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"DATABASE_URL='postgresql://postgres:bfzNahVPyVcwzIewNotORAKWJFOZiFpW@gondola.proxy.rlwy.net:20615/railway' node scripts/check-tables.js"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "cleanup-check-scripts",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"rm scripts/check-tables.js scripts/check-tables.sql && git status --short"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-commit-availability-migration",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add prisma/migrations/20260805190000_recreate_availability_table && git commit -m \"db: recreate Availability table migration\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-commit-availability-migration-2",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add .gitignore prisma/migrations/20260805190000_recreate_availability_table && git commit -m \"fix: unblock migration folders in gitignore, add Availability recreate migration\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-commit-migrations-and-suspense",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add -A && git commit -m \"fix: wrap useSearchParams in Suspense on staff-login; track all prisma migrations\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
 		}
 	]
 }

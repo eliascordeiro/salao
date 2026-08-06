@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Briefcase, Lock, Mail } from "lucide-react";
@@ -12,6 +12,14 @@ import { GridBackground } from "@/components/ui/grid-background";
 import Link from "next/link";
 
 export default function StaffLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <StaffLoginContent />
+    </Suspense>
+  );
+}
+
+function StaffLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
