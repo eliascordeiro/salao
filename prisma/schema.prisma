@@ -741,6 +741,10 @@ model ChatConversation {
   clientUnreadCount Int @default(0)
   ownerUnreadCount  Int @default(0)
 
+  // Timestamp da última tecla digitada por lado (usado para indicador "digitando...")
+  clientTypingAt DateTime?
+  ownerTypingAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

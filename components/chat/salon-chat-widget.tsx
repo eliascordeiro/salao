@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { MessageCircle, X, Send, Loader2, Store, User, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TypingIndicator } from "@/components/chat/typing-indicator";
 
 interface ChatMessage {
   id: string;
@@ -33,8 +34,10 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
+  const lastTypingPingRef = useRef(0);
 
   useEffect(() => {
     setMounted(true);
@@ -42,7 +45,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, otherTyping]);
 
   // Polling de respostas do salão (a cada 5s quando o chat está aberto)
   useEffect(() => {
@@ -61,6 +64,28 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
         // silencioso
       }
     }, 5000);
+    return () => clearInterval(interval);
+  }, [conversationId, open]);
+
+  // Polling do indicador "digitando..." do salão (a cada 2s)
+  useEffect(() => {
+    if (!conversationId || !open) {
+      setOtherTyping(false);
+      return;
+    }
+    const interval = setInterval(async () => {
+      const id = conversationIdRef.current;
+      if (!id) return;
+      try {
+        const res = await fetch(`/api/chat/conversations/${id}/typing`);
+        if (res.ok) {
+          const data = await res.json();
+          setOtherTyping(!!data.typing);
+        }
+      } catch {
+        // silencioso
+      }
+    }, 2000);
     return () => clearInterval(interval);
   }, [conversationId, open]);
 
@@ -98,6 +123,14 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleTyping = () => {
+    if (!conversationId) return;
+    const now = Date.now();
+    if (now - lastTypingPingRef.current < 2000) return;
+    lastTypingPingRef.current = now;
+    fetch(`/api/chat/conversations/${conversationId}/typing`, { method: "POST" }).catch(() => {});
   };
 
   const handleSend = async () => {
@@ -217,6 +250,7 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
             </div>
           ))
         )}
+        {otherTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -225,7 +259,10 @@ export function SalonChatWidget({ salonId, salonName }: SalonChatWidgetProps) {
         <div className="flex gap-2">
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              handleTyping();
+            }}
             onKeyDown={handleKeyPress}
             placeholder="Digite sua mensagem..."
             disabled={sending || loading || !conversationId}

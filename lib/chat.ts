@@ -91,3 +91,33 @@ export async function markConversationRead(conversationId: string, role: SenderR
       role === "CLIENT" ? { clientUnreadCount: 0 } : { ownerUnreadCount: 0 },
   });
 }
+
+// Após esse período sem novo "ping" de digitação, o indicador expira.
+const TYPING_TTL_MS = 5000;
+
+/**
+ * Registra que `role` está digitando agora nesta conversa.
+ */
+export async function setTyping(conversationId: string, role: SenderRole) {
+  await prisma.chatConversation.update({
+    where: { id: conversationId },
+    data:
+      role === "CLIENT" ? { clientTypingAt: new Date() } : { ownerTypingAt: new Date() },
+  });
+}
+
+/**
+ * Verifica se o outro lado da conversa (oposto a `role`) está digitando no momento.
+ */
+export async function isOtherPartyTyping(conversationId: string, role: SenderRole) {
+  const conversation = await prisma.chatConversation.findUnique({
+    where: { id: conversationId },
+    select: { clientTypingAt: true, ownerTypingAt: true },
+  });
+  if (!conversation) return false;
+
+  const otherTypingAt = role === "CLIENT" ? conversation.ownerTypingAt : conversation.clientTypingAt;
+  if (!otherTypingAt) return false;
+
+  return Date.now() - otherTypingAt.getTime() < TYPING_TTL_MS;
+}
