@@ -151,13 +151,17 @@ export function AdminAIChatWidget({
     setInput(question);
   };
 
+  const isMensagens = pathname.includes("/dashboard/mensagens");
+  const anchorRight = isMensagens ? "left-6" : "right-6";
+  const anchorPanel = isMensagens ? "left-6" : "right-6";
+
   return (
     <>
       {/* Botão flutuante */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all duration-300 animate-pulseGlow group"
+          className={`fixed bottom-6 ${anchorRight} z-50 p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-full shadow-2xl hover:scale-110 transition-all duration-300 animate-pulseGlow group`}
           aria-label="Abrir assistente"
         >
           <HelpCircle className="h-6 w-6 group-hover:rotate-12 transition-transform" />
@@ -170,7 +174,7 @@ export function AdminAIChatWidget({
 
       {/* Chat expandido */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col animate-fadeIn overflow-hidden">
+        <div className={`fixed bottom-6 ${anchorPanel} z-50 w-96 h-[600px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-3rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col animate-fadeIn overflow-hidden`}>
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-t-2xl flex justify-between items-center">
             <div className="flex items-center gap-3">
