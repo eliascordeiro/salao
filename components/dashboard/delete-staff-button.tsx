@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,14 +13,11 @@ interface DeleteStaffButtonProps {
 
 export function DeleteStaffButton({ staffId, staffName }: DeleteStaffButtonProps) {
   const router = useRouter();
+  const t = useTranslations("staff");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        `Tem certeza que deseja excluir o profissional "${staffName}"?\n\nEsta ação não pode ser desfeita.`
-      )
-    ) {
+    if (!window.confirm(t("deleteConfirm", { name: staffName }))) {
       return;
     }
 
@@ -32,17 +30,13 @@ export function DeleteStaffButton({ staffId, staffName }: DeleteStaffButtonProps
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Erro ao deletar profissional");
+        throw new Error(error.error || t("deleteError"));
       }
 
       router.refresh();
     } catch (error) {
       console.error("Erro ao deletar profissional:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Erro ao deletar profissional"
-      );
+      alert(error instanceof Error ? error.message : t("deleteError"));
     } finally {
       setIsDeleting(false);
     }
@@ -54,7 +48,7 @@ export function DeleteStaffButton({ staffId, staffName }: DeleteStaffButtonProps
       size="sm"
       onClick={handleDelete}
       disabled={isDeleting}
-      title={`Deletar ${staffName}`}
+      title={t("deleteTitle", { name: staffName })}
       className="aspect-square p-0 w-9 h-9"
     >
       {isDeleting ? (
@@ -65,3 +59,4 @@ export function DeleteStaffButton({ staffId, staffName }: DeleteStaffButtonProps
     </Button>
   );
 }
+

@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -15,6 +16,8 @@ import { getSalonSubscription, formatTrialInfo } from "@/lib/subscription-helper
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations("dashboard")
+  const tStatus = await getTranslations("status")
 
   if (!session) {
     redirect("/login")
@@ -175,10 +178,10 @@ export default async function DashboardPage() {
           {/* Header Section Railway */}
           <div className="mb-12 animate-fadeInUp">
             <h1 className="text-4xl font-bold text-foreground mb-3">
-              Bem-vindo, <span className="text-primary font-bold">{getDisplayName()}</span>!
+              {t("welcome")}, <span className="text-primary font-bold">{getDisplayName()}</span>!
             </h1>
             <p className="text-foreground-muted text-lg">
-              Aqui está um resumo da sua atividade nos últimos 30 dias
+              {t("activitySummary")}
             </p>
           </div>
 
@@ -204,9 +207,9 @@ export default async function DashboardPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-foreground-muted mb-1">
-                  Agendamentos
+                  {t("bookingsLabel")}
                 </p>
-                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+                <p className="text-xs text-foreground-muted/70">{t("last30Days")}</p>
               </div>
               <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
                 <Calendar className="h-5 w-5 text-white" />
@@ -226,7 +229,7 @@ export default async function DashboardPage() {
               >
                 {Math.abs(bookingsGrowth).toFixed(1)}%
               </span>
-              <span className="text-sm text-foreground-muted ml-1">vs anterior</span>
+              <span className="text-sm text-foreground-muted ml-1">{t("vsLastPeriod")}</span>
             </div>
           </GlassCard>
 
@@ -235,9 +238,9 @@ export default async function DashboardPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-foreground-muted mb-1">
-                  Receita
+                  {t("revenue")}
                 </p>
-                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+                <p className="text-xs text-foreground-muted/70">{t("last30Days")}</p>
               </div>
               <div className="p-2 bg-gradient-success rounded-lg group-hover:scale-110 transition-transform">
                 <DollarSign className="h-5 w-5 text-white" />
@@ -259,7 +262,7 @@ export default async function DashboardPage() {
               >
                 {Math.abs(revenueGrowth).toFixed(1)}%
               </span>
-              <span className="text-sm text-foreground-muted ml-1">vs anterior</span>
+              <span className="text-sm text-foreground-muted ml-1">{t("vsLastPeriod")}</span>
             </div>
           </GlassCard>
 
@@ -268,9 +271,9 @@ export default async function DashboardPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-foreground-muted mb-1">
-                  Taxa de Conclusão
+                  {t("completionRateLabel")}
                 </p>
-                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+                <p className="text-xs text-foreground-muted/70">{t("last30Days")}</p>
               </div>
               <div className="p-2 bg-gradient-accent rounded-lg group-hover:scale-110 transition-transform">
                 <CheckCircle className="h-5 w-5 text-white" />
@@ -278,7 +281,7 @@ export default async function DashboardPage() {
             </div>
             <div className="text-4xl font-bold text-foreground mb-3">{completionRate.toFixed(1)}%</div>
             <p className="text-sm text-foreground-muted">
-              {completedLast30} de {bookingsLast30} concluídos
+              {t("completedOf", { completed: completedLast30, total: bookingsLast30 })}
             </p>
           </GlassCard>
 
@@ -287,9 +290,9 @@ export default async function DashboardPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-foreground-muted mb-1">
-                  Top Profissional
+                  {t("topStaff")}
                 </p>
-                <p className="text-xs text-foreground-muted/70">Últimos 30 dias</p>
+                <p className="text-xs text-foreground-muted/70">{t("last30Days")}</p>
               </div>
               <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
                 <Zap className="h-5 w-5 text-white" />
@@ -299,7 +302,7 @@ export default async function DashboardPage() {
               {topStaff?.name || "-"}
             </div>
             <p className="text-sm text-foreground-muted">
-              {topStaffData.length > 0 ? `${topStaffData[0]._count.id} agendamentos` : "Sem dados"}
+              {topStaffData.length > 0 ? t("bookingsCountShort", { count: topStaffData[0]._count.id }) : t("noData")}
             </p>
           </GlassCard>
 
@@ -318,7 +321,7 @@ export default async function DashboardPage() {
             
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-foreground">Visão Geral</h3>
+                <h3 className="text-lg font-bold text-foreground">{t("overview")}</h3>
                 <div className="p-2 bg-gradient-primary rounded-lg group-hover:scale-110 transition-transform">
                   <BarChart3 className="h-5 w-5 text-white" />
                 </div>
@@ -330,7 +333,7 @@ export default async function DashboardPage() {
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-sm font-medium text-foreground-muted">Total de Clientes</span>
+                    <span className="text-sm font-medium text-foreground-muted">{t("totalClientsLabel")}</span>
                   </div>
                   <span className="text-xl font-bold text-foreground">{stats.totalClients}</span>
                 </div>
@@ -340,7 +343,7 @@ export default async function DashboardPage() {
                     <div className="p-2 bg-accent/10 rounded-lg">
                       <Scissors className="h-4 w-4 text-accent" />
                     </div>
-                    <span className="text-sm font-medium text-foreground-muted">Serviços Ativos</span>
+                    <span className="text-sm font-medium text-foreground-muted">{t("activeServicesLabel")}</span>
                   </div>
                   <span className="text-xl font-bold text-foreground">{stats.totalServices}</span>
                 </div>
@@ -350,7 +353,7 @@ export default async function DashboardPage() {
                     <div className="p-2 bg-success/10 rounded-lg">
                       <Calendar className="h-4 w-4 text-success" />
                     </div>
-                    <span className="text-sm font-medium text-foreground-muted">Total de Agendamentos</span>
+                    <span className="text-sm font-medium text-foreground-muted">{t("totalBookingsLabel")}</span>
                   </div>
                   <span className="text-xl font-bold text-foreground">{stats.totalBookings}</span>
                 </div>
@@ -365,10 +368,10 @@ export default async function DashboardPage() {
             
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold text-foreground">Ações Rápidas</h3>
+                <h3 className="text-lg font-bold text-foreground">{t("quickActions")}</h3>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                  <span className="text-xs text-foreground-muted">Sistema ativo</span>
+                  <span className="text-xs text-foreground-muted">{t("systemActive")}</span>
                 </div>
               </div>
               
@@ -382,7 +385,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <DollarSign className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Caixa</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("cashierShort")}</span>
                   </div>
                 </Link>
                 
@@ -395,7 +398,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <Receipt className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Despesas</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("expensesShort")}</span>
                   </div>
                 </Link>
                 
@@ -408,7 +411,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-primary rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <BarChart3 className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Relatórios</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("reportsShort")}</span>
                   </div>
                 </Link>
                 
@@ -421,7 +424,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-success rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <Calendar className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Agenda</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("agendaShort")}</span>
                   </div>
                 </Link>
                 
@@ -434,7 +437,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-accent rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <Scissors className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Serviços</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("servicesShort")}</span>
                   </div>
                 </Link>
                 
@@ -447,7 +450,7 @@ export default async function DashboardPage() {
                     <div className="p-2.5 bg-gradient-primary rounded-xl w-fit mx-auto mb-2 group-hover/item:scale-110 group-hover/item:rotate-3 transition-all shadow-lg">
                       <Users className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground block truncate px-1">Equipe</span>
+                    <span className="text-xs font-semibold text-foreground block truncate px-1">{t("teamShort")}</span>
                   </div>
                 </Link>
               </div>
@@ -459,11 +462,11 @@ export default async function DashboardPage() {
         <GlassCard className="animate-fadeInUp" style={{ animationDelay: "600ms" }}>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-bold text-foreground mb-1">Próximos Agendamentos</h3>
-              <p className="text-sm text-foreground-muted">Veja os agendamentos futuros</p>
+              <h3 className="text-xl font-bold text-foreground mb-1">{t("upcomingBookingsTitle")}</h3>
+              <p className="text-sm text-foreground-muted">{t("upcomingBookingsSubtitle")}</p>
             </div>
             <Link href="/dashboard/agendamentos" className="text-sm text-primary hover:text-accent transition-colors flex items-center gap-1">
-              Ver todos
+              {t("viewAll")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -471,7 +474,7 @@ export default async function DashboardPage() {
           {upcomingBookings.length === 0 ? (
             <div className="text-center py-12">
               <Calendar className="h-12 w-12 text-foreground-muted mx-auto mb-3 opacity-50" />
-              <p className="text-foreground-muted">Nenhum agendamento futuro encontrado</p>
+              <p className="text-foreground-muted">{t("noUpcomingBookings")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -506,9 +509,7 @@ export default async function DashboardPage() {
                         booking.status === "PENDING" ? "bg-warning/20 text-warning" :
                         "bg-foreground-muted/20 text-foreground-muted"
                       }`}>
-                        {booking.status === "CONFIRMED" ? "Confirmado" :
-                         booking.status === "PENDING" ? "Pendente" :
-                         booking.status}
+                        {tStatus(booking.status as "PENDING" | "CONFIRMED")}
                       </span>
                     </div>
                   </div>

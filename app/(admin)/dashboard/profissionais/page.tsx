@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Plus, User, Phone, Mail, Briefcase, Clock, Calendar, CalendarCheck, Sparkles, CheckCircle, XCircle, Users, DollarSign } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -12,6 +13,8 @@ import { DeleteStaffButton } from "@/components/dashboard/delete-staff-button";
 
 export default async function StaffPage() {
   const session = await getServerSession(authOptions);
+  const t = await getTranslations("staff");
+  const tCommon = await getTranslations("common");
 
   if (!session || session.user.role !== "ADMIN") {
     redirect("/login");
@@ -73,16 +76,16 @@ export default async function StaffPage() {
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
                 <Users className="h-8 w-8 text-accent" />
-                Profissionais
+                {t("title")}
               </h1>
               <p className="text-foreground-muted text-lg">
-                Gerencie sua equipe de profissionais
+                {t("subtitle")}
               </p>
             </div>
             <Link href="/dashboard/profissionais/novo">
               <GradientButton variant="accent" className="group">
                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                Novo Profissional
+                {t("newStaff")}
               </GradientButton>
             </Link>
           </div>
@@ -92,15 +95,15 @@ export default async function StaffPage() {
             <GlassCard className="p-12 text-center animate-fadeInUp" style={{ animationDelay: "200ms" }}>
               <User className="h-16 w-16 text-accent mx-auto mb-4 animate-pulse" />
               <h3 className="text-xl font-bold text-foreground mb-2">
-                Nenhum profissional cadastrado
+                {t("noStaff")}
               </h3>
               <p className="text-foreground-muted mb-6">
-                Comece adicionando seu primeiro profissional
+                {t("addFirstStaff")}
               </p>
               <Link href="/dashboard/profissionais/novo">
                 <GradientButton variant="accent" className="group">
                   <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                  Adicionar Profissional
+                  {t("newStaff")}
                 </GradientButton>
               </Link>
             </GlassCard>
@@ -131,12 +134,12 @@ export default async function StaffPage() {
                     {member.active ? (
                       <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent flex-shrink-0 ml-2 h-fit">
                         <CheckCircle className="h-3 w-3" />
-                        Ativo
+                        {tCommon("active")}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted flex-shrink-0 ml-2 h-fit">
                         <XCircle className="h-3 w-3" />
-                        Inativo
+                        {tCommon("inactive")}
                       </span>
                     )}
                   </div>
@@ -157,7 +160,7 @@ export default async function StaffPage() {
 
                     {/* Salão - altura fixa */}
                     <div className="flex items-center text-sm text-foreground-muted min-h-[20px]">
-                      <span className="font-semibold text-foreground mr-1">Salão:</span>
+                      <span className="font-semibold text-foreground mr-1">{t("salonLabel")}</span>
                       <span className="truncate">{member.salon.name}</span>
                     </div>
                   </div>
@@ -166,11 +169,11 @@ export default async function StaffPage() {
                   <div className="mb-4 flex-grow">
                     <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
                       <Sparkles className="h-3 w-3 text-primary" />
-                      Serviços:
+                      {t("servicesLabel")}
                     </p>
                     {member.services.length === 0 ? (
                       <p className="text-sm text-foreground-muted/60 italic">
-                        Nenhum serviço
+                        {t("noServicesAssigned")}
                       </p>
                     ) : (
                       <div className="flex flex-wrap gap-1">
@@ -197,7 +200,7 @@ export default async function StaffPage() {
                       <span className="font-bold text-accent">
                         {member._count.bookings}
                       </span>{" "}
-                      agendamentos
+                      {t("bookingsCount")}
                     </p>
                   </div>
 
@@ -205,13 +208,13 @@ export default async function StaffPage() {
                   <div className="flex gap-2 mt-auto">
                     <Link href={`/dashboard/profissionais/${member.id}/editar`} className="flex-1">
                       <GradientButton variant="accent" className="w-full text-xs">
-                        Editar
+                        {tCommon("edit")}
                       </GradientButton>
                     </Link>
                     <Link href={`/dashboard/profissionais/${member.id}/comissao`} className="flex-1">
                       <GradientButton variant="success" className="w-full text-xs">
                         <DollarSign className="h-3.5 w-3.5" />
-                        Comissão
+                        {t("commission")}
                       </GradientButton>
                     </Link>
                     <DeleteStaffButton staffId={member.id} staffName={member.name} />
