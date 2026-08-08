@@ -358,6 +358,37 @@
     "payXCommissions": "Payer {count} Commission(s)",
     "confirmCancel": "Êtes-vous sûr de vouloir annuler cette commission ?"
   },
+  "expenses": {
+    "title": "Comptes à Payer",
+    "subtitle": "Gérez les dépenses de votre salon",
+    "newExpense": "Nouvelle Dépense",
+    "pendingLabel": "En Attente",
+    "paidLabel": "Payé",
+    "totalLabel": "Total",
+    "searchLabel": "Rechercher",
+    "searchPlaceholder": "Description de la dépense...",
+    "statusLabel": "Statut",
+    "categoryLabel": "Catégorie",
+    "allCategories": "Toutes",
+    "noExpensesFound": "Aucune dépense trouvée",
+    "loadingExpenses": "Chargement des dépenses...",
+    "dueLabel": "Échéance",
+    "paidOnLabel": "Payé le",
+    "markPaid": "Marquer Payé",
+    "editExpenseTitle": "Modifier la dépense",
+    "deleteExpenseTitle": "Supprimer la dépense",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette dépense ?",
+    "categories": {
+      "RENT": "Loyer",
+      "UTILITIES": "Services publics (eau, électricité, internet)",
+      "PRODUCTS": "Produits",
+      "SALARIES": "Salaires/Commissions",
+      "MARKETING": "Marketing",
+      "TAXES": "Impôts",
+      "MAINTENANCE": "Maintenance",
+      "OTHER": "Autres"
+    }
+  },
   "messages": {
     "title": "Messages",
     "subtitle": "Chattez directement avec vos clients",

@@ -358,6 +358,37 @@
     "payXCommissions": "Pay {count} Commission(s)",
     "confirmCancel": "Are you sure you want to cancel this commission?"
   },
+  "expenses": {
+    "title": "Accounts Payable",
+    "subtitle": "Manage your salon's expenses",
+    "newExpense": "New Expense",
+    "pendingLabel": "Pending",
+    "paidLabel": "Paid",
+    "totalLabel": "Total",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Expense description...",
+    "statusLabel": "Status",
+    "categoryLabel": "Category",
+    "allCategories": "All",
+    "noExpensesFound": "No expenses found",
+    "loadingExpenses": "Loading expenses...",
+    "dueLabel": "Due",
+    "paidOnLabel": "Paid on",
+    "markPaid": "Mark Paid",
+    "editExpenseTitle": "Edit expense",
+    "deleteExpenseTitle": "Delete expense",
+    "deleteConfirm": "Are you sure you want to delete this expense?",
+    "categories": {
+      "RENT": "Rent",
+      "UTILITIES": "Utilities (water, electricity, internet)",
+      "PRODUCTS": "Products",
+      "SALARIES": "Salaries/Commissions",
+      "MARKETING": "Marketing",
+      "TAXES": "Taxes",
+      "MAINTENANCE": "Maintenance",
+      "OTHER": "Other"
+    }
+  },
   "messages": {
     "title": "Messages",
     "subtitle": "Chat directly with your clients",

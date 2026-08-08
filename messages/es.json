@@ -358,6 +358,37 @@
     "payXCommissions": "Pagar {count} Comisión(es)",
     "confirmCancel": "¿Estás seguro de que deseas cancelar esta comisión?"
   },
+  "expenses": {
+    "title": "Cuentas por Pagar",
+    "subtitle": "Gestiona los gastos de tu salón",
+    "newExpense": "Nuevo Gasto",
+    "pendingLabel": "Pendiente",
+    "paidLabel": "Pagado",
+    "totalLabel": "Total",
+    "searchLabel": "Buscar",
+    "searchPlaceholder": "Descripción del gasto...",
+    "statusLabel": "Estado",
+    "categoryLabel": "Categoría",
+    "allCategories": "Todas",
+    "noExpensesFound": "Ningún gasto encontrado",
+    "loadingExpenses": "Cargando gastos...",
+    "dueLabel": "Vence",
+    "paidOnLabel": "Pagado el",
+    "markPaid": "Marcar Pagado",
+    "editExpenseTitle": "Editar gasto",
+    "deleteExpenseTitle": "Eliminar gasto",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar este gasto?",
+    "categories": {
+      "RENT": "Alquiler",
+      "UTILITIES": "Servicios (agua, luz, internet)",
+      "PRODUCTS": "Productos",
+      "SALARIES": "Salarios/Comisiones",
+      "MARKETING": "Marketing",
+      "TAXES": "Impuestos",
+      "MAINTENANCE": "Mantenimiento",
+      "OTHER": "Otros"
+    }
+  },
   "messages": {
     "title": "Mensajes",
     "subtitle": "Chatea directamente con tus clientes",

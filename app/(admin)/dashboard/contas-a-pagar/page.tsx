@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Filter, DollarSign, Calendar, Edit, Trash2, Check, X } from "lucide-react";
@@ -22,26 +23,29 @@ type Expense = {
   createdAt: string;
 };
 
-const CATEGORIES = {
-  RENT: "Aluguel",
-  UTILITIES: "Utilidades (água, luz, internet)",
-  PRODUCTS: "Produtos",
-  SALARIES: "Salários/Comissões",
-  MARKETING: "Marketing",
-  TAXES: "Impostos",
-  MAINTENANCE: "Manutenção",
-  OTHER: "Outros",
-};
+const CATEGORY_KEYS = [
+  "RENT",
+  "UTILITIES",
+  "PRODUCTS",
+  "SALARIES",
+  "MARKETING",
+  "TAXES",
+  "MAINTENANCE",
+  "OTHER",
+] as const;
 
-const STATUS_MAP = {
-  PENDING: { label: "Pendente", color: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300" },
-  PAID: { label: "Pago", color: "bg-green-500/20 text-green-700 dark:text-green-300" },
-  OVERDUE: { label: "Vencido", color: "bg-red-500/20 text-red-700 dark:text-red-300" },
+const STATUS_COLORS = {
+  PENDING: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300",
+  PAID: "bg-green-500/20 text-green-700 dark:text-green-300",
+  OVERDUE: "bg-red-500/20 text-red-700 dark:text-red-300",
 };
 
 export default function ContasAPagarPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("expenses");
+  const tCommon = useTranslations("common");
+  const tStatus = useTranslations("status");
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,7 +77,7 @@ export default function ContasAPagarPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta despesa?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
 
     try {
       const response = await fetch(`/api/expenses/${id}`, {
@@ -133,12 +137,12 @@ export default function ContasAPagarPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Contas a Pagar</h1>
-          <p className="text-sm sm:text-base text-foreground-muted">Gerencie as despesas do seu salão</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t("title")}</h1>
+          <p className="text-sm sm:text-base text-foreground-muted">{t("subtitle")}</p>
         </div>
         <Button className="gap-2 w-full sm:w-auto min-h-[44px]" onClick={() => router.push("/dashboard/contas-a-pagar/nova")}>
           <Plus className="h-4 w-4" />
-          Nova Despesa
+          {t("newExpense")}
         </Button>
       </div>
 
@@ -146,7 +150,7 @@ export default function ContasAPagarPage() {
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-foreground-muted">Pendente</span>
+            <span className="text-sm text-foreground-muted">{t("pendingLabel")}</span>
             <DollarSign className="h-5 w-5 text-yellow-500" />
           </div>
           <p className="text-3xl font-bold text-foreground">
@@ -156,7 +160,7 @@ export default function ContasAPagarPage() {
 
         <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-foreground-muted">Pago</span>
+            <span className="text-sm text-foreground-muted">{t("paidLabel")}</span>
             <Check className="h-5 w-5 text-green-500" />
           </div>
           <p className="text-3xl font-bold text-foreground">
@@ -166,7 +170,7 @@ export default function ContasAPagarPage() {
 
         <GlassCard className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-foreground-muted">Total</span>
+            <span className="text-sm text-foreground-muted">{t("totalLabel")}</span>
             <DollarSign className="h-5 w-5 text-primary" />
           </div>
           <p className="text-3xl font-bold text-foreground">
@@ -181,10 +185,10 @@ export default function ContasAPagarPage() {
           <div>
             <label className="text-sm font-medium text-foreground-muted mb-2 block">
               <Search className="h-4 w-4 inline mr-1" />
-              Buscar
+              {t("searchLabel")}
             </label>
             <Input
-              placeholder="Descrição da despesa..."
+              placeholder={t("searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -193,33 +197,33 @@ export default function ContasAPagarPage() {
           <div>
             <label className="text-sm font-medium text-foreground-muted mb-2 block">
               <Filter className="h-4 w-4 inline mr-1" />
-              Status
+              {t("statusLabel")}
             </label>
             <select
               className="w-full h-10 rounded-md border glass-card bg-background-alt/50 border-primary/20 px-3"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="ALL">Todos</option>
-              <option value="PENDING">Pendente</option>
-              <option value="PAID">Pago</option>
-              <option value="OVERDUE">Vencido</option>
+              <option value="ALL">{tCommon("all")}</option>
+              <option value="PENDING">{tStatus("PENDING")}</option>
+              <option value="PAID">{tStatus("PAID")}</option>
+              <option value="OVERDUE">{tStatus("OVERDUE")}</option>
             </select>
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground-muted mb-2 block">
               <Filter className="h-4 w-4 inline mr-1" />
-              Categoria
+              {t("categoryLabel")}
             </label>
             <select
               className="w-full h-10 rounded-md border glass-card bg-background-alt/50 border-primary/20 px-3"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
-              <option value="ALL">Todas</option>
-              {Object.entries(CATEGORIES).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+              <option value="ALL">{t("allCategories")}</option>
+              {CATEGORY_KEYS.map((key) => (
+                <option key={key} value={key}>{t(`categories.${key}`)}</option>
               ))}
             </select>
           </div>
@@ -230,12 +234,12 @@ export default function ContasAPagarPage() {
       <GlassCard className="p-6">
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-foreground-muted">Carregando despesas...</p>
+            <p className="text-foreground-muted">{t("loadingExpenses")}</p>
           </div>
         ) : filteredExpenses.length === 0 ? (
           <div className="text-center py-12">
             <DollarSign className="h-12 w-12 text-foreground-muted mx-auto mb-3 opacity-50" />
-            <p className="text-foreground-muted">Nenhuma despesa encontrada</p>
+            <p className="text-foreground-muted">{t("noExpensesFound")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -248,22 +252,22 @@ export default function ContasAPagarPage() {
                   <div className="flex-1 w-full sm:w-auto">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <h3 className="font-semibold text-foreground text-base sm:text-lg">{expense.description}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_MAP[expense.status as keyof typeof STATUS_MAP].color}`}>
-                        {STATUS_MAP[expense.status as keyof typeof STATUS_MAP].label}
+                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${STATUS_COLORS[expense.status as keyof typeof STATUS_COLORS]}`}>
+                        {tStatus(expense.status as "PENDING")}
                       </span>
                     </div>
                     <p className="text-sm text-foreground-muted">
-                      {CATEGORIES[expense.category as keyof typeof CATEGORIES]}
+                      {t(`categories.${expense.category}`)}
                     </p>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-foreground-muted">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        Venc: {new Date(expense.dueDate).toLocaleDateString("pt-BR")}
+                        {t("dueLabel")}: {new Date(expense.dueDate).toLocaleDateString("pt-BR")}
                       </span>
                       {expense.paidAt && (
                         <span className="flex items-center gap-1 text-green-600">
                           <Check className="h-3 w-3" />
-                          Pago em: {new Date(expense.paidAt).toLocaleDateString("pt-BR")}
+                          {t("paidOnLabel")}: {new Date(expense.paidAt).toLocaleDateString("pt-BR")}
                         </span>
                       )}
                     </div>
@@ -282,14 +286,14 @@ export default function ContasAPagarPage() {
                           onClick={() => handleMarkAsPaid(expense.id)}
                         >
                           <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="text-xs sm:text-sm">Marcar Pago</span>
+                          <span className="text-xs sm:text-sm">{t("markPaid")}</span>
                         </Button>
                       )}
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => router.push(`/dashboard/contas-a-pagar/${expense.id}/editar`)}
-                        title="Editar despesa"
+                        title={t("editExpenseTitle")}
                         className="min-h-[40px] min-w-[40px]"
                       >
                         <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -299,7 +303,7 @@ export default function ContasAPagarPage() {
                         variant="outline"
                         className="text-red-600 hover:text-red-700 min-h-[40px] min-w-[40px]"
                         onClick={() => handleDelete(expense.id)}
-                        title="Deletar despesa"
+                        title={t("deleteExpenseTitle")}
                       >
                         <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
