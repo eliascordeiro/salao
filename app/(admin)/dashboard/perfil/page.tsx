@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,6 +15,8 @@ function PerfilContent() {
   const { data: session, update } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations("profile")
+  const tCommon = useTranslations("common")
   const securitySectionRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -83,14 +86,14 @@ function PerfilContent() {
 
     // Validar telefone
     if (!profileData.phone || profileData.phone.trim() === '') {
-      setMessage({ type: "error", text: "Telefone é obrigatório para receber notificações WhatsApp" })
+      setMessage({ type: "error", text: t("phoneRequiredError") })
       setLoading(false)
       return
     }
 
     const phoneNumbers = profileData.phone.replace(/\D/g, '')
     if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
-      setMessage({ type: "error", text: "Telefone inválido. Digite um número com DDD" })
+      setMessage({ type: "error", text: t("phoneInvalidError") })
       setLoading(false)
       return
     }
@@ -108,14 +111,14 @@ function PerfilContent() {
       const data = await res.json()
 
       if (res.ok) {
-        setMessage({ type: "success", text: "Perfil atualizado com sucesso!" })
+        setMessage({ type: "success", text: t("profileUpdated") })
         // Atualizar sessão
         await update({ name: profileData.name })
       } else {
-        setMessage({ type: "error", text: data.error || "Erro ao atualizar perfil" })
+        setMessage({ type: "error", text: data.error || t("profileUpdateError") })
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Erro ao atualizar perfil" })
+      setMessage({ type: "error", text: t("profileUpdateError") })
     } finally {
       setLoading(false)
     }
@@ -128,13 +131,13 @@ function PerfilContent() {
 
     // Validações
     if (passwordData.newPassword.length < 6) {
-      setMessage({ type: "error", text: "A nova senha deve ter no mínimo 6 caracteres" })
+      setMessage({ type: "error", text: t("passwordMinError") })
       setLoading(false)
       return
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ type: "error", text: "As senhas não coincidem" })
+      setMessage({ type: "error", text: t("passwordMismatchError") })
       setLoading(false)
       return
     }
@@ -152,17 +155,17 @@ function PerfilContent() {
       const data = await res.json()
 
       if (res.ok) {
-        setMessage({ type: "success", text: "Senha alterada com sucesso!" })
+        setMessage({ type: "success", text: t("passwordChanged") })
         setPasswordData({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
         })
       } else {
-        setMessage({ type: "error", text: data.error || "Erro ao alterar senha" })
+        setMessage({ type: "error", text: data.error || t("passwordChangeError") })
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Erro ao alterar senha" })
+      setMessage({ type: "error", text: t("passwordChangeError") })
     } finally {
       setLoading(false)
     }
@@ -187,9 +190,9 @@ function PerfilContent() {
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold">Meu Perfil</h1>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie suas informações pessoais e segurança
+            {t("subtitle")}
           </p>
         </div>
 
@@ -214,28 +217,28 @@ function PerfilContent() {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Dados Pessoais</h2>
+                <h2 className="text-xl font-semibold">{t("personalDataTitle")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Atualize suas informações pessoais
+                  {t("personalDataSubtitle")}
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo</Label>
+                <Label htmlFor="name">{t("fullNameLabel")}</Label>
                 <Input
                   id="name"
                   value={profileData.name}
                   onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  placeholder="Seu nome completo"
+                  placeholder={t("fullNamePlaceholder")}
                   required
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-foreground">
-                  Telefone <span className="text-xs text-accent">(obrigatório para WhatsApp)</span>
+                  {tCommon("phone")} <span className="text-xs text-accent">{t("phoneRequiredHint")}</span>
                 </Label>
                 <Input
                   id="phone"
@@ -248,12 +251,12 @@ function PerfilContent() {
                   maxLength={15}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Digite com DDD para receber notificações via WhatsApp
+                  {t("phoneHint")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{tCommon("email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -262,13 +265,13 @@ function PerfilContent() {
                   className="bg-muted cursor-not-allowed"
                 />
                 <p className="text-xs text-muted-foreground">
-                  O email não pode ser alterado
+                  {t("emailCannotChange")}
                 </p>
               </div>
 
               <Button type="submit" disabled={loading} className="gap-2">
                 <Save className="h-4 w-4" />
-                {loading ? "Salvando..." : "Salvar Alterações"}
+                {loading ? t("saving") : tCommon("save")}
               </Button>
             </form>
           </Card>
@@ -280,23 +283,23 @@ function PerfilContent() {
                 <Lock className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Segurança</h2>
+                <h2 className="text-xl font-semibold">{t("securityTitle")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Altere sua senha de acesso
+                  {t("securitySubtitle")}
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Senha Atual</Label>
+                <Label htmlFor="currentPassword">{t("currentPasswordLabel")}</Label>
                 <div className="relative">
                   <Input
                     id="currentPassword"
                     type={showCurrentPassword ? "text" : "password"}
                     value={passwordData.currentPassword}
                     onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                    placeholder="Digite sua senha atual"
+                    placeholder={t("currentPasswordPlaceholder")}
                     required
                   />
                   <button
@@ -310,14 +313,14 @@ function PerfilContent() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Nova Senha</Label>
+                <Label htmlFor="newPassword">{t("newPasswordLabel")}</Label>
                 <div className="relative">
                   <Input
                     id="newPassword"
                     type={showNewPassword ? "text" : "password"}
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    placeholder="Digite a nova senha"
+                    placeholder={t("newPasswordPlaceholder")}
                     required
                   />
                   <button
@@ -329,19 +332,19 @@ function PerfilContent() {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Mínimo de 6 caracteres
+                  {t("minCharsHint")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                <Label htmlFor="confirmPassword">{t("confirmNewPasswordLabel")}</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     value={passwordData.confirmPassword}
                     onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                    placeholder="Digite a nova senha novamente"
+                    placeholder={t("confirmNewPasswordPlaceholder")}
                     required
                   />
                   <button
@@ -356,7 +359,7 @@ function PerfilContent() {
 
               <Button type="submit" disabled={loading} className="gap-2">
                 <Lock className="h-4 w-4" />
-                {loading ? "Alterando..." : "Alterar Senha"}
+                {loading ? t("changing") : t("changePassword")}
               </Button>
             </form>
           </Card>
@@ -367,33 +370,33 @@ function PerfilContent() {
           <Card className="p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Shield className="h-4 w-4 text-primary" />
-              Informações da Conta
+              {t("accountInfoTitle")}
             </h3>
             
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Tipo de Conta</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("accountTypeLabel")}</p>
                 <div className="flex items-center gap-2">
                   {roleType === "OWNER" && (
                     <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400 text-sm font-medium">
-                      👑 Proprietário
+                      👑 {t("owner")}
                     </span>
                   )}
                   {roleType === "STAFF" && (
                     <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-sm font-medium">
-                      👤 Funcionário
+                      👤 {t("staffMember")}
                     </span>
                   )}
                   {roleType === "CUSTOM" && (
                     <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-700 dark:text-green-400 text-sm font-medium">
-                      ⚙️ Personalizado
+                      ⚙️ {t("custom")}
                     </span>
                   )}
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Email</p>
+                <p className="text-sm text-muted-foreground mb-1">{tCommon("email")}</p>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <p className="text-sm font-medium">{session?.user?.email}</p>
@@ -401,18 +404,18 @@ function PerfilContent() {
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Permissões</p>
+                <p className="text-sm text-muted-foreground mb-1">{t("permissionsLabel")}</p>
                 <p className="text-sm font-medium">
                   {roleType === "OWNER" 
-                    ? "Acesso Total" 
-                    : `${permissions.length} permissões configuradas`
+                    ? t("fullAccess") 
+                    : t("permissionsConfigured", { count: permissions.length })
                   }
                 </p>
               </div>
 
               {session?.user && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Membro desde</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("memberSince")}</p>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <p className="text-sm font-medium">
@@ -431,8 +434,9 @@ function PerfilContent() {
 }
 
 export default function PerfilPage() {
+  const t = useTranslations("profile")
   return (
-    <Suspense fallback={<div className="p-8">Carregando perfil...</div>}>
+    <Suspense fallback={<div className="p-8">{t("loadingProfile")}</div>}>
       <PerfilContent />
     </Suspense>
   )
