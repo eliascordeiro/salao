@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ interface SubscriptionStatus {
 export default function AssinaturaPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("subscription");
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -104,18 +106,18 @@ export default function AssinaturaPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
-      ACTIVE: { label: "Ativa", variant: "default" },
-      active: { label: "Ativa", variant: "default" },
-      PENDING: { label: "Pendente", variant: "secondary" },
-      pending: { label: "Pendente", variant: "secondary" },
-      CANCELED: { label: "Cancelada", variant: "destructive" },
-      canceled: { label: "Cancelada", variant: "destructive" },
-      EXPIRED: { label: "Expirada", variant: "destructive" },
-      expired: { label: "Expirada", variant: "destructive" },
-      SUSPENDED: { label: "Suspensa", variant: "destructive" },
-      suspended: { label: "Suspensa", variant: "destructive" },
-      trialing: { label: "Período de Teste", variant: "default" },
-      TRIALING: { label: "Período de Teste", variant: "default" },
+      ACTIVE: { label: t("statusActive"), variant: "default" },
+      active: { label: t("statusActive"), variant: "default" },
+      PENDING: { label: t("statusPending"), variant: "secondary" },
+      pending: { label: t("statusPending"), variant: "secondary" },
+      CANCELED: { label: t("statusCanceled"), variant: "destructive" },
+      canceled: { label: t("statusCanceled"), variant: "destructive" },
+      EXPIRED: { label: t("statusExpired"), variant: "destructive" },
+      expired: { label: t("statusExpired"), variant: "destructive" },
+      SUSPENDED: { label: t("statusSuspended"), variant: "destructive" },
+      suspended: { label: t("statusSuspended"), variant: "destructive" },
+      trialing: { label: t("statusTrialing"), variant: "default" },
+      TRIALING: { label: t("statusTrialing"), variant: "default" },
     };
     return statusMap[status] || { label: status, variant: "secondary" };
   };
@@ -133,7 +135,7 @@ export default function AssinaturaPage() {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Acesso negado. Apenas proprietários podem visualizar informações de assinatura.
+              {t("accessDenied")}
             </AlertDescription>
           </Alert>
         </div>
@@ -171,15 +173,15 @@ export default function AssinaturaPage() {
               <div className="bg-muted rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <Package className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-2xl font-bold mb-2">Nenhuma assinatura ativa</h2>
+              <h2 className="text-2xl font-bold mb-2">{t("noActiveSubscription")}</h2>
               <p className="text-muted-foreground">
-                Assine um de nossos planos para desbloquear todos os recursos da plataforma.
+                {t("noActiveSubscriptionDesc")}
               </p>
             </div>
 
             <Button size="lg" onClick={() => router.push("/planos")}>
               <Crown className="h-5 w-5 mr-2" />
-              Ver Planos e Preços
+              {t("viewPlans")}
             </Button>
           </Card>
         </div>
@@ -199,7 +201,7 @@ export default function AssinaturaPage() {
         <div className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Erro ao carregar dados da assinatura. Tente novamente.</AlertDescription>
+            <AlertDescription>{t("loadError")}</AlertDescription>
           </Alert>
         </div>
       </>
@@ -225,9 +227,9 @@ export default function AssinaturaPage() {
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Minha Assinatura</h1>
+            <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
             <p className="text-muted-foreground">
-              Gerencie seu plano e informações de pagamento
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -241,7 +243,7 @@ export default function AssinaturaPage() {
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Plano Atual</p>
+                <p className="text-sm text-muted-foreground">{t("currentPlan")}</p>
                 <h3 className="text-2xl font-bold">{subscription.planName}</h3>
               </div>
             </div>
@@ -249,7 +251,7 @@ export default function AssinaturaPage() {
               <span className="text-3xl font-bold text-primary">
                 R$ {subscription.planPrice.toFixed(2)}
               </span>
-              <span className="text-muted-foreground">/mês</span>
+              <span className="text-muted-foreground">{t("perMonth")}</span>
             </div>
             <Badge variant={statusBadge.variant} className="mt-4">
               {statusBadge.label}
@@ -267,15 +269,15 @@ export default function AssinaturaPage() {
                 )}
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Forma de Pagamento</p>
+                <p className="text-sm text-muted-foreground">{t("paymentMethodTitle")}</p>
                 <h3 className="text-xl font-bold">
-                  {subscription.paymentMethod === "pix" ? "PIX" : "Cartão de Crédito"}
+                  {subscription.paymentMethod === "pix" ? "PIX" : t("creditCard")}
                 </h3>
               </div>
             </div>
             {subscription.lastPaymentDate && (
               <div className="text-sm text-muted-foreground">
-                Último pagamento: {formatDate(subscription.lastPaymentDate)}
+                {t("lastPayment")} {formatDate(subscription.lastPaymentDate)}
               </div>
             )}
           </Card>
@@ -287,7 +289,7 @@ export default function AssinaturaPage() {
                 <Calendar className="h-6 w-6 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Próxima Cobrança</p>
+                <p className="text-sm text-muted-foreground">{t("nextBilling")}</p>
                 <h3 className="text-xl font-bold">
                   {subscription.nextBillingDate
                     ? formatDate(subscription.nextBillingDate)
@@ -297,7 +299,7 @@ export default function AssinaturaPage() {
             </div>
             {subscription.nextBillingDate && (
               <div className="text-sm text-muted-foreground">
-                Valor: R$ {subscription.planPrice.toFixed(2)}
+                {t("amountLabel")} R$ {subscription.planPrice.toFixed(2)}
               </div>
             )}
           </Card>
@@ -308,9 +310,8 @@ export default function AssinaturaPage() {
           <Alert className="bg-blue-500/10 border-blue-500/20">
             <Clock className="h-4 w-4 text-blue-500" />
             <AlertDescription>
-              <strong>Período trial ativo!</strong> Você tem até{" "}
-              <strong>{formatDate(subscription.trialEndsAt)}</strong> para testar gratuitamente.
-              A primeira cobrança será feita automaticamente após o término do trial.
+              <strong>{t("trialActiveTitle")}</strong> {t("trialActivePrefix")}{" "}
+              <strong>{formatDate(subscription.trialEndsAt)}</strong> {t("trialActiveSuffix")}
             </AlertDescription>
           </Alert>
         )}
@@ -319,30 +320,30 @@ export default function AssinaturaPage() {
         <Card className="p-6">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Benefícios do seu Plano
+            {t("planBenefitsTitle")}
           </h3>
 
           {subscription.planName === "Essencial" && (
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Até 2 profissionais cadastrados</span>
+                <span>{t("essentialBenefit1")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Agendamentos ilimitados</span>
+                <span>{t("essentialBenefit2")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Catálogo de serviços completo</span>
+                <span>{t("essentialBenefit3")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Calendário e gestão de horários</span>
+                <span>{t("essentialBenefit4")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Notificações por email</span>
+                <span>{t("essentialBenefit5")}</span>
               </li>
             </ul>
           )}
@@ -351,35 +352,35 @@ export default function AssinaturaPage() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span><strong>Profissionais ilimitados</strong></span>
+                <span><strong>{t("professionalBenefit1")}</strong></span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Pagamentos online via Mercado Pago</span>
+                <span>{t("professionalBenefit2")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>WhatsApp Business integrado</span>
+                <span>{t("professionalBenefit3")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Relatórios financeiros avançados</span>
+                <span>{t("professionalBenefit4")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Controle de despesas e receitas</span>
+                <span>{t("professionalBenefit5")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Multi-usuários (até 5 admins)</span>
+                <span>{t("professionalBenefit6")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Chat com IA (assistente virtual)</span>
+                <span>{t("professionalBenefit7")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                <span>Suporte prioritário</span>
+                <span>{t("professionalBenefit8")}</span>
               </li>
             </ul>
           )}
@@ -394,7 +395,7 @@ export default function AssinaturaPage() {
             className="w-full"
           >
             <TrendingUp className="h-5 w-5 mr-2" />
-            Ver Outros Planos
+            {t("viewOtherPlans")}
           </Button>
 
           <Button 
@@ -404,7 +405,7 @@ export default function AssinaturaPage() {
             className="w-full"
           >
             <AlertCircle className="h-5 w-5 mr-2" />
-            Falar com Suporte
+            {t("talkToSupport")}
           </Button>
         </div>
 
@@ -412,20 +413,20 @@ export default function AssinaturaPage() {
         <Card className="p-6 bg-muted/50">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Como Funciona o Pagamento
+            {t("howPaymentWorksTitle")}
           </h3>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              • <strong>PIX:</strong> Renovação mensal via PIX. Você receberá um email com QR Code 5 dias antes.
+              • <strong>{t("paymentPixLabel")}</strong> {t("paymentPixDesc")}
             </p>
             <p>
-              • <strong>Cartão:</strong> Cobrança automática no Mercado Pago todo mês.
+              • <strong>{t("paymentCardLabel")}</strong> {t("paymentCardDesc")}
             </p>
             <p>
-              • <strong>Trial:</strong> 14 dias grátis para testar. Primeira cobrança após o término.
+              • <strong>{t("paymentTrialLabel")}</strong> {t("paymentTrialDesc")}
             </p>
             <p>
-              • <strong>Cancelamento:</strong> Sem multas ou taxas. Cancele quando quiser.
+              • <strong>{t("paymentCancelLabel")}</strong> {t("paymentCancelDesc")}
             </p>
           </div>
         </Card>
