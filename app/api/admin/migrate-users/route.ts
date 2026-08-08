@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 /**
  * API temporária para migrar usuários existentes
  * Adiciona roleType e permissions para usuários criados antes do sistema multi-usuário

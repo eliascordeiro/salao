@@ -250,6 +250,16 @@
 				"git commit -m \"fix: align public salon detail visibility filter with listing (drop publishedAt requirement); remove stray file\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
+		},
+		{
+			"label": "git-commit-i18n-fix",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"git add -A && git commit -m \"fix: remove duplicate next.config.js so next-intl plugin loads; mark session/db-dependent API routes as force-dynamic\" && git push origin $(git branch --show-current)"
+			],
+			"isBackground": false
 		}
 	]
 }

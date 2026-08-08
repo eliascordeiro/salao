@@ -10,6 +10,8 @@ import { getSalonByOwnerId } from '@/lib/salon-helper'
 import { getQRCode } from '@/lib/whatsapp/baileys-auth-store'
 import { isWhatsAppConnected } from '@/lib/whatsapp/baileys-client'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     // Autenticação
