@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { 
   Building2, 
@@ -54,19 +55,21 @@ interface ViaCepResponse {
   erro?: boolean;
 }
 
-const DAYS_OF_WEEK = [
-  { id: "0", label: "Dom" },
-  { id: "1", label: "Seg" },
-  { id: "2", label: "Ter" },
-  { id: "3", label: "Qua" },
-  { id: "4", label: "Qui" },
-  { id: "5", label: "Sex" },
-  { id: "6", label: "Sáb" },
-];
+const DAY_KEYS = [
+  { id: "0", key: "daySun" },
+  { id: "1", key: "dayMon" },
+  { id: "2", key: "dayTue" },
+  { id: "3", key: "dayWed" },
+  { id: "4", key: "dayThu" },
+  { id: "5", key: "dayFri" },
+  { id: "6", key: "daySat" },
+] as const;
 
 export default function MeuSalaoPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const t = useTranslations("salon");
+  const tCommon = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -113,7 +116,7 @@ export default function MeuSalaoPage() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error || "Erro ao carregar informações do salão");
+        setError(errorData.error || t("loadError"));
         return;
       }
 
@@ -158,7 +161,7 @@ export default function MeuSalaoPage() {
       });
     } catch (error) {
       console.error("Erro ao carregar salão:", error);
-      setError("Erro ao carregar informações do salão");
+      setError(t("loadError"));
     } finally {
       setLoading(false);
     }
@@ -217,7 +220,7 @@ export default function MeuSalaoPage() {
       const data: ViaCepResponse = await response.json();
       
       if (data.erro) {
-        setError("CEP não encontrado");
+        setError(t("cepNotFound"));
         return;
       }
 
@@ -260,11 +263,11 @@ export default function MeuSalaoPage() {
         console.error("Erro ao buscar coordenadas:", geoError);
       }
       
-      setSuccess("CEP encontrado! Preencha o número.");
+      setSuccess(t("cepFoundHint"));
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
       console.error("Erro ao buscar CEP:", error);
-      setError("Erro ao buscar CEP. Tente novamente.");
+      setError(t("cepSearchError"));
     } finally {
       setSearchingCep(false);
     }
@@ -327,16 +330,16 @@ export default function MeuSalaoPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Erro ao atualizar salão");
+        throw new Error(errorData.error || t("updateError"));
       }
 
       const updatedSalon = await response.json();
       setSalon(updatedSalon);
-      setSuccess("Informações atualizadas com sucesso!");
+      setSuccess(t("updateSuccess"));
       
       setTimeout(() => setSuccess(""), 3000);
     } catch (error: any) {
-      setError(error.message || "Erro ao atualizar salão");
+      setError(error.message || t("updateError"));
     } finally {
       setSaving(false);
     }
@@ -362,13 +365,13 @@ export default function MeuSalaoPage() {
 
     // Validação de tipo
     if (!file.type.startsWith('image/')) {
-      setError("Por favor, selecione uma imagem válida");
+      setError(t("invalidImage"));
       return;
     }
 
     // Validação de tamanho (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("A imagem deve ter no máximo 5MB");
+      setError(t("imageTooLarge"));
       return;
     }
 
@@ -400,11 +403,11 @@ export default function MeuSalaoPage() {
       
       // Atualizar salão com nova foto
       setSalon(prev => prev ? { ...prev, coverPhoto: coverPhotoUrl } : null);
-      setSuccess("Foto de capa atualizada com sucesso!");
+      setSuccess(t("coverUpdated"));
       setTimeout(() => setSuccess(""), 3000);
 
     } catch (error: any) {
-      setError(error.message || "Erro ao fazer upload da foto");
+      setError(error.message || t("uploadError"));
       setCoverPreview(null);
     } finally {
       setUploadingCover(false);
@@ -412,7 +415,7 @@ export default function MeuSalaoPage() {
   };
 
   const handleRemoveCoverPhoto = async () => {
-    if (!confirm("Deseja realmente remover a foto de capa?")) return;
+    if (!confirm(t("removeCoverConfirm"))) return;
 
     try {
       setUploadingCover(true);
@@ -422,16 +425,16 @@ export default function MeuSalaoPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao remover foto");
+        throw new Error(t("removeError"));
       }
 
       setSalon(prev => prev ? { ...prev, coverPhoto: null } : null);
       setCoverPreview(null);
-      setSuccess("Foto de capa removida com sucesso!");
+      setSuccess(t("coverRemoved"));
       setTimeout(() => setSuccess(""), 3000);
 
     } catch (error: any) {
-      setError(error.message || "Erro ao remover foto");
+      setError(error.message || t("removeError"));
     } finally {
       setUploadingCover(false);
     }
@@ -460,10 +463,10 @@ export default function MeuSalaoPage() {
           <div className="container mx-auto px-4 py-8">
             <GlassCard className="max-w-2xl mx-auto p-8 text-center">
               <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Erro</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t("errorTitle")}</h2>
               <p className="text-foreground-muted mb-6">{error}</p>
               <GradientButton onClick={() => router.push("/dashboard")}>
-                Voltar ao Dashboard
+                {t("backToDashboard")}
               </GradientButton>
             </GlassCard>
           </div>
@@ -480,10 +483,10 @@ export default function MeuSalaoPage() {
           <div className="max-w-4xl mx-auto space-y-8">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">
-                Informações do Salão
+                {t("pageTitle")}
               </h1>
               <p className="text-foreground-muted">
-                Gerencie as informações do seu estabelecimento
+                {t("pageSubtitle")}
               </p>
             </div>
 
@@ -506,10 +509,10 @@ export default function MeuSalaoPage() {
             <GlassCard className="p-6 md:p-8">
               <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />
-                Foto de Capa
+                {t("coverPhotoTitle")}
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Uma foto de capa atrativa aumenta suas chances de conversão. Tamanho recomendado: 1920x1080px (máx. 5MB)
+                {t("coverPhotoHint")}
               </p>
 
               <div className="space-y-4">
@@ -534,7 +537,7 @@ export default function MeuSalaoPage() {
                               className="gap-2"
                             >
                               <X className="h-4 w-4" />
-                              Remover
+                              {t("removePhoto")}
                             </Button>
                             <Button
                               type="button"
@@ -544,7 +547,7 @@ export default function MeuSalaoPage() {
                               className="gap-2"
                             >
                               <Upload className="h-4 w-4" />
-                              Trocar
+                              {t("changePhoto")}
                             </Button>
                           </div>
                         </div>
@@ -553,7 +556,7 @@ export default function MeuSalaoPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full">
                       <ImageIcon className="h-16 w-16 text-primary/40 mb-3" />
-                      <p className="text-sm text-muted-foreground mb-4">Nenhuma foto de capa ainda</p>
+                      <p className="text-sm text-muted-foreground mb-4">{t("noPhotoYet")}</p>
                       <Button
                         type="button"
                         variant="outline"
@@ -562,7 +565,7 @@ export default function MeuSalaoPage() {
                         className="gap-2"
                       >
                         <Upload className="h-4 w-4" />
-                        Fazer Upload
+                        {t("uploadPhoto")}
                       </Button>
                     </div>
                   )}
@@ -572,7 +575,7 @@ export default function MeuSalaoPage() {
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                       <div className="text-center">
                         <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-2" />
-                        <p className="text-white text-sm">Enviando imagem...</p>
+                        <p className="text-white text-sm">{t("uploadingPhoto")}</p>
                       </div>
                     </div>
                   )}
@@ -595,12 +598,12 @@ export default function MeuSalaoPage() {
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  Informações Básicas
+                  {t("basicInfoTitle")}
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Nome do Salão *</Label>
+                    <Label htmlFor="name">{t("salonNameLabel")} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -612,7 +615,7 @@ export default function MeuSalaoPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{tCommon("email")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -623,13 +626,13 @@ export default function MeuSalaoPage() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <Label htmlFor="description">Descrição</Label>
+                    <Label htmlFor="description">{t("description")}</Label>
                     <textarea
                       id="description"
                       className="w-full px-4 py-3 rounded-xl border glass-card bg-background-alt/50 border-primary/20 text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] placeholder:text-foreground-muted/50"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Descrição do seu salão..."
+                      placeholder={t("descriptionPlaceholder")}
                     />
                   </div>
                 </div>
@@ -639,17 +642,17 @@ export default function MeuSalaoPage() {
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
-                  Contato e Localização
+                  {t("contactLocationTitle")}
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">Telefone</Label>
+                    <Label htmlFor="phone">{tCommon("phone")}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="(11) 99999-9999"
+                      placeholder={t("phonePlaceholder")}
                       className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                     />
                   </div>
@@ -659,13 +662,13 @@ export default function MeuSalaoPage() {
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-primary" />
-                    Endereço
+                    {t("addressTitle")}
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* CEP com busca */}
                     <div>
-                      <Label htmlFor="cep">CEP</Label>
+                      <Label htmlFor="cep">{t("cepLabel")}</Label>
                       <div className="relative">
                         <Input
                           id="cep"
@@ -684,24 +687,24 @@ export default function MeuSalaoPage() {
                           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">Busca automática</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("autoSearchHint")}</p>
                     </div>
 
                     {/* Rua */}
                     <div className="md:col-span-2">
-                      <Label htmlFor="street">Rua</Label>
+                      <Label htmlFor="street">{t("streetLabel")}</Label>
                       <Input
                         id="street"
                         value={formData.street}
                         onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                        placeholder="Nome da rua"
+                        placeholder={t("streetPlaceholder")}
                         className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                       />
                     </div>
 
                     {/* Número */}
                     <div>
-                      <Label htmlFor="number">Número</Label>
+                      <Label htmlFor="number">{t("numberLabel")}</Label>
                       <Input
                         id="number"
                         value={formData.number}
@@ -713,43 +716,43 @@ export default function MeuSalaoPage() {
 
                     {/* Complemento */}
                     <div>
-                      <Label htmlFor="complement">Complemento</Label>
+                      <Label htmlFor="complement">{t("complementLabel")}</Label>
                       <Input
                         id="complement"
                         value={formData.complement}
                         onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
-                        placeholder="Apto, Sala..."
+                        placeholder={t("complementPlaceholder")}
                         className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                       />
                     </div>
 
                     {/* Bairro */}
                     <div>
-                      <Label htmlFor="neighborhood">Bairro</Label>
+                      <Label htmlFor="neighborhood">{t("neighborhoodLabel")}</Label>
                       <Input
                         id="neighborhood"
                         value={formData.neighborhood}
                         onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                        placeholder="Nome do bairro"
+                        placeholder={t("neighborhoodPlaceholder")}
                         className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                       />
                     </div>
 
                     {/* Cidade */}
                     <div>
-                      <Label htmlFor="city">Cidade</Label>
+                      <Label htmlFor="city">{t("city")}</Label>
                       <Input
                         id="city"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Nome da cidade"
+                        placeholder={t("cityPlaceholder")}
                         className="glass-card bg-background-alt/50 border-primary/20 focus:border-primary text-foreground"
                       />
                     </div>
 
                     {/* Estado */}
                     <div>
-                      <Label htmlFor="state">Estado</Label>
+                      <Label htmlFor="state">{t("state")}</Label>
                       <Input
                         id="state"
                         value={formData.state}
@@ -767,12 +770,12 @@ export default function MeuSalaoPage() {
               <div>
                 <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
-                  Horário de Funcionamento
+                  {t("businessHoursTitle")}
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="openTime">Hora de Abertura</Label>
+                    <Label htmlFor="openTime">{t("openTimeLabel")}</Label>
                     <Input
                       id="openTime"
                       type="time"
@@ -783,7 +786,7 @@ export default function MeuSalaoPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="closeTime">Hora de Fechamento</Label>
+                    <Label htmlFor="closeTime">{t("closeTimeLabel")}</Label>
                     <Input
                       id="closeTime"
                       type="time"
@@ -795,9 +798,9 @@ export default function MeuSalaoPage() {
                 </div>
 
                 <div className="mt-4">
-                  <Label className="mb-3 block">Dias de Funcionamento</Label>
+                  <Label className="mb-3 block">{t("workDaysLabel")}</Label>
                   <div className="flex flex-wrap gap-2">
-                    {DAYS_OF_WEEK.map((day) => {
+                    {DAY_KEYS.map((day) => {
                       const isSelected = formData.workDays.split(",").includes(day.id);
                       return (
                         <button
@@ -810,7 +813,7 @@ export default function MeuSalaoPage() {
                               : "bg-background-alt border border-border text-foreground-muted hover:border-primary"
                           }`}
                         >
-                          {day.label}
+                          {t(day.key)}
                         </button>
                       );
                     })}
@@ -828,9 +831,9 @@ export default function MeuSalaoPage() {
                     className="w-5 h-5"
                   />
                   <div>
-                    <div className="font-semibold text-foreground">Salão Ativo</div>
+                    <div className="font-semibold text-foreground">{t("activeLabel")}</div>
                     <div className="text-sm text-foreground-muted">
-                      Desmarque para pausar temporariamente os agendamentos
+                      {t("activeHint")}
                     </div>
                   </div>
                 </label>
@@ -846,12 +849,12 @@ export default function MeuSalaoPage() {
                   {saving ? (
                     <>
                       <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                      Salvando...
+                      {t("saving")}
                     </>
                   ) : (
                     <>
                       <Save className="h-5 w-5 mr-2" />
-                      Salvar Alterações
+                      {t("saveChanges")}
                     </>
                   )}
                 </GradientButton>
