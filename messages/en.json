@@ -225,12 +225,20 @@
   },
   "services": {
     "title": "Services",
-    "subtitle": "Manage your salon's services",
+    "subtitle": "Manage the services offered by your salon",
     "newService": "New Service",
     "editService": "Edit Service",
     "description": "Description",
     "noServices": "No services registered",
-    "addFirstService": "Add the first service"
+    "addFirstService": "Add the first service",
+    "createFirstService": "Create First Service",
+    "noCategory": "No category",
+    "staffLabel": "Staff:",
+    "noStaffAssigned": "No staff assigned",
+    "bookingsCount": "bookings",
+    "deleteConfirm": "Are you sure you want to delete the service \"{name}\"? This action cannot be undone.",
+    "deleteError": "Error deleting service",
+    "deleteErrorRetry": "Error deleting service. Please try again."
   },
   "cashier": {
     "title": "Cashier",

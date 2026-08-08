@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 
@@ -12,10 +13,11 @@ interface DeleteServiceButtonProps {
 
 export function DeleteServiceButton({ serviceId, serviceName }: DeleteServiceButtonProps) {
   const router = useRouter()
+  const t = useTranslations("services")
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
-    if (!confirm(`Tem certeza que deseja deletar o serviço "${serviceName}"? Esta ação não pode ser desfeita.`)) {
+    if (!confirm(t("deleteConfirm", { name: serviceName }))) {
       return
     }
 
@@ -27,12 +29,12 @@ export function DeleteServiceButton({ serviceId, serviceName }: DeleteServiceBut
       })
 
       if (!response.ok) {
-        throw new Error("Erro ao deletar serviço")
+        throw new Error(t("deleteError"))
       }
 
       router.refresh()
     } catch (error) {
-      alert("Erro ao deletar serviço. Tente novamente.")
+      alert(t("deleteErrorRetry"))
     } finally {
       setIsDeleting(false)
     }

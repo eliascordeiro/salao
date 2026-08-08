@@ -225,12 +225,20 @@
   },
   "services": {
     "title": "Services",
-    "subtitle": "Gérez les services de votre salon",
+    "subtitle": "Gérez les services proposés par votre salon",
     "newService": "Nouveau Service",
     "editService": "Modifier le Service",
     "description": "Description",
     "noServices": "Aucun service enregistré",
-    "addFirstService": "Ajoutez le premier service"
+    "addFirstService": "Ajoutez le premier service",
+    "createFirstService": "Créer le Premier Service",
+    "noCategory": "Aucune catégorie",
+    "staffLabel": "Professionnels :",
+    "noStaffAssigned": "Aucun professionnel",
+    "bookingsCount": "rendez-vous",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer le service \"{name}\" ? Cette action est irréversible.",
+    "deleteError": "Erreur lors de la suppression du service",
+    "deleteErrorRetry": "Erreur lors de la suppression du service. Veuillez réessayer."
   },
   "cashier": {
     "title": "Caisse",

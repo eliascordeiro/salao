@@ -225,12 +225,20 @@
   },
   "services": {
     "title": "Servicios",
-    "subtitle": "Gestiona los servicios de tu salón",
+    "subtitle": "Gestiona los servicios ofrecidos por tu salón",
     "newService": "Nuevo Servicio",
     "editService": "Editar Servicio",
     "description": "Descripción",
     "noServices": "Sin servicios registrados",
-    "addFirstService": "Agrega el primer servicio"
+    "addFirstService": "Agrega el primer servicio",
+    "createFirstService": "Crear Primer Servicio",
+    "noCategory": "Sin categoría",
+    "staffLabel": "Profesionales:",
+    "noStaffAssigned": "Sin profesional asignado",
+    "bookingsCount": "citas",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar el servicio \"{name}\"? Esta acción no se puede deshacer.",
+    "deleteError": "Error al eliminar el servicio",
+    "deleteErrorRetry": "Error al eliminar el servicio. Inténtalo de nuevo."
   },
   "cashier": {
     "title": "Caja",

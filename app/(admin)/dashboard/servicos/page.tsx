@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { DashboardHeader } from "@/components/dashboard/header"
@@ -12,6 +13,8 @@ import { DeleteServiceButton } from "@/components/dashboard/delete-service-butto
 
 export default async function ServicesPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations("services")
+  const tCommon = await getTranslations("common")
 
   if (!session) {
     redirect("/login")
@@ -60,16 +63,16 @@ export default async function ServicesPage() {
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-2 flex items-center gap-3">
                 <Sparkles className="h-8 w-8 text-primary" />
-                Serviços
+                {t("title")}
               </h1>
               <p className="text-foreground-muted text-lg">
-                Gerencie os serviços oferecidos pelo seu salão
+                {t("subtitle")}
               </p>
             </div>
             <Link href="/dashboard/servicos/novo">
               <GradientButton variant="primary" className="group">
                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                Novo Serviço
+                {t("newService")}
               </GradientButton>
             </Link>
           </div>
@@ -78,11 +81,11 @@ export default async function ServicesPage() {
           {services.length === 0 ? (
             <GlassCard className="p-12 text-center animate-fadeInUp" style={{ animationDelay: "200ms" }}>
               <Sparkles className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
-              <p className="text-foreground-muted text-lg mb-6">Nenhum serviço cadastrado</p>
+              <p className="text-foreground-muted text-lg mb-6">{t("noServices")}</p>
               <Link href="/dashboard/servicos/novo">
                 <GradientButton variant="primary" className="group">
                   <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                  Criar Primeiro Serviço
+                  {t("createFirstService")}
                 </GradientButton>
               </Link>
             </GlassCard>
@@ -103,18 +106,18 @@ export default async function ServicesPage() {
                         <span className="truncate">{service.name}</span>
                       </h3>
                       <span className="text-xs text-foreground-muted glass-card bg-background-alt/50 px-2 py-1 rounded-md inline-block">
-                        {service.category || "Sem categoria"}
+                        {service.category || t("noCategory")}
                       </span>
                     </div>
                     {service.active ? (
                       <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card border-accent/50 bg-accent/10 text-accent flex-shrink-0 ml-2 h-fit">
                         <CheckCircle className="h-3 w-3" />
-                        Ativo
+                        {tCommon("active")}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-md glass-card bg-background-alt/50 text-foreground-muted flex-shrink-0 ml-2 h-fit">
                         <XCircle className="h-3 w-3" />
-                        Inativo
+                        {tCommon("inactive")}
                       </span>
                     )}
                   </div>
@@ -144,10 +147,10 @@ export default async function ServicesPage() {
                   <div className="mb-4 min-h-[72px] flex-grow">
                     <p className="text-xs text-foreground-muted mb-2 flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      Profissionais:
+                      {t("staffLabel")}
                     </p>
                     {service.staff.length === 0 ? (
-                      <p className="text-sm text-foreground-muted/60 italic">Nenhum profissional</p>
+                      <p className="text-sm text-foreground-muted/60 italic">{t("noStaffAssigned")}</p>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {service.staff.map((s) => (
@@ -162,7 +165,7 @@ export default async function ServicesPage() {
                   {/* Estatísticas - altura fixa */}
                   <div className="py-3 border-t border-border mb-4 min-h-[48px]">
                     <p className="text-xs text-foreground-muted">
-                      <span className="font-semibold text-primary">{service._count.bookings}</span> agendamentos
+                      <span className="font-semibold text-primary">{service._count.bookings}</span> {t("bookingsCount")}
                     </p>
                   </div>
 
@@ -171,7 +174,7 @@ export default async function ServicesPage() {
                     <Link href={`/dashboard/servicos/${service.id}/editar`} className="flex-1">
                       <GradientButton variant="accent" className="w-full text-sm group">
                         <Pencil className="h-3 w-3 group-hover:rotate-12 transition-transform" />
-                        Editar
+                        {tCommon("edit")}
                       </GradientButton>
                     </Link>
                     <DeleteServiceButton serviceId={service.id} serviceName={service.name} />

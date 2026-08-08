@@ -262,12 +262,19 @@
 			"isBackground": false
 		},
 		{
-			"label": "git-commit-i18n-pages-1",
+			"label": "validate-i18n-build-3",
+			"type": "shell",
+			"command": "DATABASE_URL='postgresql://invalid:invalid@127.0.0.1:1/invalid?connect_timeout=1' npm run build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "git-commit-i18n-pages-2",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"i18n: translate professionals list and dashboard home pages (pt/en/es/fr)\" && git push origin $(git branch --show-current)"
+				"git add -A && git commit -m \"i18n: translate services list page and delete-service dialog (pt/en/es/fr)\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}
