@@ -247,6 +247,38 @@
     "deleteConfirm": "¿Estás seguro de que deseas eliminar al profesional \"{name}\"?\n\nEsta acción no se puede deshacer.",
     "deleteError": "Error al eliminar el profesional"
   },
+  "staffDashboard": {
+    "greeting": "Hola, {name}! 👋",
+    "welcomeMessage": "Bienvenido a tu panel de profesional",
+    "today": "Hoy",
+    "thisWeek": "Esta Semana",
+    "thisMonth": "Este Mes",
+    "pending": "Pendientes",
+    "upcomingBookings": "Próximas Citas",
+    "noUpcomingBookings": "Ninguna cita próxima",
+    "recentCommissions": "Comisiones Recientes",
+    "noRecentCommissions": "Ninguna comisión registrada"
+  },
+  "staffAgenda": {
+    "title": "Mi Agenda",
+    "subtitle": "Visualiza tus citas",
+    "noBookingsFound": "Ninguna cita encontrada",
+    "minutesAbbrev": "min",
+    "notesLabel": "Nota:",
+    "dateLabel": "Fecha",
+    "timeLabel": "Hora",
+    "confirmBookingConfirm": "¿Deseas confirmar esta cita?",
+    "confirmSuccess": "¡Cita confirmada con éxito!",
+    "confirmError": "Error al confirmar la cita",
+    "confirming": "Confirmando...",
+    "confirmButton": "Confirmar",
+    "cancelBookingConfirm": "¿Deseas cancelar esta cita?",
+    "cancelSuccess": "¡Cita cancelada con éxito!",
+    "cancelError": "Error al cancelar la cita",
+    "cancelling": "Cancelando...",
+    "cancelButton": "Cancelar",
+    "noPermission": "Sin permiso para gestionar citas"
+  },
   "services": {
     "title": "Servicios",
     "subtitle": "Gestiona los servicios ofrecidos por tu salón",
@@ -774,6 +806,19 @@
     "signUp": "Crear cuenta",
     "welcomeBack": "¡Bienvenido de nuevo!",
     "createAccount": "Crear cuenta"
+  },
+  "staffLogin": {
+    "title": "Área del Profesional",
+    "subtitle": "Accede a tu panel para gestionar agenda y comisiones",
+    "salonDetected": "Salón detectado: {salon}",
+    "emailPlaceholder": "tu@email.com",
+    "invalidCredentials": "Correo o contraseña inválidos",
+    "accessDenied": "Acceso denegado. Esta área es exclusiva para profesionales.",
+    "connectionError": "Error de conexión. Inténtalo de nuevo.",
+    "loggingIn": "Iniciando sesión...",
+    "noAccess": "¿No tienes acceso?",
+    "contactSalon": "Ponte en contacto con el salón",
+    "backToHome": "Volver a la página de inicio"
   },
   "client": {
     "salons": "Salones",

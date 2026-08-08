@@ -14,6 +14,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 interface DashboardStats {
   todayEarnings: number;
@@ -27,6 +28,8 @@ interface DashboardStats {
 
 export default function StaffDashboardPage() {
   const { data: session } = useSession();
+  const t = useTranslations("staffDashboard");
+  const tStatus = useTranslations("status");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     todayEarnings: 0,
@@ -70,10 +73,10 @@ export default function StaffDashboardPage() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-          Olá, {session?.user?.name?.split(" ")[0]}! 👋
+          {t("greeting", { name: session?.user?.name?.split(" ")[0] ?? "" })}
         </h1>
         <p className="text-sm sm:text-base text-foreground-muted">
-          Bem-vindo ao seu painel de profissional
+          {t("welcomeMessage")}
         </p>
       </div>
 
@@ -82,7 +85,7 @@ export default function StaffDashboardPage() {
         <GlassCard hover glow="success">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-foreground-muted">Hoje</p>
+              <p className="text-sm text-foreground-muted">{t("today")}</p>
               <DollarSign className="h-5 w-5 text-success" />
             </div>
             <p className="text-3xl font-bold text-success">
@@ -94,7 +97,7 @@ export default function StaffDashboardPage() {
         <GlassCard hover glow="primary">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-foreground-muted">Esta Semana</p>
+              <p className="text-sm text-foreground-muted">{t("thisWeek")}</p>
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <p className="text-3xl font-bold text-primary">
@@ -106,7 +109,7 @@ export default function StaffDashboardPage() {
         <GlassCard hover glow="accent">
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-foreground-muted">Este Mês</p>
+              <p className="text-sm text-foreground-muted">{t("thisMonth")}</p>
               <DollarSign className="h-5 w-5 text-accent" />
             </div>
             <p className="text-3xl font-bold text-accent">
@@ -118,7 +121,7 @@ export default function StaffDashboardPage() {
         <GlassCard hover>
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-foreground-muted">Pendentes</p>
+              <p className="text-sm text-foreground-muted">{t("pending")}</p>
               <Clock className="h-5 w-5 text-warning" />
             </div>
             <p className="text-3xl font-bold text-warning">
@@ -135,13 +138,13 @@ export default function StaffDashboardPage() {
             <div className="flex items-center gap-3 mb-4">
               <Calendar className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-bold text-foreground">
-                Próximos Agendamentos
+                {t("upcomingBookings")}
               </h2>
             </div>
 
             {stats.upcomingBookings.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Nenhum agendamento próximo
+                {t("noUpcomingBookings")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -179,13 +182,13 @@ export default function StaffDashboardPage() {
             <div className="flex items-center gap-3 mb-4">
               <DollarSign className="h-5 w-5 text-success" />
               <h2 className="text-lg font-bold text-foreground">
-                Comissões Recentes
+                {t("recentCommissions")}
               </h2>
             </div>
 
             {stats.recentCommissions.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Nenhuma comissão registrada
+                {t("noRecentCommissions")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -209,12 +212,12 @@ export default function StaffDashboardPage() {
                       {commission.status === "PAID" ? (
                         <div className="flex items-center gap-1 text-xs text-success">
                           <CheckCircle className="h-3 w-3" />
-                          Pago
+                          {tStatus("PAID")}
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-xs text-warning">
                           <AlertCircle className="h-3 w-3" />
-                          Pendente
+                          {tStatus("PENDING")}
                         </div>
                       )}
                     </div>

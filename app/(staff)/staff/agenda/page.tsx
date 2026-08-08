@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 interface Booking {
   id: string;
@@ -26,6 +27,8 @@ interface StaffProfile {
 }
 
 export default function StaffAgendaPage() {
+  const t = useTranslations("staffAgenda");
+  const tStatus = useTranslations("status");
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
@@ -79,16 +82,16 @@ export default function StaffAgendaPage() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      PENDING: "Pendente",
-      CONFIRMED: "Confirmado",
-      COMPLETED: "Concluído",
-      CANCELLED: "Cancelado",
+      PENDING: tStatus("PENDING"),
+      CONFIRMED: tStatus("CONFIRMED"),
+      COMPLETED: tStatus("COMPLETED"),
+      CANCELLED: tStatus("CANCELLED"),
     };
     return labels[status] || status;
   };
 
   const handleConfirmBooking = async (bookingId: string) => {
-    if (!confirm("Deseja confirmar este agendamento?")) return;
+    if (!confirm(t("confirmBookingConfirm"))) return;
 
     setActionLoading(bookingId);
     try {
@@ -104,17 +107,17 @@ export default function StaffAgendaPage() {
       setBookings(bookings.map(b => 
         b.id === bookingId ? { ...b, status: "CONFIRMED" } : b
       ));
-      alert("Agendamento confirmado com sucesso!");
+      alert(t("confirmSuccess"));
     } catch (error) {
       console.error("Erro ao confirmar:", error);
-      alert("Erro ao confirmar agendamento");
+      alert(t("confirmError"));
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleCancelBooking = async (bookingId: string) => {
-    if (!confirm("Deseja cancelar este agendamento?")) return;
+    if (!confirm(t("cancelBookingConfirm"))) return;
 
     setActionLoading(bookingId);
     try {
@@ -130,10 +133,10 @@ export default function StaffAgendaPage() {
       setBookings(bookings.map(b => 
         b.id === bookingId ? { ...b, status: "CANCELLED" } : b
       ));
-      alert("Agendamento cancelado com sucesso!");
+      alert(t("cancelSuccess"));
     } catch (error) {
       console.error("Erro ao cancelar:", error);
-      alert("Erro ao cancelar agendamento");
+      alert(t("cancelError"));
     } finally {
       setActionLoading(null);
     }
@@ -151,10 +154,10 @@ export default function StaffAgendaPage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
-          Minha Agenda
+          {t("title")}
         </h1>
         <p className="text-sm sm:text-base text-foreground-muted">
-          Visualize seus agendamentos
+          {t("subtitle")}
         </p>
       </div>
 
@@ -162,7 +165,7 @@ export default function StaffAgendaPage() {
         <GlassCard>
           <div className="p-8 sm:p-12 text-center">
             <CalendarIcon className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground">Nenhum agendamento encontrado</p>
+            <p className="text-sm sm:text-base text-muted-foreground">{t("noBookingsFound")}</p>
           </div>
         </GlassCard>
       ) : (
@@ -179,7 +182,7 @@ export default function StaffAgendaPage() {
                       <div className="flex items-center gap-2 mt-1">
                         <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         <span className="text-xs sm:text-sm text-muted-foreground">
-                          {booking.service.duration} min
+                          {booking.service.duration} {t("minutesAbbrev")}
                         </span>
                       </div>
                     </div>
@@ -206,7 +209,7 @@ export default function StaffAgendaPage() {
 
                   {booking.notes && (
                     <p className="text-xs sm:text-sm text-muted-foreground italic">
-                      Obs: {booking.notes}
+                      {t("notesLabel")} {booking.notes}
                     </p>
                   )}
                 </div>
@@ -214,13 +217,13 @@ export default function StaffAgendaPage() {
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="flex lg:flex-col items-start lg:items-end gap-3 sm:gap-3">
                     <div className="text-left lg:text-right">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Data</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("dateLabel")}</p>
                       <p className="text-base sm:text-lg font-bold text-primary">
                         {format(new Date(booking.date), "dd/MM/yyyy", { locale: ptBR })}
                       </p>
                     </div>
                     <div className="text-left lg:text-right">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Horário</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("timeLabel")}</p>
                       <p className="text-base sm:text-lg font-bold text-accent">
                         {format(new Date(booking.date), "HH:mm", { locale: ptBR })}
                       </p>
@@ -237,7 +240,7 @@ export default function StaffAgendaPage() {
                           className="w-full bg-success hover:bg-success/90 text-white gap-2"
                         >
                           <CheckCircle className="h-4 w-4" />
-                          {actionLoading === booking.id ? "Confirmando..." : "Confirmar"}
+                          {actionLoading === booking.id ? t("confirming") : t("confirmButton")}
                         </Button>
                       )}
                       {staffProfile.canCancelBooking && (
@@ -248,12 +251,12 @@ export default function StaffAgendaPage() {
                           className="w-full border-error text-error hover:bg-error/10 gap-2"
                         >
                           <XCircle className="h-4 w-4" />
-                          {actionLoading === booking.id ? "Cancelando..." : "Cancelar"}
+                          {actionLoading === booking.id ? t("cancelling") : t("cancelButton")}
                         </Button>
                       )}
                       {!staffProfile.canConfirmBooking && !staffProfile.canCancelBooking && (
                         <p className="text-xs text-muted-foreground text-center italic">
-                          Sem permissão para gerenciar agendamentos
+                          {t("noPermission")}
                         </p>
                       )}
                     </div>
@@ -267,7 +270,7 @@ export default function StaffAgendaPage() {
                       className="w-full border-error text-error hover:bg-error/10 gap-2"
                     >
                       <XCircle className="h-4 w-4" />
-                      {actionLoading === booking.id ? "Cancelando..." : "Cancelar"}
+                      {actionLoading === booking.id ? t("cancelling") : t("cancelButton")}
                     </Button>
                   )}
                 </div>

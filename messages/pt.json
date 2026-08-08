@@ -247,6 +247,38 @@
     "deleteConfirm": "Tem certeza que deseja excluir o profissional \"{name}\"?\n\nEsta ação não pode ser desfeita.",
     "deleteError": "Erro ao deletar profissional"
   },
+  "staffDashboard": {
+    "greeting": "Olá, {name}! 👋",
+    "welcomeMessage": "Bem-vindo ao seu painel de profissional",
+    "today": "Hoje",
+    "thisWeek": "Esta Semana",
+    "thisMonth": "Este Mês",
+    "pending": "Pendentes",
+    "upcomingBookings": "Próximos Agendamentos",
+    "noUpcomingBookings": "Nenhum agendamento próximo",
+    "recentCommissions": "Comissões Recentes",
+    "noRecentCommissions": "Nenhuma comissão registrada"
+  },
+  "staffAgenda": {
+    "title": "Minha Agenda",
+    "subtitle": "Visualize seus agendamentos",
+    "noBookingsFound": "Nenhum agendamento encontrado",
+    "minutesAbbrev": "min",
+    "notesLabel": "Obs:",
+    "dateLabel": "Data",
+    "timeLabel": "Horário",
+    "confirmBookingConfirm": "Deseja confirmar este agendamento?",
+    "confirmSuccess": "Agendamento confirmado com sucesso!",
+    "confirmError": "Erro ao confirmar agendamento",
+    "confirming": "Confirmando...",
+    "confirmButton": "Confirmar",
+    "cancelBookingConfirm": "Deseja cancelar este agendamento?",
+    "cancelSuccess": "Agendamento cancelado com sucesso!",
+    "cancelError": "Erro ao cancelar agendamento",
+    "cancelling": "Cancelando...",
+    "cancelButton": "Cancelar",
+    "noPermission": "Sem permissão para gerenciar agendamentos"
+  },
   "services": {
     "title": "Serviços",
     "subtitle": "Gerencie os serviços oferecidos pelo seu salão",
@@ -774,6 +806,19 @@
     "signUp": "Criar conta",
     "welcomeBack": "Bem-vindo de volta!",
     "createAccount": "Criar conta"
+  },
+  "staffLogin": {
+    "title": "Área do Profissional",
+    "subtitle": "Acesse seu painel para gerenciar agenda e comissões",
+    "salonDetected": "Salão detectado: {salon}",
+    "emailPlaceholder": "seu@email.com",
+    "invalidCredentials": "Email ou senha inválidos",
+    "accessDenied": "Acesso negado. Esta área é exclusiva para profissionais.",
+    "connectionError": "Erro ao conectar. Tente novamente.",
+    "loggingIn": "Entrando...",
+    "noAccess": "Não tem acesso?",
+    "contactSalon": "Entre em contato com o salão",
+    "backToHome": "Voltar para página inicial"
   },
   "client": {
     "salons": "Salões",

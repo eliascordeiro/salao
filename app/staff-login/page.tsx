@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff, Briefcase, Lock, Mail } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -22,6 +23,8 @@ export default function StaffLoginPage() {
 function StaffLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("staffLogin");
+  const tAuth = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +59,7 @@ function StaffLoginContent() {
       });
 
       if (result?.error) {
-        setError("Email ou senha inválidos");
+        setError(t("invalidCredentials"));
         setLoading(false);
         return;
       }
@@ -72,13 +75,13 @@ function StaffLoginContent() {
 
         router.push(callbackUrl);
       } else {
-        setError("Acesso negado. Esta área é exclusiva para profissionais.");
+        setError(t("accessDenied"));
         await signIn("credentials", { redirect: false }); // Logout
         setLoading(false);
       }
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      setError("Erro ao conectar. Tente novamente.");
+      setError(t("connectionError"));
       setLoading(false);
     }
   };
@@ -93,14 +96,14 @@ function StaffLoginContent() {
                 <Briefcase className="h-8 w-8 text-primary" />
               </div>
               <h1 className="text-3xl font-bold text-foreground">
-                Área do Profissional
+                {t("title")}
               </h1>
               <p className="mt-2 text-sm text-foreground-muted">
-                Acesse seu painel para gerenciar agenda e comissões
+                {t("subtitle")}
               </p>
               {tenantHint && (
                 <p className="mt-3 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-primary">
-                  Salão detectado: {tenantHint.label}
+                  {t("salonDetected", { salon: tenantHint.label })}
                 </p>
               )}
             </div>
@@ -113,13 +116,13 @@ function StaffLoginContent() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{tAuth("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={t("emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -130,7 +133,7 @@ function StaffLoginContent() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password">{tAuth("password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -163,20 +166,20 @@ function StaffLoginContent() {
                 disabled={loading}
                 variant="primary"
               >
-                {loading ? "Entrando..." : "Entrar"}
+                {loading ? t("loggingIn") : tAuth("login")}
               </GradientButton>
             </form>
 
             <div className="mt-6 text-center text-sm text-foreground-muted">
               <p>
-                Não tem acesso?{" "}
+                {t("noAccess")}{" "}
                 <Link href="/contato" className="text-primary hover:underline">
-                  Entre em contato com o salão
+                  {t("contactSalon")}
                 </Link>
               </p>
               <p className="mt-2">
                 <Link href="/" className="text-primary hover:underline">
-                  Voltar para página inicial
+                  {t("backToHome")}
                 </Link>
               </p>
             </div>

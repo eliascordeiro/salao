@@ -247,6 +247,38 @@
     "deleteConfirm": "Are you sure you want to delete staff member \"{name}\"?\n\nThis action cannot be undone.",
     "deleteError": "Error deleting staff member"
   },
+  "staffDashboard": {
+    "greeting": "Hi, {name}! 👋",
+    "welcomeMessage": "Welcome to your staff dashboard",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "thisMonth": "This Month",
+    "pending": "Pending",
+    "upcomingBookings": "Upcoming Bookings",
+    "noUpcomingBookings": "No upcoming bookings",
+    "recentCommissions": "Recent Commissions",
+    "noRecentCommissions": "No commissions recorded"
+  },
+  "staffAgenda": {
+    "title": "My Schedule",
+    "subtitle": "View your bookings",
+    "noBookingsFound": "No bookings found",
+    "minutesAbbrev": "min",
+    "notesLabel": "Note:",
+    "dateLabel": "Date",
+    "timeLabel": "Time",
+    "confirmBookingConfirm": "Do you want to confirm this booking?",
+    "confirmSuccess": "Booking confirmed successfully!",
+    "confirmError": "Error confirming booking",
+    "confirming": "Confirming...",
+    "confirmButton": "Confirm",
+    "cancelBookingConfirm": "Do you want to cancel this booking?",
+    "cancelSuccess": "Booking cancelled successfully!",
+    "cancelError": "Error cancelling booking",
+    "cancelling": "Cancelling...",
+    "cancelButton": "Cancel",
+    "noPermission": "No permission to manage bookings"
+  },
   "services": {
     "title": "Services",
     "subtitle": "Manage the services offered by your salon",
@@ -774,6 +806,19 @@
     "signUp": "Create account",
     "welcomeBack": "Welcome back!",
     "createAccount": "Create account"
+  },
+  "staffLogin": {
+    "title": "Staff Area",
+    "subtitle": "Access your dashboard to manage schedule and commissions",
+    "salonDetected": "Salon detected: {salon}",
+    "emailPlaceholder": "your@email.com",
+    "invalidCredentials": "Invalid email or password",
+    "accessDenied": "Access denied. This area is exclusive to staff members.",
+    "connectionError": "Connection error. Please try again.",
+    "loggingIn": "Signing in...",
+    "noAccess": "Don't have access?",
+    "contactSalon": "Contact the salon",
+    "backToHome": "Back to home page"
   },
   "client": {
     "salons": "Salons",

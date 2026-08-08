@@ -247,6 +247,38 @@
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer le professionnel \"{name}\" ?\n\nCette action est irréversible.",
     "deleteError": "Erreur lors de la suppression du professionnel"
   },
+  "staffDashboard": {
+    "greeting": "Bonjour, {name} ! 👋",
+    "welcomeMessage": "Bienvenue sur votre tableau de bord professionnel",
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette Semaine",
+    "thisMonth": "Ce Mois",
+    "pending": "En Attente",
+    "upcomingBookings": "Prochains Rendez-vous",
+    "noUpcomingBookings": "Aucun rendez-vous à venir",
+    "recentCommissions": "Commissions Récentes",
+    "noRecentCommissions": "Aucune commission enregistrée"
+  },
+  "staffAgenda": {
+    "title": "Mon Agenda",
+    "subtitle": "Consultez vos rendez-vous",
+    "noBookingsFound": "Aucun rendez-vous trouvé",
+    "minutesAbbrev": "min",
+    "notesLabel": "Note :",
+    "dateLabel": "Date",
+    "timeLabel": "Heure",
+    "confirmBookingConfirm": "Voulez-vous confirmer ce rendez-vous ?",
+    "confirmSuccess": "Rendez-vous confirmé avec succès !",
+    "confirmError": "Erreur lors de la confirmation du rendez-vous",
+    "confirming": "Confirmation...",
+    "confirmButton": "Confirmer",
+    "cancelBookingConfirm": "Voulez-vous annuler ce rendez-vous ?",
+    "cancelSuccess": "Rendez-vous annulé avec succès !",
+    "cancelError": "Erreur lors de l'annulation du rendez-vous",
+    "cancelling": "Annulation...",
+    "cancelButton": "Annuler",
+    "noPermission": "Aucune permission pour gérer les rendez-vous"
+  },
   "services": {
     "title": "Services",
     "subtitle": "Gérez les services proposés par votre salon",
@@ -774,6 +806,19 @@
     "signUp": "Créer un compte",
     "welcomeBack": "Bon retour !",
     "createAccount": "Créer un compte"
+  },
+  "staffLogin": {
+    "title": "Espace Professionnel",
+    "subtitle": "Accédez à votre tableau de bord pour gérer l'agenda et les commissions",
+    "salonDetected": "Salon détecté : {salon}",
+    "emailPlaceholder": "votre@email.com",
+    "invalidCredentials": "E-mail ou mot de passe invalide",
+    "accessDenied": "Accès refusé. Cet espace est réservé aux professionnels.",
+    "connectionError": "Erreur de connexion. Veuillez réessayer.",
+    "loggingIn": "Connexion...",
+    "noAccess": "Pas encore d'accès ?",
+    "contactSalon": "Contactez le salon",
+    "backToHome": "Retour à la page d'accueil"
   },
   "client": {
     "salons": "Salons",
