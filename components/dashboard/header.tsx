@@ -5,6 +5,8 @@ import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { LogOut, User, Sun, Moon, Sunset, UserCircle, KeyRound, Sparkles } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
+import { useTranslations } from "next-intl"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 
 type Theme = "ultra-light" | "light" | "twilight" | "dark";
 
@@ -20,6 +22,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>("dark")
   const userMenuRef = useRef<HTMLDivElement>(null)
+  const t = useTranslations("header")
 
   useEffect(() => {
     // Detectar tema atual no mount
@@ -76,7 +79,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           {/* Título da página */}
           <div className="flex items-center gap-3 min-w-0">
             <h1 className="text-lg md:text-xl font-semibold text-foreground truncate">
-              {user?.role === "ADMIN" ? "Painel Administrativo" : "Meu Painel"}
+              {user?.role === "ADMIN" ? t("adminPanel") : t("myPanel")}
             </h1>
           </div>
 
@@ -87,7 +90,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
               <p className="text-xs text-muted-foreground truncate max-w-[200px]">{user?.email}</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              {/* Language Switcher */}
+              <LanguageSwitcher />
               {/* Toggle Tema */}
               <Button 
                 variant="ghost" 
@@ -96,12 +101,12 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 className="hover:bg-background-alt hover:text-primary transition-colors"
                 title={
                   theme === 'ultra-light' 
-                    ? "Mudar para tema claro"
+                    ? t("theme.ultraLight")
                     : theme === 'light' 
-                    ? "Mudar para tema Twilight" 
+                    ? t("theme.light") 
                     : theme === 'twilight'
-                    ? "Mudar para tema escuro"
-                    : "Mudar para tema ultra claro"
+                    ? t("theme.twilight")
+                    : t("theme.dark")
                 }
               >
                 {theme === 'ultra-light' ? (
@@ -142,7 +147,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-background-alt transition-colors"
                       >
                         <UserCircle className="h-4 w-4 text-primary" />
-                        <span>Meu Perfil</span>
+                        <span>{t("myProfile")}</span>
                       </Link>
                       
                       <Link 
@@ -151,7 +156,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-background-alt transition-colors"
                       >
                         <KeyRound className="h-4 w-4 text-primary" />
-                        <span>Alterar Senha</span>
+                        <span>{t("changePassword")}</span>
                       </Link>
                       
                       <div className="border-t border-border/30 my-1"></div>
@@ -164,7 +169,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/10 transition-colors"
                       >
                         <LogOut className="h-4 w-4" />
-                        <span>Sair</span>
+                        <span>{t("logout")}</span>
                       </button>
                     </div>
                   </div>

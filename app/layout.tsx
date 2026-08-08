@@ -4,6 +4,8 @@ import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ServiceWorkerRegister } from "@/components/push/ServiceWorkerRegister";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,13 +37,16 @@ export const viewport = {
   themeColor: "#a855f7",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -67,8 +72,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <ServiceWorkerRegister />
-            {children}
+            <NextIntlClientProvider messages={messages} locale={locale}>
+              <ServiceWorkerRegister />
+              {children}
+            </NextIntlClientProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

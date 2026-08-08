@@ -15,12 +15,14 @@ import { usePermissions } from "@/hooks/use-permissions"
 import { getMenuItems } from "@/lib/sidebar"
 import type { MenuItem } from "@/lib/sidebar"
 import { useUnreadMessages } from "@/hooks/use-unread-messages"
+import { useTranslations } from "next-intl"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useSidebar()
   const unreadMessages = useUnreadMessages()
   const { hasPermission, hasAllPermissions, hasAnyPermission, isOwner } = usePermissions()
+  const t = useTranslations("nav")
 
   // Obtém itens de menu do sistema dinâmico
   const menuItems = getMenuItems()
@@ -227,7 +229,8 @@ export function Sidebar() {
                     "font-medium text-sm lg:text-base transition-all relative z-10 flex-1",
                     isActive && "text-primary font-semibold"
                   )}>
-                    {item.label}
+                    {/* Use translation by item.id, fall back to original label */}
+                    {t.has(item.id as any) ? t(item.id as any) : item.label}
                   </span>
                 )}
 
@@ -252,7 +255,7 @@ export function Sidebar() {
                     "before:content-[''] before:absolute before:right-full before:top-1/2 before:-translate-y-1/2",
                     "before:border-4 before:border-transparent before:border-r-gray-900/95"
                   )}>
-                    {item.label}
+                    {t.has(item.id as any) ? t(item.id as any) : item.label}
                   </div>
                 )}
 

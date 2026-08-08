@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, MessageCircle, Send, Search, Phone, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TypingIndicator } from "@/components/chat/typing-indicator";
+import { useTranslations } from "next-intl";
 
 interface ConversationSummary {
   id: string;
@@ -35,6 +36,7 @@ export default function MensagensPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedIdRef = useRef<string | null>(null);
   const lastTypingPingRef = useRef(0);
+  const t = useTranslations("messages");
 
   const loadConversations = useCallback(async () => {
     try {
@@ -176,8 +178,8 @@ export default function MensagensPage() {
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       {/* Page header */}
       <div className="mb-4 flex-shrink-0">
-        <h1 className="text-2xl font-bold">Mensagens</h1>
-        <p className="text-sm text-muted-foreground">Converse diretamente com seus clientes.</p>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <div className="flex-1 grid md:grid-cols-[320px_1fr] gap-0 rounded-xl border border-border overflow-hidden min-h-0">
@@ -185,13 +187,13 @@ export default function MensagensPage() {
         <div className="flex flex-col border-r border-border bg-card min-h-0">
           {/* Sidebar header */}
           <div className="px-4 py-3 border-b border-border flex-shrink-0">
-            <p className="font-semibold text-sm">Conversas</p>
+            <p className="font-semibold text-sm">{t("conversations")}</p>
             {/* Search */}
             <div className="relative mt-2">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input
                 className="w-full rounded-lg bg-background-alt/60 border border-border pl-8 pr-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-                placeholder="Buscar conversa..."
+                placeholder={t("searchConversation")}
               />
             </div>
           </div>
@@ -205,7 +207,7 @@ export default function MensagensPage() {
             ) : conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-sm text-muted-foreground p-6 gap-2">
                 <MessageCircle className="h-9 w-9 opacity-30" />
-                <span>Nenhuma conversa ainda.</span>
+                <span>{t("noConversations")}</span>
               </div>
             ) : (
               <div className="p-2 space-y-0.5">
@@ -258,8 +260,8 @@ export default function MensagensPage() {
               <div className="h-16 w-16 rounded-full bg-background-alt flex items-center justify-center">
                 <MessageCircle className="h-8 w-8 opacity-40" />
               </div>
-              <p className="text-sm font-medium">Selecione uma conversa</p>
-              <p className="text-xs opacity-60">Escolha um cliente na lista ao lado.</p>
+              <p className="text-sm font-medium">{t("selectConversation")}</p>
+              <p className="text-xs opacity-60">{t("selectConversationHint")}</p>
             </div>
           ) : (
             <>
@@ -353,7 +355,7 @@ export default function MensagensPage() {
                       handleSend();
                     }
                   }}
-                  placeholder="Digite uma mensagem..."
+                  placeholder={t("typeMessage")}
                   disabled={sending}
                   className="flex-1 rounded-full bg-background-alt/60 border-border/60 focus-visible:ring-primary/30"
                 />
