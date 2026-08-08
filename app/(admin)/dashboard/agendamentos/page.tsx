@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Calendar, Clock, User, Phone, Mail, Filter, Search, Sparkles, CheckCircle, XCircle, AlertCircle, Plus, Edit2, Save, X as XIcon, Check, Briefcase, UserCheck } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -892,14 +894,15 @@ export default function AgendamentosPage() {
                 Gerencie todos os agendamentos do salão
               </p>
             </div>
-            <GradientButton
-              variant="primary"
-              onClick={handleOpenCreate}
-              className="w-full sm:w-auto px-4 py-2 gap-2 min-h-[44px]"
-            >
-              <Plus className="h-5 w-5" />
-              Novo Agendamento
-            </GradientButton>
+            <Link href="/dashboard/agendamentos/novo">
+              <GradientButton
+                variant="primary"
+                className="w-full sm:w-auto px-4 py-2 gap-2 min-h-[44px]"
+              >
+                <Plus className="h-5 w-5" />
+                Novo Agendamento
+              </GradientButton>
+            </Link>
           </div>
 
           {/* Filtros */}
@@ -1223,8 +1226,8 @@ export default function AgendamentosPage() {
         </main>
       </GridBackground>
 
-      {/* Modal de Criar Agendamento */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+      {/* Modal de Criar — substituído por /agendamentos/novo */}
+      <Dialog open={false} onOpenChange={setShowCreateModal}>
         <DialogContent className="glass-card w-[95vw] max-w-3xl max-h-[92vh] overflow-y-auto p-0">
           {/* Header com gradiente */}
           <div className="relative px-6 pt-6 pb-5 border-b border-primary/15 bg-gradient-to-r from-primary/5 via-transparent to-transparent">
