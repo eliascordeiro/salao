@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,29 +35,23 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const STATUS_OPTIONS = [
-  { value: "ALL", label: "Todos" },
-  { value: "OPEN", label: "Abertos", color: "text-red-500" },
-  { value: "IN_PROGRESS", label: "Em Andamento", color: "text-yellow-500" },
-  { value: "RESOLVED", label: "Resolvidos", color: "text-green-500" },
-  { value: "CLOSED", label: "Fechados", color: "text-gray-500" },
-];
+const STATUS_VALUES = ["ALL", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"] as const;
+const STATUS_COLORS: Record<string, string> = {
+  OPEN: "text-red-500",
+  IN_PROGRESS: "text-yellow-500",
+  RESOLVED: "text-green-500",
+  CLOSED: "text-gray-500",
+};
 
-const CATEGORY_OPTIONS = [
-  { value: "ALL", label: "Todas" },
-  { value: "TECNICO", label: "Suporte Técnico" },
-  { value: "FATURAMENTO", label: "Faturamento" },
-  { value: "DUVIDA", label: "Dúvida" },
-  { value: "SUGESTAO", label: "Sugestão" },
-  { value: "RECLAMACAO", label: "Reclamação" },
-];
+const CATEGORY_VALUES = ["ALL", "TECNICO", "FATURAMENTO", "DUVIDA", "SUGESTAO", "RECLAMACAO"] as const;
 
-const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Baixa", color: "bg-blue-500" },
-  { value: "MEDIUM", label: "Média", color: "bg-yellow-500" },
-  { value: "HIGH", label: "Alta", color: "bg-orange-500" },
-  { value: "URGENT", label: "Urgente", color: "bg-red-500" },
-];
+const PRIORITY_VALUES = ["LOW", "MEDIUM", "HIGH", "URGENT"] as const;
+const PRIORITY_COLORS: Record<string, string> = {
+  LOW: "bg-blue-500",
+  MEDIUM: "bg-yellow-500",
+  HIGH: "bg-orange-500",
+  URGENT: "bg-red-500",
+};
 
 interface Ticket {
   id: string;
@@ -84,6 +79,8 @@ interface Ticket {
 }
 
 export default function SuportePage() {
+  const t = useTranslations("support");
+  const tCommon = useTranslations("common");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
@@ -204,6 +201,39 @@ export default function SuportePage() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      ALL: tCommon("all"),
+      OPEN: t("statusOpen"),
+      IN_PROGRESS: t("statusInProgress"),
+      RESOLVED: t("statusResolved"),
+      CLOSED: t("statusClosed"),
+    };
+    return map[status] || status;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const map: Record<string, string> = {
+      ALL: tCommon("all"),
+      TECNICO: t("categoryTechnical"),
+      FATURAMENTO: t("categoryBilling"),
+      DUVIDA: t("categoryQuestion"),
+      SUGESTAO: t("categorySuggestion"),
+      RECLAMACAO: t("categoryComplaint"),
+    };
+    return map[category] || category;
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    const map: Record<string, string> = {
+      LOW: t("priorityLow"),
+      MEDIUM: t("priorityMedium"),
+      HIGH: t("priorityHigh"),
+      URGENT: t("priorityUrgent"),
+    };
+    return map[priority] || priority;
+  };
+
   const stats = {
     total: tickets.length,
     open: tickets.filter((t) => t.status === "OPEN").length,
@@ -214,7 +244,7 @@ export default function SuportePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Carregando tickets...</p>
+        <p>{t("loadingTickets")}</p>
       </div>
     );
   }
@@ -223,9 +253,9 @@ export default function SuportePage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Central de Suporte</h1>
+        <h1 className="text-3xl font-bold">{t("adminTitle")}</h1>
         <p className="text-muted-foreground">
-          Gerencie tickets e atenda seus clientes
+          {t("adminSubtitle")}
         </p>
       </div>
 
@@ -235,7 +265,7 @@ export default function SuportePage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-sm text-muted-foreground">{tCommon("total")}</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <Ticket className="w-8 h-8 text-muted-foreground" />
@@ -247,7 +277,7 @@ export default function SuportePage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Abertos</p>
+                <p className="text-sm text-muted-foreground">{t("statusOpen")}</p>
                 <p className="text-2xl font-bold text-red-500">{stats.open}</p>
               </div>
               <AlertCircle className="w-8 h-8 text-red-500" />
@@ -259,7 +289,7 @@ export default function SuportePage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Em Andamento</p>
+                <p className="text-sm text-muted-foreground">{t("statusInProgress")}</p>
                 <p className="text-2xl font-bold text-yellow-500">
                   {stats.inProgress}
                 </p>
@@ -273,7 +303,7 @@ export default function SuportePage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Resolvidos</p>
+                <p className="text-sm text-muted-foreground">{t("statusResolved")}</p>
                 <p className="text-2xl font-bold text-green-500">
                   {stats.resolved}
                 </p>
@@ -289,11 +319,11 @@ export default function SuportePage() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label>Buscar</Label>
+              <Label>{tCommon("search")}</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Número, assunto, nome..."
+                  placeholder={t("searchPlaceholder")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -302,15 +332,15 @@ export default function SuportePage() {
             </div>
 
             <div>
-              <Label>Status</Label>
+              <Label>{tCommon("status")}</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                  {STATUS_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {getStatusLabel(value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -318,15 +348,15 @@ export default function SuportePage() {
             </div>
 
             <div>
-              <Label>Categoria</Label>
+              <Label>{t("category")}</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                  {CATEGORY_VALUES.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {getCategoryLabel(value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -339,13 +369,13 @@ export default function SuportePage() {
       {/* Tickets List */}
       <Card>
         <CardHeader>
-          <CardTitle>Tickets ({filteredTickets.length})</CardTitle>
+          <CardTitle>{t("ticketsCount", { count: filteredTickets.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredTickets.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Ticket className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhum ticket encontrado</p>
+              <p>{t("noTicketsFound")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -365,27 +395,17 @@ export default function SuportePage() {
                         <span className="font-semibold">{ticket.subject}</span>
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
-                            PRIORITY_OPTIONS.find(
-                              (p) => p.value === ticket.priority
-                            )?.color
+                            PRIORITY_COLORS[ticket.priority]
                           } text-white`}
                         >
-                          {
-                            PRIORITY_OPTIONS.find(
-                              (p) => p.value === ticket.priority
-                            )?.label
-                          }
+                          {getPriorityLabel(ticket.priority)}
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground flex items-center gap-4">
                         <span>{ticket.name}</span>
                         <span>{ticket.email}</span>
                         <span>
-                          {
-                            CATEGORY_OPTIONS.find(
-                              (c) => c.value === ticket.category
-                            )?.label
-                          }
+                          {getCategoryLabel(ticket.category)}
                         </span>
                         <span>
                           {format(
@@ -404,7 +424,7 @@ export default function SuportePage() {
                       {ticket.messages?.length || 0}
                     </div>
                     <Button size="sm" variant="ghost">
-                      Ver Detalhes
+                      {t("viewDetails")}
                     </Button>
                   </div>
                 </div>
@@ -434,7 +454,7 @@ export default function SuportePage() {
               {/* Status & Priority */}
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <Label>Status</Label>
+                  <Label>{tCommon("status")}</Label>
                   <Select
                     value={selectedTicket.status}
                     onValueChange={(value) =>
@@ -445,10 +465,10 @@ export default function SuportePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUS_OPTIONS.filter((s) => s.value !== "ALL").map(
-                        (opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                      {STATUS_VALUES.filter((s) => s !== "ALL").map(
+                        (value) => (
+                          <SelectItem key={value} value={value}>
+                            {getStatusLabel(value)}
                           </SelectItem>
                         )
                       )}
@@ -457,15 +477,15 @@ export default function SuportePage() {
                 </div>
 
                 <div className="flex-1">
-                  <Label>Prioridade</Label>
+                  <Label>{t("priority")}</Label>
                   <Select value={selectedTicket.priority} disabled>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {PRIORITY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                      {PRIORITY_VALUES.map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {getPriorityLabel(value)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -475,7 +495,7 @@ export default function SuportePage() {
 
               {/* Messages */}
               <div>
-                <Label className="mb-4 block">Conversação</Label>
+                <Label className="mb-4 block">{t("conversationLabel")}</Label>
                 <div className="space-y-4 mb-4 max-h-96 overflow-y-auto p-4 border rounded-lg bg-muted/20">
                   {selectedTicket.messages?.map((msg) => (
                     <div
@@ -506,7 +526,7 @@ export default function SuportePage() {
                 {/* Reply */}
                 <div className="space-y-2">
                   <Textarea
-                    placeholder="Digite sua resposta..."
+                    placeholder={t("replyPlaceholder")}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     rows={4}
@@ -517,11 +537,11 @@ export default function SuportePage() {
                     className="w-full"
                   >
                     {sending ? (
-                      "Enviando..."
+                      t("sendingReply")
                     ) : (
                       <>
                         <Send className="w-4 h-4 mr-2" />
-                        Enviar Resposta
+                        {t("sendReply")}
                       </>
                     )}
                   </Button>
