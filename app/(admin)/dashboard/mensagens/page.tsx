@@ -237,7 +237,7 @@ export default function MensagensPage() {
                       </div>
                       <div className="flex items-center justify-between gap-1 mt-0.5">
                         <p className={cn("text-xs truncate", c.unreadCount > 0 ? "text-foreground" : "text-muted-foreground")}>
-                          {c.lastMessagePreview || "Sem mensagens"}
+                          {c.lastMessagePreview || t("noMessagesPreview")}
                         </p>
                         {c.unreadCount > 0 && (
                           <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-4.5 min-w-[18px] flex items-center justify-center px-1 flex-shrink-0">
@@ -298,7 +298,7 @@ export default function MensagensPage() {
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
-                    Nenhuma mensagem ainda. Diga olá!
+                    {t("noMessagesYet")}
                   </div>
                 ) : (
                   <>

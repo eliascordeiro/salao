@@ -426,7 +426,9 @@
     "selectConversationHint": "Choisissez un client dans la liste.",
     "typeMessage": "Tapez un message...",
     "existing": "existant",
-    "online": "En ligne • Toujours disponible"
+    "online": "En ligne • Toujours disponible",
+    "noMessagesPreview": "Aucun message",
+    "noMessagesYet": "Aucun message pour l'instant. Dites bonjour !"
   },
   "support": {
     "title": "Support",

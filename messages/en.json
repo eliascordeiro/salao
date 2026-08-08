@@ -426,7 +426,9 @@
     "selectConversationHint": "Choose a client from the list.",
     "typeMessage": "Type a message...",
     "existing": "existing",
-    "online": "Online • Always available"
+    "online": "Online • Always available",
+    "noMessagesPreview": "No messages",
+    "noMessagesYet": "No messages yet. Say hi!"
   },
   "support": {
     "title": "Support",

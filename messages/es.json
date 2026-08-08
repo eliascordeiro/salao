@@ -426,7 +426,9 @@
     "selectConversationHint": "Elige un cliente de la lista.",
     "typeMessage": "Escribe un mensaje...",
     "existing": "existente",
-    "online": "En línea • Siempre disponible"
+    "online": "En línea • Siempre disponible",
+    "noMessagesPreview": "Sin mensajes",
+    "noMessagesYet": "Aún no hay mensajes. ¡Saluda!"
   },
   "support": {
     "title": "Soporte",
