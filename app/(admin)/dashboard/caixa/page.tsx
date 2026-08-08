@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { format, addDays, subDays, startOfDay, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -114,6 +115,8 @@ function parseCurrencyInput(formatted: string): number {
 export default function CaixaPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("cashier");
+  const tCommon = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
@@ -323,19 +326,19 @@ export default function CaixaPage() {
         <main className="container mx-auto px-4 py-6 md:py-8">
           <div className="space-y-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Frente de Caixa</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">{t("pageTitle")}</h1>
               <p className="text-muted-foreground mt-1">
-                Gerencie o fechamento de contas dos clientes
+                {t("pageSubtitle")}
               </p>
             </div>
             <GlassCard className="p-8 text-center">
               <div className="text-red-500 mb-4">
                 <Receipt className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-semibold">Erro ao carregar dados</p>
+                <p className="font-semibold">{t("loadErrorTitle")}</p>
                 <p className="text-sm text-muted-foreground mt-2">{error}</p>
               </div>
               <Button onClick={() => loadAllData(selectedDate)} variant="outline">
-                Tentar Novamente
+                {t("tryAgain")}
               </Button>
             </GlassCard>
           </div>
@@ -352,9 +355,9 @@ export default function CaixaPage() {
           {/* Header com Controles */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="w-full sm:w-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold">Frente de Caixa</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("pageTitle")}</h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Gerencie o fechamento de contas dos clientes
+            {t("pageSubtitle")}
           </p>
         </div>
         
@@ -364,10 +367,10 @@ export default function CaixaPage() {
           variant="outline" 
           size="sm" 
           className="w-full sm:w-auto"
-          title="Atualizar dados"
+          title={t("refresh")}
         >
           <RefreshCw className="h-4 w-4 sm:mr-2" />
-          <span className="hidden xs:inline">Atualizar</span>
+          <span className="hidden xs:inline">{t("refresh")}</span>
         </Button>
       </div>
 
@@ -404,7 +407,7 @@ export default function CaixaPage() {
               className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
             >
               <ChevronLeft className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Anterior</span>
+              <span className="hidden sm:inline">{t("previous")}</span>
             </Button>
           </div>
 
@@ -417,7 +420,7 @@ export default function CaixaPage() {
               className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
               disabled={isToday(selectedDate)}
             >
-              <span className="hidden sm:inline">Próximo</span>
+              <span className="hidden sm:inline">{t("next")}</span>
               <ChevronRight className="h-4 w-4 sm:ml-1" />
             </Button>
 
@@ -430,7 +433,7 @@ export default function CaixaPage() {
                 className="flex-1 sm:flex-initial flex-shrink-0 min-h-[44px]"
               >
                 <Calendar className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline">Hoje</span>
+                <span className="hidden sm:inline">{t("today")}</span>
               </Button>
             )}
           </div>
@@ -449,7 +452,7 @@ export default function CaixaPage() {
         >
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
-            Pendentes
+            {t("tabPending")}
             {pendingData && pendingData.totalClients > 0 && (
               <Badge variant="default" className="ml-1">
                 {pendingData.totalClients}
@@ -470,7 +473,7 @@ export default function CaixaPage() {
         >
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
-            Histórico
+            {t("tabHistory")}
             {historyData && historyData.totalClients > 0 && (
               <Badge variant="outline" className="ml-1">
                 {historyData.totalClients}
@@ -491,7 +494,7 @@ export default function CaixaPage() {
               <Calendar className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Data</p>
+              <p className="text-sm text-muted-foreground">{t("statDate")}</p>
               <p className="text-lg font-semibold">
                 {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
               </p>
@@ -506,7 +509,7 @@ export default function CaixaPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
-                {activeTab === "pending" ? "Clientes Pendentes" : "Sessões Pagas"}
+                {activeTab === "pending" ? t("statPendingClients") : t("statPaidSessions")}
               </p>
               <p className="text-lg font-semibold">
                 {(activeTab === "pending" ? pendingData?.totalClients : historyData?.totalSessions) || 0}
@@ -521,7 +524,7 @@ export default function CaixaPage() {
               <Receipt className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Serviços Prestados</p>
+              <p className="text-sm text-muted-foreground">{t("statServicesRendered")}</p>
               <p className="text-lg font-semibold">
                 {(activeTab === "pending" ? pendingData?.totalBookings : historyData?.totalBookings) || 0}
               </p>
@@ -536,7 +539,7 @@ export default function CaixaPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
-                {activeTab === "pending" ? "A Receber" : "Recebido"}
+                {activeTab === "pending" ? t("statToReceive") : t("statReceived")}
               </p>
               <p className="text-lg font-semibold text-green-500">
                 R$ {((activeTab === "pending" 
@@ -558,7 +561,7 @@ export default function CaixaPage() {
               <CheckCircle2 className="h-5 w-5 text-green-500" />
             )}
             <h2 className="text-lg sm:text-xl font-semibold">
-              {activeTab === "pending" ? "Aguardando Pagamento" : "Pagamentos Realizados"}
+              {activeTab === "pending" ? t("awaitingPayment") : t("completedPayments")}
             </h2>
           </div>
 
@@ -567,7 +570,7 @@ export default function CaixaPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar por nome..."
+              placeholder={t("searchByName")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -589,12 +592,12 @@ export default function CaixaPage() {
               <div className="text-center py-12">
                 <Receipt className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
                 <p className="text-lg font-medium text-foreground mb-2">
-                  {searchTerm ? "Nenhum cliente encontrado" : "Nenhum pagamento pendente"}
+                  {searchTerm ? t("noClientFound") : t("noPendingPayment")}
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
                   {searchTerm 
-                    ? "Tente buscar por outro nome ou email."
-                    : "Os agendamentos completados aparecerão aqui aguardando pagamento."
+                    ? t("tryOtherSearch")
+                    : t("completedBookingsHint")
                   }
                 </p>
               </div>
@@ -648,7 +651,7 @@ export default function CaixaPage() {
 
                     {/* Total */}
                     <div className="flex items-center justify-between pt-3 border-t border-primary/10">
-                      <span className="font-semibold">Total</span>
+                      <span className="font-semibold">{tCommon("total")}</span>
                       <span className="text-lg font-bold text-primary">
                         R$ {clientData.subtotal.toFixed(2)}
                       </span>
@@ -659,8 +662,8 @@ export default function CaixaPage() {
                   <div className="flex flex-row lg:flex-col gap-2 w-full lg:w-auto">
                     <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 whitespace-nowrap flex-shrink-0">
                       <AlertCircle className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Aguardando Pagamento</span>
-                      <span className="sm:hidden">Aguardando</span>
+                      <span className="hidden sm:inline">{t("awaitingPayment")}</span>
+                      <span className="sm:hidden">{t("awaitingPaymentShort")}</span>
                     </Badge>
                     <Button
                       onClick={() => handleOpenCheckout(clientData)}
@@ -668,7 +671,7 @@ export default function CaixaPage() {
                       className="flex-1 lg:w-full min-h-[44px]"
                     >
                       <DollarSign className="h-4 w-4 mr-1" />
-                      Receber
+                      {t("receive")}
                     </Button>
                   </div>
                 </div>
@@ -690,12 +693,12 @@ export default function CaixaPage() {
               <div className="text-center py-12">
                 <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
                 <p className="text-lg font-medium text-foreground mb-2">
-                  {searchTerm ? "Nenhum cliente encontrado" : "Nenhum pagamento realizado hoje"}
+                  {searchTerm ? t("noClientFound") : t("noPaymentToday")}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {searchTerm 
-                    ? "Tente buscar por outro nome ou email."
-                    : "Os pagamentos finalizados hoje aparecerão neste histórico."
+                    ? t("tryOtherSearch")
+                    : t("finalizedPaymentsHint")
                   }
                 </p>
               </div>
@@ -749,7 +752,7 @@ export default function CaixaPage() {
 
                       {/* Subtotal */}
                       <div className="flex items-center justify-between pt-3 border-t border-primary/10">
-                        <span className="font-semibold">Subtotal</span>
+                        <span className="font-semibold">{t("subtotal")}</span>
                         <span className="text-lg font-bold">
                           R$ {clientData.subtotal.toFixed(2)}
                         </span>
@@ -758,14 +761,14 @@ export default function CaixaPage() {
                       {/* Desconto */}
                       {clientData.discount > 0 && (
                         <div className="flex items-center justify-between text-sm text-muted-foreground">
-                          <span>Desconto</span>
+                          <span>{t("discount")}</span>
                           <span>- R$ {clientData.discount.toFixed(2)}</span>
                         </div>
                       )}
 
                       {/* Total Pago */}
                       <div className="flex items-center justify-between pt-2 border-t border-green-500/20">
-                        <span className="font-semibold">Total Pago</span>
+                        <span className="font-semibold">{t("totalPaid")}</span>
                         <span className="text-xl font-bold text-green-500">
                           R$ {clientData.total.toFixed(2)}
                         </span>
@@ -776,14 +779,14 @@ export default function CaixaPage() {
                     <div className="flex flex-row md:flex-col gap-2 md:items-end w-full md:w-auto">
                       <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20 whitespace-nowrap flex-shrink-0">
                         <CheckCircle2 className="h-4 w-4 mr-1" />
-                        Pago
+                        {t("paidLabel")}
                       </Badge>
                       {clientData.paymentMethod && (
                         <div className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
-                          {clientData.paymentMethod === "CASH" && "💵 Dinheiro"}
-                          {clientData.paymentMethod === "CARD" && "💳 Cartão"}
-                          {clientData.paymentMethod === "PIX" && "📱 PIX"}
-                          {clientData.paymentMethod === "MULTIPLE" && "💰 Múltiplos"}
+                          {clientData.paymentMethod === "CASH" && `💵 ${t("cash")}`}
+                          {clientData.paymentMethod === "CARD" && `💳 ${t("cardGeneric")}`}
+                          {clientData.paymentMethod === "PIX" && `📱 ${t("pix")}`}
+                          {clientData.paymentMethod === "MULTIPLE" && `💰 ${t("multiple")}`}
                         </div>
                       )}
                       {clientData.paidAt && (
@@ -805,9 +808,9 @@ export default function CaixaPage() {
       <Dialog open={showCheckoutModal} onOpenChange={setShowCheckoutModal}>
         <DialogContent className="w-[95vw] sm:w-[90vw] md:max-w-[500px] max-h-[92vh] sm:max-h-[90vh] flex flex-col p-4 md:p-6">
           <DialogHeader className="pb-3 sm:pb-4">
-            <DialogTitle className="text-xl sm:text-2xl">Fechar Conta</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl">{t("closeAccount")}</DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
-              Finalize o pagamento do cliente <span className="font-semibold">{selectedClient?.client.name}</span>
+              {t("finalizePaymentFor")} <span className="font-semibold">{selectedClient?.client.name}</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -816,7 +819,7 @@ export default function CaixaPage() {
               {/* Resumo de Serviços */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <Label className="text-sm sm:text-base font-semibold">Serviços Prestados</Label>
+                  <Label className="text-sm sm:text-base font-semibold">{t("statServicesRendered")}</Label>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -830,7 +833,7 @@ export default function CaixaPage() {
                       className="flex-1 md:flex-initial min-h-[40px]"
                     >
                       <Check className="h-4 w-4 md:mr-1" />
-                      <span className="hidden md:inline">Todos</span>
+                      <span className="hidden md:inline">{t("selectAll")}</span>
                     </Button>
                     <Button
                       type="button"
@@ -840,7 +843,7 @@ export default function CaixaPage() {
                       className="flex-1 md:flex-initial min-h-[40px]"
                     >
                       <X className="h-4 w-4 md:mr-1" />
-                      <span className="hidden md:inline">Nenhum</span>
+                      <span className="hidden md:inline">{t("selectNone")}</span>
                     </Button>
                   </div>
                 </div>
@@ -879,14 +882,14 @@ export default function CaixaPage() {
                   ))}
                 </div>
                 <div className="text-xs sm:text-sm text-muted-foreground text-center py-1 bg-muted/30 rounded">
-                  <span className="font-semibold">{selectedBookings.size}</span> de <span className="font-semibold">{selectedClient.bookings.length}</span>{" "}
-                  serviço(s) selecionado(s)
+                  <span className="font-semibold">{selectedBookings.size}</span> {t("ofLabel")} <span className="font-semibold">{selectedClient.bookings.length}</span>{" "}
+                  {t("servicesSelectedSuffix")}
                 </div>
               </div>
 
               {/* Desconto */}
               <div className="space-y-2">
-                <Label htmlFor="discount" className="text-sm sm:text-base font-semibold">Desconto (R$)</Label>
+                <Label htmlFor="discount" className="text-sm sm:text-base font-semibold">{t("discount")} (R$)</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                     R$
@@ -909,41 +912,41 @@ export default function CaixaPage() {
                 {discount > getSelectedSubtotal() && (
                   <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    Desconto não pode ser maior que o subtotal
+                    {t("discountCannotExceedSubtotal")}
                   </p>
                 )}
               </div>
 
               {/* Método de Pagamento */}
               <div className="space-y-2">
-                <Label htmlFor="payment" className="text-sm sm:text-base font-semibold">Método de Pagamento</Label>
+                <Label htmlFor="payment" className="text-sm sm:text-base font-semibold">{t("paymentMethodLabel")}</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger id="payment" className="h-11">
-                    <SelectValue placeholder="Selecione o método..." />
+                    <SelectValue placeholder={t("selectPaymentMethod")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CASH">
                       <div className="flex items-center gap-2">
                         <Banknote className="h-4 w-4" />
-                        <span>Dinheiro</span>
+                        <span>{t("cash")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="CARD">
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
-                        <span>Cartão</span>
+                        <span>{t("cardGeneric")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="PIX">
                       <div className="flex items-center gap-2">
                         <Smartphone className="h-4 w-4" />
-                        <span>PIX</span>
+                        <span>{t("pix")}</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="MULTIPLE">
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
-                        <span>Múltiplos</span>
+                        <span>{t("multiple")}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -953,17 +956,17 @@ export default function CaixaPage() {
               {/* Totais */}
               <div className="space-y-2 pt-3 sm:pt-4 border-t-2 border-primary/20">
                 <div className="flex items-center justify-between text-sm sm:text-base">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t("subtotal")}</span>
                   <span className="font-medium">R$ {getSelectedSubtotal().toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex items-center justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Desconto</span>
+                    <span className="text-muted-foreground">{t("discount")}</span>
                     <span className="text-red-500 font-medium">- R$ {discount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between text-lg sm:text-xl font-bold pt-2 border-t-2 border-primary/20">
-                  <span>Total</span>
+                  <span>{t("totalLabel")}</span>
                   <span className="text-primary text-xl sm:text-2xl">
                     R$ {(getSelectedSubtotal() - discount).toFixed(2)}
                   </span>
@@ -979,7 +982,7 @@ export default function CaixaPage() {
                   className="flex-1 min-h-[48px] text-base order-2 sm:order-1"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Cancelar
+                  {tCommon("cancel")}
                 </Button>
                 <Button
                   onClick={handleCloseAccount}
@@ -989,12 +992,12 @@ export default function CaixaPage() {
                   {processing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processando...
+                      {t("processing")}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Confirmar
+                      {tCommon("confirm")}
                     </>
                   )}
                 </Button>
