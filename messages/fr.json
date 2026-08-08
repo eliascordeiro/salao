@@ -389,6 +389,33 @@
       "OTHER": "Autres"
     }
   },
+  "users": {
+    "title": "Gérer les Utilisateurs",
+    "subtitle": "Créez et gérez les utilisateurs de votre équipe avec des permissions personnalisées",
+    "newUser": "Nouvel Utilisateur",
+    "accessDenied": "Accès Refusé",
+    "accessDeniedDesc": "Seul le propriétaire du salon peut gérer les utilisateurs.",
+    "totalUsers": "Total Utilisateurs",
+    "activeUsers": "Utilisateurs Actifs",
+    "inactiveUsers": "Utilisateurs Inactifs",
+    "noUsersYet": "Aucun utilisateur créé pour l'instant",
+    "noUsersHint": "Cliquez sur \"Nouvel Utilisateur\" pour ajouter des membres de l'équipe",
+    "typeLabel": "Type",
+    "staffType": "Employé",
+    "customType": "Personnalisé",
+    "permissionsLabel": "Permissions",
+    "permissionsCount": "{count} permissions",
+    "createdAtLabel": "Date de Création",
+    "resend": "Renvoyer",
+    "sending": "Envoi...",
+    "resendInviteTitle": "Renvoyer l'invitation",
+    "deactivateTitle": "Désactiver",
+    "deactivateConfirm": "Êtes-vous sûr de vouloir désactiver cet utilisateur ?",
+    "resendConfirm": "Renvoyer l'invitation à {email} ?\n\nUn nouveau mot de passe temporaire sera généré et envoyé par e-mail.",
+    "resendSuccess": "✅ Invitation renvoyée avec succès à {email} !\n\nL'utilisateur recevra un e-mail avec le nouveau mot de passe temporaire.",
+    "resendError": "Erreur lors du renvoi de l'invitation",
+    "deactivateError": "Erreur lors de la désactivation de l'utilisateur"
+  },
   "messages": {
     "title": "Messages",
     "subtitle": "Chattez directement avec vos clients",

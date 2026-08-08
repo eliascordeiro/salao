@@ -389,6 +389,33 @@
       "OTHER": "Otros"
     }
   },
+  "users": {
+    "title": "Gestionar Usuarios",
+    "subtitle": "Crea y gestiona los usuarios de tu equipo con permisos personalizados",
+    "newUser": "Nuevo Usuario",
+    "accessDenied": "Acceso Denegado",
+    "accessDeniedDesc": "Solo el propietario del salón puede gestionar usuarios.",
+    "totalUsers": "Total de Usuarios",
+    "activeUsers": "Usuarios Activos",
+    "inactiveUsers": "Usuarios Inactivos",
+    "noUsersYet": "Aún no se han creado usuarios",
+    "noUsersHint": "Haz clic en \"Nuevo Usuario\" para agregar miembros del equipo",
+    "typeLabel": "Tipo",
+    "staffType": "Empleado",
+    "customType": "Personalizado",
+    "permissionsLabel": "Permisos",
+    "permissionsCount": "{count} permisos",
+    "createdAtLabel": "Fecha de Creación",
+    "resend": "Reenviar",
+    "sending": "Enviando...",
+    "resendInviteTitle": "Reenviar invitación",
+    "deactivateTitle": "Desactivar",
+    "deactivateConfirm": "¿Estás seguro de que deseas desactivar este usuario?",
+    "resendConfirm": "¿Reenviar invitación a {email}?\n\nSe generará y enviará por correo una nueva contraseña temporal.",
+    "resendSuccess": "✅ ¡Invitación reenviada con éxito a {email}!\n\nEl usuario recibirá un correo con la nueva contraseña temporal.",
+    "resendError": "Error al reenviar la invitación",
+    "deactivateError": "Error al desactivar el usuario"
+  },
   "messages": {
     "title": "Mensajes",
     "subtitle": "Chatea directamente con tus clientes",

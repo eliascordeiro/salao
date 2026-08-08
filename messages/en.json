@@ -389,6 +389,33 @@
       "OTHER": "Other"
     }
   },
+  "users": {
+    "title": "Manage Users",
+    "subtitle": "Create and manage your team's users with custom permissions",
+    "newUser": "New User",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "Only the salon owner can manage users.",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "inactiveUsers": "Inactive Users",
+    "noUsersYet": "No users created yet",
+    "noUsersHint": "Click \"New User\" to add team members",
+    "typeLabel": "Type",
+    "staffType": "Staff",
+    "customType": "Custom",
+    "permissionsLabel": "Permissions",
+    "permissionsCount": "{count} permissions",
+    "createdAtLabel": "Created At",
+    "resend": "Resend",
+    "sending": "Sending...",
+    "resendInviteTitle": "Resend invite",
+    "deactivateTitle": "Deactivate",
+    "deactivateConfirm": "Are you sure you want to deactivate this user?",
+    "resendConfirm": "Resend invite to {email}?\n\nA new temporary password will be generated and sent by email.",
+    "resendSuccess": "✅ Invite successfully resent to {email}!\n\nThe user will receive an email with the new temporary password.",
+    "resendError": "Error resending invite",
+    "deactivateError": "Error deactivating user"
+  },
   "messages": {
     "title": "Messages",
     "subtitle": "Chat directly with your clients",

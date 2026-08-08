@@ -389,6 +389,33 @@
       "OTHER": "Outros"
     }
   },
+  "users": {
+    "title": "Gerenciar Usuários",
+    "subtitle": "Crie e gerencie usuários da sua equipe com permissões personalizadas",
+    "newUser": "Novo Usuário",
+    "accessDenied": "Acesso Negado",
+    "accessDeniedDesc": "Apenas o proprietário do salão pode gerenciar usuários.",
+    "totalUsers": "Total de Usuários",
+    "activeUsers": "Usuários Ativos",
+    "inactiveUsers": "Usuários Inativos",
+    "noUsersYet": "Nenhum usuário criado ainda",
+    "noUsersHint": "Clique em \"Novo Usuário\" para adicionar membros da equipe",
+    "typeLabel": "Tipo",
+    "staffType": "Funcionário",
+    "customType": "Personalizado",
+    "permissionsLabel": "Permissões",
+    "permissionsCount": "{count} permissões",
+    "createdAtLabel": "Data de Criação",
+    "resend": "Reenviar",
+    "sending": "Enviando...",
+    "resendInviteTitle": "Reenviar convite",
+    "deactivateTitle": "Desativar",
+    "deactivateConfirm": "Tem certeza que deseja desativar este usuário?",
+    "resendConfirm": "Reenviar convite para {email}?\n\nUma nova senha temporária será gerada e enviada por email.",
+    "resendSuccess": "✅ Convite reenviado com sucesso para {email}!\n\nO usuário receberá um email com a nova senha temporária.",
+    "resendError": "Erro ao reenviar convite",
+    "deactivateError": "Erro ao desativar usuário"
+  },
   "messages": {
     "title": "Mensagens",
     "subtitle": "Converse diretamente com seus clientes",

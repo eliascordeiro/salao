@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UserPlus, Edit, Trash2, Mail, CheckCircle, XCircle } from "lucide-react"
@@ -22,6 +23,8 @@ interface ManagedUser {
 export default function UsuariosPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const t = useTranslations("users")
+  const tCommon = useTranslations("common")
   const [users, setUsers] = useState<ManagedUser[]>([])
   const [loading, setLoading] = useState(true)
   const [resendingInvite, setResendingInvite] = useState<string | null>(null)
@@ -65,7 +68,7 @@ export default function UsuariosPage() {
   }
 
   const handleDeactivate = async (userId: string) => {
-    if (!confirm("Tem certeza que deseja desativar este usuário?")) return
+    if (!confirm(t("deactivateConfirm"))) return
 
     try {
       const res = await fetch(`/api/users/${userId}`, {
@@ -75,16 +78,16 @@ export default function UsuariosPage() {
       if (res.ok) {
         fetchUsers() // Recarrega lista
       } else {
-        alert("Erro ao desativar usuário")
+        alert(t("deactivateError"))
       }
     } catch (error) {
       console.error("Erro:", error)
-      alert("Erro ao desativar usuário")
+      alert(t("deactivateError"))
     }
   }
 
   const handleResendInvite = async (userId: string, userEmail: string) => {
-    if (!confirm(`Reenviar convite para ${userEmail}?\n\nUma nova senha temporária será gerada e enviada por email.`)) {
+    if (!confirm(t("resendConfirm", { email: userEmail }))) {
       return
     }
 
@@ -98,13 +101,13 @@ export default function UsuariosPage() {
       const data = await res.json()
 
       if (res.ok) {
-        alert(`✅ Convite reenviado com sucesso para ${userEmail}!\n\nO usuário receberá um email com a nova senha temporária.`)
+        alert(t("resendSuccess", { email: userEmail }))
       } else {
-        alert(data.error || "Erro ao reenviar convite")
+        alert(data.error || t("resendError"))
       }
     } catch (error) {
       console.error("Erro:", error)
-      alert("Erro ao reenviar convite")
+      alert(t("resendError"))
     } finally {
       setResendingInvite(null)
     }
@@ -123,9 +126,9 @@ export default function UsuariosPage() {
       <div className="flex items-center justify-center min-h-screen">
         <Card className="p-8 text-center">
           <XCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Acesso Negado</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("accessDenied")}</h2>
           <p className="text-muted-foreground">
-            Apenas o proprietário do salão pode gerenciar usuários.
+            {t("accessDeniedDesc")}
           </p>
         </Card>
       </div>
@@ -147,9 +150,9 @@ export default function UsuariosPage() {
           {/* Título da Página */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Gerenciar Usuários</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{t("title")}</h1>
               <p className="text-sm sm:text-base text-muted-foreground mt-1">
-                Crie e gerencie usuários da sua equipe com permissões personalizadas
+                {t("subtitle")}
               </p>
             </div>
 
@@ -159,7 +162,7 @@ export default function UsuariosPage() {
               className="gap-2 w-full sm:w-auto min-h-[44px]"
             >
               <UserPlus className="h-4 w-4" />
-              <span className="text-sm sm:text-base">Novo Usuário</span>
+              <span className="text-sm sm:text-base">{t("newUser")}</span>
             </Button>
           </div>
 
@@ -168,7 +171,7 @@ export default function UsuariosPage() {
         <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Total de Usuários</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t("totalUsers")}</p>
               <p className="text-2xl sm:text-3xl font-bold mt-1">{users.length}</p>
             </div>
             <div className="p-2 sm:p-3 bg-primary/10 rounded-full flex-shrink-0">
@@ -180,7 +183,7 @@ export default function UsuariosPage() {
         <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Usuários Ativos</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t("activeUsers")}</p>
               <p className="text-2xl sm:text-3xl font-bold mt-1">
                 {users.filter((u) => u.active).length}
               </p>
@@ -194,7 +197,7 @@ export default function UsuariosPage() {
         <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Usuários Inativos</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t("inactiveUsers")}</p>
               <p className="text-2xl sm:text-3xl font-bold mt-1">
                 {users.filter((u) => !u.active).length}
               </p>
@@ -211,9 +214,9 @@ export default function UsuariosPage() {
         {users.length === 0 ? (
           <div className="text-center py-12 px-4 text-muted-foreground">
             <UserPlus className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">Nenhum usuário criado ainda</p>
+            <p className="text-lg font-medium mb-2">{t("noUsersYet")}</p>
             <p className="text-sm">
-              Clique em &quot;Novo Usuário&quot; para adicionar membros da equipe
+              {t("noUsersHint")}
             </p>
           </div>
         ) : (
@@ -231,12 +234,12 @@ export default function UsuariosPage() {
                     {user.active ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500 flex-shrink-0">
                         <CheckCircle className="h-3 w-3" />
-                        Ativo
+                        {tCommon("active")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 flex-shrink-0">
                         <XCircle className="h-3 w-3" />
-                        Inativo
+                        {tCommon("inactive")}
                       </span>
                     )}
                   </div>
@@ -244,17 +247,17 @@ export default function UsuariosPage() {
                   {/* Info do Card */}
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
-                      <p className="text-xs text-muted-foreground">Tipo</p>
+                      <p className="text-xs text-muted-foreground">{t("typeLabel")}</p>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary mt-1">
-                        {user.roleType === "STAFF" ? "Funcionário" : "Personalizado"}
+                        {user.roleType === "STAFF" ? t("staffType") : t("customType")}
                       </span>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Permissões</p>
-                      <p className="font-medium mt-1">{user.permissions.length} permissões</p>
+                      <p className="text-xs text-muted-foreground">{t("permissionsLabel")}</p>
+                      <p className="font-medium mt-1">{t("permissionsCount", { count: user.permissions.length })}</p>
                     </div>
                     <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Data de Criação</p>
+                      <p className="text-xs text-muted-foreground">{t("createdAtLabel")}</p>
                       <p className="font-medium mt-1">
                         {new Date(user.createdAt).toLocaleDateString("pt-BR")}
                       </p>
@@ -273,12 +276,12 @@ export default function UsuariosPage() {
                       {resendingInvite === user.id ? (
                         <>
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                          <span className="text-xs">Enviando...</span>
+                          <span className="text-xs">{t("sending")}</span>
                         </>
                       ) : (
                         <>
                           <Mail className="h-4 w-4" />
-                          <span className="text-xs">Reenviar</span>
+                          <span className="text-xs">{t("resend")}</span>
                         </>
                       )}
                     </Button>
@@ -290,7 +293,7 @@ export default function UsuariosPage() {
                       className="flex-1 gap-2 min-h-[40px]"
                     >
                       <Edit className="h-4 w-4" />
-                      <span className="text-xs">Editar</span>
+                      <span className="text-xs">{tCommon("edit")}</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -311,13 +314,13 @@ export default function UsuariosPage() {
               <table className="w-full">
                 <thead className="border-b">
                   <tr className="bg-muted/50">
-                    <th className="text-left p-4 font-medium text-sm">Nome</th>
-                    <th className="text-left p-4 font-medium text-sm">Email</th>
-                    <th className="text-left p-4 font-medium text-sm">Tipo</th>
-                    <th className="text-left p-4 font-medium text-sm">Permissões</th>
-                    <th className="text-left p-4 font-medium text-sm">Status</th>
-                    <th className="text-left p-4 font-medium text-sm">Data de Criação</th>
-                    <th className="text-right p-4 font-medium text-sm">Ações</th>
+                    <th className="text-left p-4 font-medium text-sm">{tCommon("name")}</th>
+                    <th className="text-left p-4 font-medium text-sm">{tCommon("email")}</th>
+                    <th className="text-left p-4 font-medium text-sm">{t("typeLabel")}</th>
+                    <th className="text-left p-4 font-medium text-sm">{t("permissionsLabel")}</th>
+                    <th className="text-left p-4 font-medium text-sm">{tCommon("status")}</th>
+                    <th className="text-left p-4 font-medium text-sm">{t("createdAtLabel")}</th>
+                    <th className="text-right p-4 font-medium text-sm">{tCommon("actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,24 +334,24 @@ export default function UsuariosPage() {
                       </td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                          {user.roleType === "STAFF" ? "Funcionário" : "Personalizado"}
+                          {user.roleType === "STAFF" ? t("staffType") : t("customType")}
                         </span>
                       </td>
                       <td className="p-4">
                         <div className="text-sm">
-                          {user.permissions.length} permissões
+                          {t("permissionsCount", { count: user.permissions.length })}
                         </div>
                       </td>
                       <td className="p-4">
                         {user.active ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
                             <CheckCircle className="h-3 w-3" />
-                            Ativo
+                            {tCommon("active")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
                             <XCircle className="h-3 w-3" />
-                            Inativo
+                            {tCommon("inactive")}
                           </span>
                         )}
                       </td>
@@ -364,7 +367,7 @@ export default function UsuariosPage() {
                             size="sm"
                             onClick={() => handleResendInvite(user.id, user.email)}
                             disabled={!user.active || resendingInvite === user.id}
-                            title="Reenviar convite"
+                            title={t("resendInviteTitle")}
                             className="h-8 w-8 p-0"
                           >
                             {resendingInvite === user.id ? (
@@ -378,7 +381,7 @@ export default function UsuariosPage() {
                             size="sm"
                             onClick={() => router.push(`/dashboard/usuarios/${user.id}`)}
                             disabled={!user.active}
-                            title="Editar"
+                            title={tCommon("edit")}
                             className="h-8 w-8 p-0"
                           >
                             <Edit className="h-4 w-4" />
@@ -388,7 +391,7 @@ export default function UsuariosPage() {
                             size="sm"
                             onClick={() => handleDeactivate(user.id)}
                             disabled={!user.active}
-                            title="Desativar"
+                            title={t("deactivateTitle")}
                             className="h-8 w-8 p-0"
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />

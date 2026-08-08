@@ -269,12 +269,12 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "git-commit-i18n-pages-6",
+			"label": "git-commit-i18n-pages-7",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"i18n: translate expenses (contas a pagar) admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
+				"git add -A && git commit -m \"i18n: translate users admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}
