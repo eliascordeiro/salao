@@ -269,12 +269,12 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "git-commit-i18n-pages-4",
+			"label": "git-commit-i18n-pages-5",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"i18n: translate cashier (POS) admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
+				"git add -A && git commit -m \"i18n: translate commissions admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}

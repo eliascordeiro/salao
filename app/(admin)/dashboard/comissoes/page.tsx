@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { DollarSign, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Calendar, User, Filter, CreditCard, Banknote, Smartphone, ArrowLeftRight, Check } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -56,13 +57,17 @@ interface Totals {
   total: number;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  PENDING: { label: "Pendente", color: "text-warning" },
-  PAID: { label: "Pago", color: "text-success" },
-  CANCELLED: { label: "Cancelado", color: "text-error" },
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "text-warning",
+  PAID: "text-success",
+  CANCELLED: "text-error",
 };
 
 export default function CommissionsPage() {
+  const t = useTranslations("commissions");
+  const tCommon = useTranslations("common");
+  const tStatus = useTranslations("status");
+  const tCashier = useTranslations("cashier");
   const [loading, setLoading] = useState(true);
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [totals, setTotals] = useState<Totals>({ pending: 0, paid: 0, total: 0 });
@@ -144,7 +149,7 @@ export default function CommissionsPage() {
   };
 
   const handleCancelCommission = async (commissionId: string) => {
-    if (!confirm("Tem certeza que deseja cancelar esta comissão?")) return;
+    if (!confirm(t("confirmCancel"))) return;
 
     try {
       const response = await fetch(`/api/commissions/${commissionId}`, {
@@ -248,10 +253,10 @@ export default function CommissionsPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-              Comissões
+              {t("title")}
             </h1>
             <p className="text-foreground-muted">
-              Gerencie e acompanhe as comissões dos profissionais
+              {t("subtitle")}
             </p>
           </div>
 
@@ -260,7 +265,7 @@ export default function CommissionsPage() {
             <GlassCard hover>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-foreground-muted">Pendentes</p>
+                  <p className="text-sm text-foreground-muted">{t("pending")}</p>
                   <Clock className="h-5 w-5 text-warning" />
                 </div>
                 <p className="text-3xl font-bold text-warning">
@@ -272,7 +277,7 @@ export default function CommissionsPage() {
             <GlassCard hover glow="success">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-foreground-muted">Pagas</p>
+                  <p className="text-sm text-foreground-muted">{t("paid")}</p>
                   <CheckCircle className="h-5 w-5 text-success" />
                 </div>
                 <p className="text-3xl font-bold text-success">
@@ -284,7 +289,7 @@ export default function CommissionsPage() {
             <GlassCard hover glow="primary">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-foreground-muted">Total</p>
+                  <p className="text-sm text-foreground-muted">{tCommon("total")}</p>
                   <DollarSign className="h-5 w-5 text-primary" />
                 </div>
                 <p className="text-3xl font-bold text-primary">
@@ -300,7 +305,7 @@ export default function CommissionsPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Filter className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-bold text-foreground">Filtros</h2>
+                  <h2 className="text-lg font-bold text-foreground">{t("filters")}</h2>
                 </div>
                 
                 {/* Checkbox "Selecionar Todos" - apenas para pendentes */}
@@ -312,7 +317,7 @@ export default function CommissionsPage() {
                       onCheckedChange={toggleSelectAll}
                     />
                     <Label htmlFor="select-all" className="text-sm cursor-pointer">
-                      Selecionar todas pendentes ({commissions.filter(c => c.status === 'PENDING').length})
+                      {t("selectAllPending", { count: commissions.filter(c => c.status === 'PENDING').length })}
                     </Label>
                   </div>
                 )}
@@ -320,27 +325,27 @@ export default function CommissionsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <Label>Status</Label>
+                  <Label>{t("statusLabel")}</Label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full mt-1 px-3 py-2 rounded-lg bg-background-alt/50 border border-primary/20 text-foreground"
                   >
-                    <option value="all">Todos</option>
-                    <option value="PENDING">Pendente</option>
-                    <option value="PAID">Pago</option>
-                    <option value="CANCELLED">Cancelado</option>
+                    <option value="all">{tCommon("all")}</option>
+                    <option value="PENDING">{tStatus("PENDING")}</option>
+                    <option value="PAID">{tStatus("PAID")}</option>
+                    <option value="CANCELLED">{tStatus("CANCELLED")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <Label>Profissional</Label>
+                  <Label>{t("professionalLabel")}</Label>
                   <select
                     value={staffFilter}
                     onChange={(e) => setStaffFilter(e.target.value)}
                     className="w-full mt-1 px-3 py-2 rounded-lg bg-background-alt/50 border border-primary/20 text-foreground"
                   >
-                    <option value="all">Todos</option>
+                    <option value="all">{tCommon("all")}</option>
                     {staffList.map((staff) => (
                       <option key={staff.id} value={staff.id}>
                         {staff.name}
@@ -350,7 +355,7 @@ export default function CommissionsPage() {
                 </div>
 
                 <div>
-                  <Label>Data Início</Label>
+                  <Label>{t("startDateLabel")}</Label>
                   <Input
                     type="date"
                     value={startDate}
@@ -359,7 +364,7 @@ export default function CommissionsPage() {
                 </div>
 
                 <div>
-                  <Label>Data Fim</Label>
+                  <Label>{t("endDateLabel")}</Label>
                   <Input
                     type="date"
                     value={endDate}
@@ -373,13 +378,13 @@ export default function CommissionsPage() {
           {/* Lista de Comissões */}
           {loading ? (
             <div className="text-center py-12">
-              <p className="text-foreground-muted">Carregando...</p>
+              <p className="text-foreground-muted">{tCommon("loading")}</p>
             </div>
           ) : commissions.length === 0 ? (
             <GlassCard>
               <div className="p-12 text-center">
                 <DollarSign className="h-12 w-12 text-foreground-muted mx-auto mb-4" />
-                <p className="text-foreground-muted">Nenhuma comissão encontrada</p>
+                <p className="text-foreground-muted">{t("noCommissionsFound")}</p>
               </div>
             </GlassCard>
           ) : (
@@ -401,7 +406,7 @@ export default function CommissionsPage() {
                               htmlFor={`commission-${commission.id}`} 
                               className="text-xs text-muted-foreground cursor-pointer"
                             >
-                              Selecionar para pagamento em lote
+                              {t("selectForBulkPayment")}
                             </Label>
                           </div>
                         </div>
@@ -423,10 +428,10 @@ export default function CommissionsPage() {
                           </div>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              STATUS_LABELS[commission.status]?.color
+                              STATUS_COLORS[commission.status]
                             } bg-current/10`}
                           >
-                            {STATUS_LABELS[commission.status]?.label}
+                            {tStatus(commission.status as "PENDING")}
                           </span>
                         </div>
 
@@ -440,14 +445,14 @@ export default function CommissionsPage() {
                         </div>
 
                         <div className="text-sm text-foreground-muted">
-                          Cliente: {commission.booking.client.name}
+                          {t("clientLabel")}: {commission.booking.client.name}
                         </div>
                       </div>
 
                       {/* Cálculo */}
                       <div className="space-y-2">
                         <div className="text-sm text-foreground-muted">
-                          Serviço: R$ {commission.servicePrice.toFixed(2)}
+                          {t("serviceLabel")}: R$ {commission.servicePrice.toFixed(2)}
                         </div>
                         <div className="text-sm text-foreground-muted">
                           {commission.commissionType === "PERCENTAGE" &&
@@ -473,7 +478,7 @@ export default function CommissionsPage() {
                               className="text-xs"
                             >
                               <CheckCircle className="h-3.5 w-3.5" />
-                              {paying === commission.id ? "Processando..." : "Marcar como Pago"}
+                              {paying === commission.id ? t("processing") : t("markAsPaid")}
                             </GradientButton>
                             <Button
                               onClick={() => handleCancelCommission(commission.id)}
@@ -481,13 +486,13 @@ export default function CommissionsPage() {
                               className="text-xs border-error text-error hover:bg-error/10"
                             >
                               <XCircle className="h-3.5 w-3.5" />
-                              Cancelar
+                              {tCommon("cancel")}
                             </Button>
                           </>
                         )}
                         {commission.status === "PAID" && commission.paidAt && (
                           <div className="text-xs text-foreground-muted">
-                            Pago em {format(new Date(commission.paidAt), "dd/MM/yyyy", { locale: ptBR })}
+                            {t("paidOn")} {format(new Date(commission.paidAt), "dd/MM/yyyy", { locale: ptBR })}
                             <br />
                             <span className="font-semibold">{commission.paymentMethod}</span>
                           </div>
@@ -513,7 +518,7 @@ export default function CommissionsPage() {
                 </div>
                 <div>
                   <p className="font-bold text-foreground text-sm sm:text-base">
-                    {selectedCommissions.size} comissão(ões) selecionada(s)
+                    {t("selectedCount", { count: selectedCommissions.size })}
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-success">
                     R$ {getSelectedTotal().toFixed(2)}
@@ -527,7 +532,7 @@ export default function CommissionsPage() {
                   onClick={() => setSelectedCommissions(new Set())}
                   className="flex-1 sm:flex-initial"
                 >
-                  Cancelar
+                  {tCommon("cancel")}
                 </Button>
                 <GradientButton
                   onClick={openBulkPaymentDialog}
@@ -536,7 +541,7 @@ export default function CommissionsPage() {
                   disabled={paying === "bulk"}
                 >
                   <CheckCircle className="h-4 w-4" />
-                  {paying === "bulk" ? "Processando..." : "Pagar Selecionadas"}
+                  {paying === "bulk" ? t("processing") : t("payButton")}
                 </GradientButton>
               </div>
             </div>
@@ -550,10 +555,10 @@ export default function CommissionsPage() {
           <DialogHeader className="pb-4 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
               <CheckCircle className="h-6 w-6" />
-              Confirmar Pagamento de Comissão
+              {t("confirmPaymentTitle")}
             </DialogTitle>
             <DialogDescription className="text-base mt-3">
-              Selecione o método de pagamento utilizado
+              {t("selectPaymentMethodDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -562,21 +567,21 @@ export default function CommissionsPage() {
             {selectedCommission && (
               <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
                 <p className="text-sm">
-                  <span className="font-semibold">Profissional:</span> {selectedCommission.staff.name}
+                  <span className="font-semibold">{t("professionalLabel")}:</span> {selectedCommission.staff.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Serviço:</span> {selectedCommission.service.name}
+                  <span className="font-semibold">{t("serviceLabel")}:</span> {selectedCommission.service.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Cliente:</span> {selectedCommission.booking.client.name}
+                  <span className="font-semibold">{t("clientLabel")}:</span> {selectedCommission.booking.client.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Data:</span>{" "}
+                  <span className="font-semibold">{t("dateLabel")}:</span>{" "}
                   {format(new Date(selectedCommission.booking.date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 </p>
                 <div className="pt-2 border-t border-primary/10 mt-3">
                   <p className="text-lg font-bold text-success">
-                    Valor: R$ {selectedCommission.calculatedValue.toFixed(2)}
+                    {t("valueLabel")}: R$ {selectedCommission.calculatedValue.toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -584,7 +589,7 @@ export default function CommissionsPage() {
 
             {/* Seletor de Método de Pagamento */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold">Método de Pagamento</Label>
+              <Label className="text-base font-semibold">{t("paymentMethodTitle")}</Label>
               
               <div className="grid grid-cols-2 gap-3">
                 {/* PIX */}
@@ -601,7 +606,7 @@ export default function CommissionsPage() {
                 >
                   <Smartphone className={`h-6 w-6 ${selectedPaymentMethod === "PIX" ? "text-primary" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${selectedPaymentMethod === "PIX" ? "text-primary" : "text-foreground"}`}>
-                    PIX
+                    {tCashier("pix")}
                   </span>
                 </button>
 
@@ -619,7 +624,7 @@ export default function CommissionsPage() {
                 >
                   <Banknote className={`h-6 w-6 ${selectedPaymentMethod === "CASH" ? "text-success" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${selectedPaymentMethod === "CASH" ? "text-success" : "text-foreground"}`}>
-                    Dinheiro
+                    {tCashier("cash")}
                   </span>
                 </button>
 
@@ -637,7 +642,7 @@ export default function CommissionsPage() {
                 >
                   <CreditCard className={`h-6 w-6 ${selectedPaymentMethod === "CARD" ? "text-accent" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${selectedPaymentMethod === "CARD" ? "text-accent" : "text-foreground"}`}>
-                    Cartão
+                    {tCashier("cardGeneric")}
                   </span>
                 </button>
 
@@ -655,7 +660,7 @@ export default function CommissionsPage() {
                 >
                   <ArrowLeftRight className={`h-6 w-6 ${selectedPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${selectedPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground"}`}>
-                    Transferência
+                    {tCashier("transfer")}
                   </span>
                 </button>
               </div>
@@ -669,7 +674,7 @@ export default function CommissionsPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
                 disabled={paying !== null}
               >
-                Cancelar
+                {tCommon("cancel")}
               </Button>
               <GradientButton
                 variant="success"
@@ -678,7 +683,7 @@ export default function CommissionsPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
-                {paying ? "Processando..." : "Confirmar Pagamento"}
+                {paying ? t("processing") : t("confirmPaymentButton")}
               </GradientButton>
             </div>
           </div>
@@ -691,11 +696,10 @@ export default function CommissionsPage() {
           <DialogHeader className="pb-4 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
               <CheckCircle className="h-6 w-6" />
-              Pagamento em Lote
+              {t("bulkPaymentTitle")}
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-base pt-2">
-              Confirme o pagamento de <span className="font-bold text-success">{selectedCommissions.size}</span> comissão(ões) 
-              no valor total de <span className="font-bold text-success">R$ {getSelectedTotal().toFixed(2)}</span>
+              {t("confirmBulkPrefix")} <span className="font-bold text-success">{selectedCommissions.size}</span> {t("confirmBulkSuffix")} <span className="font-bold text-success">R$ {getSelectedTotal().toFixed(2)}</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -726,7 +730,7 @@ export default function CommissionsPage() {
             {/* Seletor de Método de Pagamento */}
             <div>
               <Label className="text-base font-semibold mb-3 block">
-                Selecione o método de pagamento:
+                {t("selectPaymentMethodColon")}
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -743,7 +747,7 @@ export default function CommissionsPage() {
                 >
                   <Smartphone className={`h-6 w-6 ${bulkPaymentMethod === "PIX" ? "text-primary" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${bulkPaymentMethod === "PIX" ? "text-primary" : "text-foreground"}`}>
-                    PIX
+                    {tCashier("pix")}
                   </span>
                 </button>
 
@@ -761,7 +765,7 @@ export default function CommissionsPage() {
                 >
                   <Banknote className={`h-6 w-6 ${bulkPaymentMethod === "CASH" ? "text-success" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${bulkPaymentMethod === "CASH" ? "text-success" : "text-foreground"}`}>
-                    Dinheiro
+                    {tCashier("cash")}
                   </span>
                 </button>
 
@@ -779,7 +783,7 @@ export default function CommissionsPage() {
                 >
                   <CreditCard className={`h-6 w-6 ${bulkPaymentMethod === "CARD" ? "text-error" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${bulkPaymentMethod === "CARD" ? "text-error" : "text-foreground"}`}>
-                    Cartão
+                    {tCashier("cardGeneric")}
                   </span>
                 </button>
 
@@ -797,7 +801,7 @@ export default function CommissionsPage() {
                 >
                   <ArrowLeftRight className={`h-6 w-6 ${bulkPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground-muted"}`} />
                   <span className={`text-sm font-semibold ${bulkPaymentMethod === "TRANSFER" ? "text-warning" : "text-foreground"}`}>
-                    Transferência
+                    {tCashier("transfer")}
                   </span>
                 </button>
               </div>
@@ -811,7 +815,7 @@ export default function CommissionsPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
                 disabled={paying === "bulk"}
               >
-                Cancelar
+                {tCommon("cancel")}
               </Button>
               <GradientButton
                 variant="success"
@@ -820,7 +824,7 @@ export default function CommissionsPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
-                {paying === "bulk" ? "Processando..." : `Pagar ${selectedCommissions.size} Comissão(ões)`}
+                {paying === "bulk" ? t("processing") : t("payXCommissions", { count: selectedCommissions.size })}
               </GradientButton>
             </div>
           </div>
