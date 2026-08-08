@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import { BookingsLineChart } from "@/components/analytics/BookingsLineChart";
 import { ServicesBarChart } from "@/components/analytics/ServicesBarChart";
@@ -23,6 +24,7 @@ interface StatsData {
 }
 
 export default function RelatoriosPage() {
+  const t = useTranslations("reports");
   const [period, setPeriod] = useState("30d");
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,10 +56,10 @@ export default function RelatoriosPage() {
   };
 
   const periodLabels = {
-    "7d": "7 dias",
-    "30d": "30 dias",
-    "3m": "3 meses",
-    "1y": "1 ano",
+    "7d": t("period7d"),
+    "30d": t("period30d"),
+    "3m": t("period3m"),
+    "1y": t("period1y"),
   };
 
   return (
@@ -65,9 +67,9 @@ export default function RelatoriosPage() {
       {/* Header Responsivo */}
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Relatórios & Análises</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t("title")}</h1>
           <p className="text-gray-600 text-sm md:text-base mt-1">
-            Visualize o desempenho do seu negócio
+            {t("subtitle")}
           </p>
         </div>
 
@@ -104,7 +106,7 @@ export default function RelatoriosPage() {
           {/* Total de Agendamentos */}
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs sm:text-sm text-gray-600">Total de Agendamentos</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t("totalBookings")}</p>
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
             </div>
             <p className="text-2xl sm:text-3xl font-bold">
@@ -123,8 +125,7 @@ export default function RelatoriosPage() {
                     : "text-red-600"
                 }`}
               >
-                {Math.abs(stats.growth.bookingsGrowth).toFixed(1)}% vs período
-                anterior
+                {Math.abs(stats.growth.bookingsGrowth).toFixed(1)}% {t("vsPreviousPeriod")}
               </span>
             </div>
           </Card>
@@ -132,7 +133,7 @@ export default function RelatoriosPage() {
           {/* Receita Total */}
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs sm:text-sm text-gray-600">Receita Total</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t("totalRevenue")}</p>
               <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
             </div>
             <p className="text-xl sm:text-2xl md:text-3xl font-bold">
@@ -154,8 +155,7 @@ export default function RelatoriosPage() {
                     : "text-red-600"
                 }`}
               >
-                {Math.abs(stats.growth.revenueGrowth).toFixed(1)}% vs período
-                anterior
+                {Math.abs(stats.growth.revenueGrowth).toFixed(1)}% {t("vsPreviousPeriod")}
               </span>
             </div>
           </Card>
@@ -163,28 +163,28 @@ export default function RelatoriosPage() {
           {/* Taxa de Conclusão */}
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs sm:text-sm text-gray-600">Taxa de Conclusão</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t("completionRate")}</p>
               <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
             </div>
             <p className="text-2xl sm:text-3xl font-bold">
               {stats.summary.completionRate.toFixed(1)}%
             </p>
             <p className="text-xs sm:text-sm text-gray-600 mt-2">
-              Agendamentos concluídos com sucesso
+              {t("completionRateDesc")}
             </p>
           </Card>
 
           {/* Taxa de Cancelamento */}
           <Card className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs sm:text-sm text-gray-600">Taxa de Cancelamento</p>
+              <p className="text-xs sm:text-sm text-gray-600">{t("cancellationRate")}</p>
               <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
             </div>
             <p className="text-2xl sm:text-3xl font-bold">
               {stats.summary.cancellationRate.toFixed(1)}%
             </p>
             <p className="text-xs sm:text-sm text-gray-600 mt-2">
-              Agendamentos cancelados
+              {t("cancellationRateDesc")}
             </p>
           </Card>
         </div>
@@ -195,14 +195,14 @@ export default function RelatoriosPage() {
         {/* Agendamentos ao Longo do Tempo */}
         <Card className="p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-bold mb-4">
-            Agendamentos ao Longo do Tempo
+            {t("bookingsOverTime")}
           </h2>
           <BookingsLineChart days={periodDays[period as keyof typeof periodDays]} />
         </Card>
 
         {/* Receita por Período */}
         <Card className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold mb-4">Receita por Período</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-4">{t("revenueByPeriod")}</h2>
           <RevenueAreaChart
             days={periodDays[period as keyof typeof periodDays]}
             groupBy={period === "1y" ? "month" : period === "3m" ? "week" : "day"}
@@ -211,7 +211,7 @@ export default function RelatoriosPage() {
 
         {/* Serviços Mais Populares */}
         <Card className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold mb-4">Serviços Mais Populares</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-4">{t("popularServices")}</h2>
           <ServicesBarChart
             days={periodDays[period as keyof typeof periodDays]}
             limit={10}
@@ -220,16 +220,16 @@ export default function RelatoriosPage() {
 
         {/* Status dos Agendamentos */}
         <Card className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold mb-4">Status dos Agendamentos</h2>
+          <h2 className="text-lg md:text-xl font-bold mb-4">{t("bookingsStatus")}</h2>
           <StatusPieChart period={period} />
         </Card>
       </div>
 
       {/* Botões de Exportação */}
       <Card className="p-4 md:p-6">
-        <h2 className="text-lg md:text-xl font-bold mb-4">Exportar Dados</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">{t("exportData")}</h2>
         <p className="text-xs sm:text-sm text-gray-600 mb-4">
-          Baixe os dados do período selecionado em formato CSV para análise externa
+          {t("exportDataDesc")}
         </p>
         <div className="grid grid-cols-1 xs:grid-cols-2 md:flex md:flex-wrap gap-2 md:gap-3">
           <button
@@ -242,7 +242,7 @@ export default function RelatoriosPage() {
             }}
           >
             <Calendar className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Agendamentos</span>
+            <span className="truncate">{t("exportBookings")}</span>
           </button>
           <button
             className="px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
@@ -254,7 +254,7 @@ export default function RelatoriosPage() {
             }}
           >
             <DollarSign className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Receita</span>
+            <span className="truncate">{t("exportRevenue")}</span>
           </button>
           <button
             className="px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
@@ -266,7 +266,7 @@ export default function RelatoriosPage() {
             }}
           >
             <CheckCircle className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Serviços</span>
+            <span className="truncate">{t("exportServices")}</span>
           </button>
           <button
             className="px-3 md:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
@@ -278,7 +278,7 @@ export default function RelatoriosPage() {
             }}
           >
             <TrendingUp className="h-4 w-4 flex-shrink-0" />
-            <span className="truncate">Relatório Completo</span>
+            <span className="truncate">{t("exportComplete")}</span>
           </button>
         </div>
       </Card>
