@@ -519,7 +519,22 @@
     "expensesLegend": "Dépenses",
     "profitLegend": "Bénéfice",
     "expensesByCategory": "Dépenses par Catégorie",
-    "topExpenseCategories": "Principales Catégories de Dépenses"
+    "topExpenseCategories": "Principales Catégories de Dépenses",
+    "revenueShort": "Revenu",
+    "confirmedBookingsDesc": "Rendez-vous confirmés",
+    "expensesShort": "Dépenses",
+    "pendingOverdueDesc": "{pending} en attente, {overdue} en retard",
+    "profitShort": "Bénéfice",
+    "vsPrevious": "vs précédent",
+    "marginShort": "Marge",
+    "netProfitMarginDesc": "Marge bénéficiaire nette",
+    "comparisonTitle": "Comparaison avec le Mois Précédent",
+    "beforeLabel": "avant :",
+    "noExpensesRegistered": "Aucune dépense enregistrée",
+    "trendTitle": "Évolution des Dépenses (6 Derniers Mois)",
+    "legendTotal": "Total",
+    "legendPaid": "Payé",
+    "legendPending": "En attente"
   },
   "salon": {
     "title": "Mon Salon",

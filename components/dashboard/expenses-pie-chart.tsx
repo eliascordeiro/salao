@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { GlassCard } from "@/components/ui/glass-card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 import { Loader2 } from "lucide-react"
@@ -16,18 +17,9 @@ const COLORS = [
   "#14b8a6", // teal
 ]
 
-const CATEGORIES_PT: Record<string, string> = {
-  RENT: "Aluguel",
-  UTILITIES: "Utilidades",
-  PRODUCTS: "Produtos",
-  SALARIES: "Salários",
-  MARKETING: "Marketing",
-  TAXES: "Impostos",
-  MAINTENANCE: "Manutenção",
-  OTHER: "Outros",
-}
-
 export function ExpensesPieChart() {
+  const t = useTranslations("financial")
+  const tExpenses = useTranslations("expenses")
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -53,7 +45,7 @@ export function ExpensesPieChart() {
 
           // Converter para formato do gráfico
           const chartData = Object.entries(categoryTotals).map(([category, amount]) => ({
-            name: CATEGORIES_PT[category] || category,
+            name: tExpenses(`categories.${category}`) || category,
             value: amount,
             percentage: totalAmount > 0 ? ((amount / totalAmount) * 100).toFixed(1) : 0,
           }))
@@ -87,7 +79,7 @@ export function ExpensesPieChart() {
   if (loading) {
     return (
       <GlassCard className="p-6">
-        <h3 className="text-lg font-bold text-foreground mb-4">Despesas por Categoria</h3>
+        <h3 className="text-lg font-bold text-foreground mb-4">{t("expensesByCategory")}</h3>
         <div className="flex items-center justify-center h-[300px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -98,9 +90,9 @@ export function ExpensesPieChart() {
   if (data.length === 0) {
     return (
       <GlassCard className="p-6">
-        <h3 className="text-lg font-bold text-foreground mb-4">Despesas por Categoria</h3>
+        <h3 className="text-lg font-bold text-foreground mb-4">{t("expensesByCategory")}</h3>
         <div className="flex items-center justify-center h-[300px] text-foreground-muted">
-          Nenhuma despesa registrada
+          {t("noExpensesRegistered")}
         </div>
       </GlassCard>
     )
@@ -109,9 +101,9 @@ export function ExpensesPieChart() {
   return (
     <GlassCard className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-foreground">Despesas por Categoria</h3>
+        <h3 className="text-lg font-bold text-foreground">{t("expensesByCategory")}</h3>
         <div className="text-right">
-          <p className="text-sm text-foreground-muted">Total</p>
+          <p className="text-sm text-foreground-muted">{t("legendTotal")}</p>
           <p className="text-xl font-bold text-foreground">R$ {total.toFixed(2)}</p>
         </div>
       </div>

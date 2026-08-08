@@ -519,7 +519,22 @@
     "expensesLegend": "Expenses",
     "profitLegend": "Profit",
     "expensesByCategory": "Expenses by Category",
-    "topExpenseCategories": "Top Expense Categories"
+    "topExpenseCategories": "Top Expense Categories",
+    "revenueShort": "Revenue",
+    "confirmedBookingsDesc": "Confirmed bookings",
+    "expensesShort": "Expenses",
+    "pendingOverdueDesc": "{pending} pending, {overdue} overdue",
+    "profitShort": "Profit",
+    "vsPrevious": "vs previous",
+    "marginShort": "Margin",
+    "netProfitMarginDesc": "Net profit margin",
+    "comparisonTitle": "Comparison with Previous Month",
+    "beforeLabel": "before:",
+    "noExpensesRegistered": "No expenses registered",
+    "trendTitle": "Expense Trend (Last 6 Months)",
+    "legendTotal": "Total",
+    "legendPaid": "Paid",
+    "legendPending": "Pending"
   },
   "salon": {
     "title": "My Salon",

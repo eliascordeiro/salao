@@ -519,7 +519,22 @@
     "expensesLegend": "Despesas",
     "profitLegend": "Lucro",
     "expensesByCategory": "Despesas por Categoria",
-    "topExpenseCategories": "Top Categorias de Despesa"
+    "topExpenseCategories": "Top Categorias de Despesa",
+    "revenueShort": "Receita",
+    "confirmedBookingsDesc": "Agendamentos confirmados",
+    "expensesShort": "Despesas",
+    "pendingOverdueDesc": "{pending} pendentes, {overdue} atrasadas",
+    "profitShort": "Lucro",
+    "vsPrevious": "vs anterior",
+    "marginShort": "Margem",
+    "netProfitMarginDesc": "Margem de lucro líquida",
+    "comparisonTitle": "Comparação com Mês Anterior",
+    "beforeLabel": "antes:",
+    "noExpensesRegistered": "Nenhuma despesa registrada",
+    "trendTitle": "Evolução de Despesas (Últimos 6 Meses)",
+    "legendTotal": "Total",
+    "legendPaid": "Pago",
+    "legendPending": "Pendente"
   },
   "salon": {
     "title": "Meu Salão",

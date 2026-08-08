@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { GlassCard } from "@/components/ui/glass-card"
 import {
   LineChart,
@@ -17,6 +18,7 @@ import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from
 import { ptBR } from "date-fns/locale"
 
 export function ExpensesTrendChart() {
+  const t = useTranslations("financial")
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -100,7 +102,7 @@ export function ExpensesTrendChart() {
     return (
       <GlassCard className="p-6">
         <h3 className="text-lg font-bold text-foreground mb-4">
-          Evolução de Despesas (Últimos 6 Meses)
+          {t("trendTitle")}
         </h3>
         <div className="flex items-center justify-center h-[300px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -113,10 +115,10 @@ export function ExpensesTrendChart() {
     return (
       <GlassCard className="p-6">
         <h3 className="text-lg font-bold text-foreground mb-4">
-          Evolução de Despesas (Últimos 6 Meses)
+          {t("trendTitle")}
         </h3>
         <div className="flex items-center justify-center h-[300px] text-foreground-muted">
-          Nenhuma despesa registrada
+          {t("noExpensesRegistered")}
         </div>
       </GlassCard>
     )
@@ -125,7 +127,7 @@ export function ExpensesTrendChart() {
   return (
     <GlassCard className="p-6">
       <h3 className="text-lg font-bold text-foreground mb-4">
-        Evolução de Despesas (Últimos 6 Meses)
+        {t("trendTitle")}
       </h3>
 
       <ResponsiveContainer width="100%" height={300}>
@@ -153,7 +155,7 @@ export function ExpensesTrendChart() {
             dataKey="total"
             stroke="#8b5cf6"
             strokeWidth={2}
-            name="Total"
+            name={t("legendTotal")}
             dot={{ fill: "#8b5cf6", r: 4 }}
             activeDot={{ r: 6 }}
           />
@@ -162,7 +164,7 @@ export function ExpensesTrendChart() {
             dataKey="paid"
             stroke="#10b981"
             strokeWidth={2}
-            name="Pago"
+            name={t("legendPaid")}
             dot={{ fill: "#10b981", r: 4 }}
             activeDot={{ r: 6 }}
           />
@@ -171,7 +173,7 @@ export function ExpensesTrendChart() {
             dataKey="pending"
             stroke="#f59e0b"
             strokeWidth={2}
-            name="Pendente"
+            name={t("legendPending")}
             dot={{ fill: "#f59e0b", r: 4 }}
             activeDot={{ r: 6 }}
           />

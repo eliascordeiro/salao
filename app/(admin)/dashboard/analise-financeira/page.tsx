@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { authOptions } from "@/lib/auth"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { GridBackground } from "@/components/ui/grid-background"
@@ -14,6 +15,7 @@ import { ptBR } from "date-fns/locale"
 
 export default async function FinancialAnalysisPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations("financial")
 
   if (!session) {
     redirect("/login")
@@ -57,7 +59,7 @@ export default async function FinancialAnalysisPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2">
-              Análise Financeira
+              {t("title")}
             </h1>
             <p className="text-foreground-muted">
               {format(now, "MMMM 'de' yyyy", { locale: ptBR })}
@@ -70,7 +72,7 @@ export default async function FinancialAnalysisPage() {
             <GlassCard className="p-6" hover>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Receita</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("revenueShort")}</p>
                   <p className="text-3xl font-bold text-foreground">
                     R$ {currentStats.revenue.toFixed(2)}
                   </p>
@@ -80,7 +82,7 @@ export default async function FinancialAnalysisPage() {
                 </div>
               </div>
               <p className="text-sm text-foreground-muted">
-                Agendamentos confirmados
+                {t("confirmedBookingsDesc")}
               </p>
             </GlassCard>
 
@@ -88,7 +90,7 @@ export default async function FinancialAnalysisPage() {
             <GlassCard className="p-6" hover>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Despesas</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("expensesShort")}</p>
                   <p className="text-3xl font-bold text-foreground">
                     R$ {currentStats.expenses.toFixed(2)}
                   </p>
@@ -98,7 +100,7 @@ export default async function FinancialAnalysisPage() {
                 </div>
               </div>
               <p className="text-sm text-foreground-muted">
-                {pendingExpenses} pendentes, {overdueExpenses} atrasadas
+                {t("pendingOverdueDesc", { pending: pendingExpenses, overdue: overdueExpenses })}
               </p>
             </GlassCard>
 
@@ -106,7 +108,7 @@ export default async function FinancialAnalysisPage() {
             <GlassCard className="p-6" hover>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Lucro</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("profitShort")}</p>
                   <p className={`text-3xl font-bold ${
                     currentStats.profit >= 0 
                       ? "text-green-600 dark:text-green-400" 
@@ -136,7 +138,7 @@ export default async function FinancialAnalysisPage() {
                 }`}>
                   {Math.abs(profitComparison.profitGrowth).toFixed(1)}%
                 </span>
-                <span className="text-sm text-foreground-muted ml-1">vs anterior</span>
+                <span className="text-sm text-foreground-muted ml-1">{t("vsPrevious")}</span>
               </div>
             </GlassCard>
 
@@ -144,7 +146,7 @@ export default async function FinancialAnalysisPage() {
             <GlassCard className="p-6" hover>
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Margem</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("marginShort")}</p>
                   <p className="text-3xl font-bold text-foreground">
                     {currentStats.profitMargin.toFixed(1)}%
                   </p>
@@ -154,7 +156,7 @@ export default async function FinancialAnalysisPage() {
                 </div>
               </div>
               <p className="text-sm text-foreground-muted">
-                Margem de lucro líquida
+                {t("netProfitMarginDesc")}
               </p>
             </GlassCard>
           </div>
@@ -169,33 +171,33 @@ export default async function FinancialAnalysisPage() {
           <div className="mt-8">
             <GlassCard className="p-6">
               <h2 className="text-xl font-bold text-foreground mb-4">
-                Comparação com Mês Anterior
+                {t("comparisonTitle")}
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Receita</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("revenueShort")}</p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-2xl font-bold text-foreground">
                       R$ {currentStats.revenue.toFixed(2)}
                     </p>
                     <p className="text-sm text-foreground-muted">
-                      (antes: R$ {previousStats.revenue.toFixed(2)})
+                      ({t("beforeLabel")} R$ {previousStats.revenue.toFixed(2)})
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Despesas</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("expensesShort")}</p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-2xl font-bold text-foreground">
                       R$ {currentStats.expenses.toFixed(2)}
                     </p>
                     <p className="text-sm text-foreground-muted">
-                      (antes: R$ {previousStats.expenses.toFixed(2)})
+                      ({t("beforeLabel")} R$ {previousStats.expenses.toFixed(2)})
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-foreground-muted mb-1">Lucro</p>
+                  <p className="text-sm text-foreground-muted mb-1">{t("profitShort")}</p>
                   <div className="flex items-baseline gap-2">
                     <p className={`text-2xl font-bold ${
                       currentStats.profit >= 0 
@@ -205,7 +207,7 @@ export default async function FinancialAnalysisPage() {
                       R$ {currentStats.profit.toFixed(2)}
                     </p>
                     <p className="text-sm text-foreground-muted">
-                      (antes: R$ {previousStats.profit.toFixed(2)})
+                      ({t("beforeLabel")} R$ {previousStats.profit.toFixed(2)})
                     </p>
                   </div>
                 </div>

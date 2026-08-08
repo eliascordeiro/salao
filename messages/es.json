@@ -519,7 +519,22 @@
     "expensesLegend": "Gastos",
     "profitLegend": "Ganancia",
     "expensesByCategory": "Gastos por Categoría",
-    "topExpenseCategories": "Principales Categorías de Gasto"
+    "topExpenseCategories": "Principales Categorías de Gasto",
+    "revenueShort": "Ingresos",
+    "confirmedBookingsDesc": "Citas confirmadas",
+    "expensesShort": "Gastos",
+    "pendingOverdueDesc": "{pending} pendientes, {overdue} atrasados",
+    "profitShort": "Ganancia",
+    "vsPrevious": "vs anterior",
+    "marginShort": "Margen",
+    "netProfitMarginDesc": "Margen de ganancia neta",
+    "comparisonTitle": "Comparación con el Mes Anterior",
+    "beforeLabel": "antes:",
+    "noExpensesRegistered": "Ningún gasto registrado",
+    "trendTitle": "Evolución de Gastos (Últimos 6 Meses)",
+    "legendTotal": "Total",
+    "legendPaid": "Pagado",
+    "legendPending": "Pendiente"
   },
   "salon": {
     "title": "Mi Salón",
