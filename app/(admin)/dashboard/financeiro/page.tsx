@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,28 +36,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const PERIODS = [
-  { value: "3m", label: "3 meses" },
-  { value: "6m", label: "6 meses" },
-  { value: "12m", label: "12 meses" },
-];
-
-const CATEGORY_LABELS: Record<string, string> = {
-  RENT: "Aluguel",
-  UTILITIES: "Utilidades",
-  PRODUCTS: "Produtos",
-  SALARIES: "Salários",
-  MARKETING: "Marketing",
-  TAXES: "Impostos",
-  MAINTENANCE: "Manutenção",
-  OTHER: "Outros",
-};
+const PERIOD_VALUES = ["3m", "6m", "12m"] as const;
 
 const COLORS = ["#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#6366f1", "#84cc16"];
 
 export default function FinanceiroPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("financial");
+  const tExpenses = useTranslations("expenses");
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("6m");
   const [data, setData] = useState<any>(null);
@@ -115,7 +103,7 @@ export default function FinanceiroPage() {
 
   // Preparar dados para gráfico de pizza
   const pieData = expensesByCategory.map((item: any, index: number) => ({
-    name: CATEGORY_LABELS[item.category] || item.category,
+    name: tExpenses(`categories.${item.category}`) || item.category,
     value: item.total,
     color: COLORS[index % COLORS.length],
   }));
@@ -139,25 +127,25 @@ export default function FinanceiroPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-                Análise Financeira
+                {t("title")}
               </h1>
               <p className="text-sm sm:text-base text-foreground-muted">
-                Relatórios avançados de receita, despesas e lucro
+                {t("subtitle")}
               </p>
             </div>
 
           {/* Seletor de Período */}
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            {PERIODS.map((p) => (
+            {PERIOD_VALUES.map((value) => (
               <Button
-                key={p.value}
-                variant={period === p.value ? "default" : "outline"}
+                key={value}
+                variant={period === value ? "default" : "outline"}
                 size="sm"
-                onClick={() => setPeriod(p.value)}
+                onClick={() => setPeriod(value)}
                 className="flex-1 sm:flex-initial min-w-[90px] min-h-[40px]"
               >
                 <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="text-xs sm:text-sm">{p.label}</span>
+                <span className="text-xs sm:text-sm">{t(`period${value}`)}</span>
               </Button>
             ))}
           </div>
@@ -173,20 +161,20 @@ export default function FinanceiroPage() {
             </div>
             <div className="flex-1 w-full">
               <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
-                Receita Pendente
+                {t("pendingRevenueTitle")}
               </h3>
               <p className="text-xs sm:text-sm text-foreground-muted mb-3">
-                Você tem agendamentos completados aguardando pagamento no caixa
+                {t("pendingRevenueDesc")}
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6 mb-4">
                 <div>
-                  <p className="text-xs sm:text-sm text-foreground-muted">Valor Total</p>
+                  <p className="text-xs sm:text-sm text-foreground-muted">{t("totalValueLabel")}</p>
                   <p className="text-2xl sm:text-3xl font-bold text-yellow-500">
                     R$ {pendingRevenue.totalPending.toFixed(2)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm text-foreground-muted">Sessões Abertas</p>
+                  <p className="text-xs sm:text-sm text-foreground-muted">{t("openSessionsLabel")}</p>
                   <p className="text-xl sm:text-2xl font-semibold text-foreground">
                     {pendingRevenue.sessionCount}
                   </p>
@@ -197,7 +185,7 @@ export default function FinanceiroPage() {
                 className="bg-yellow-500 hover:bg-yellow-600 text-white w-full sm:w-auto min-h-[44px]"
               >
                 <DollarSign className="h-4 w-4 mr-2" />
-                <span className="text-sm sm:text-base">Ir para o Caixa</span>
+                <span className="text-sm sm:text-base">{t("goToCashier")}</span>
               </Button>
             </div>
           </div>
@@ -210,7 +198,7 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Receita Total</p>
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">{t("totalRevenueLabel")}</p>
               <p className="text-xl sm:text-2xl font-bold text-green-500">
                 R$ {summary.totalRevenue.toFixed(2)}
               </p>
@@ -237,12 +225,12 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Despesas Totais</p>
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">{t("totalExpensesLabel")}</p>
               <p className="text-xl sm:text-2xl font-bold text-red-500">
                 R$ {summary.totalExpenses.toFixed(2)}
               </p>
               <p className="text-[10px] sm:text-xs text-foreground-muted mt-2">
-                Média mensal: R$ {summary.avgMonthlyExpenses.toFixed(2)}
+                {t("avgMonthlyLabel")} R$ {summary.avgMonthlyExpenses.toFixed(2)}
               </p>
             </div>
             <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
@@ -255,7 +243,7 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Lucro Líquido</p>
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">{t("netProfitLabel")}</p>
               <p className={`text-xl sm:text-2xl font-bold ${summary.netProfit >= 0 ? "text-green-500" : "text-red-500"}`}>
                 R$ {summary.netProfit.toFixed(2)}
               </p>
@@ -282,7 +270,7 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs sm:text-sm text-foreground-muted mb-1">Margem de Lucro</p>
+              <p className="text-xs sm:text-sm text-foreground-muted mb-1">{t("profitMarginLabel")}</p>
               <p className="text-xl sm:text-2xl font-bold text-primary">
                 {summary.profitMargin.toFixed(1)}%
               </p>
@@ -290,7 +278,7 @@ export default function FinanceiroPage() {
                 variant={summary.profitMargin >= 20 ? "default" : "secondary"}
                 className="mt-2 text-[10px] sm:text-xs"
               >
-                {summary.profitMargin >= 20 ? "Excelente" : summary.profitMargin >= 10 ? "Bom" : "Atenção"}
+                {summary.profitMargin >= 20 ? t("excellent") : summary.profitMargin >= 10 ? t("good") : t("attention")}
               </Badge>
             </div>
             <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -306,7 +294,7 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            <span className="text-sm sm:text-base">Evolução Mensal</span>
+            <span className="text-sm sm:text-base">{t("monthlyEvolution")}</span>
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyEvolution}>
@@ -327,21 +315,21 @@ export default function FinanceiroPage() {
                 dataKey="revenue" 
                 stroke="#10b981" 
                 strokeWidth={2}
-                name="Receita"
+                name={t("revenueLegend")}
               />
               <Line 
                 type="monotone" 
                 dataKey="expenses" 
                 stroke="#ef4444" 
                 strokeWidth={2}
-                name="Despesas"
+                name={t("expensesLegend")}
               />
               <Line 
                 type="monotone" 
                 dataKey="profit" 
                 stroke="#8b5cf6" 
                 strokeWidth={2}
-                name="Lucro"
+                name={t("profitLegend")}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -351,7 +339,7 @@ export default function FinanceiroPage() {
         <GlassCard className="p-4 sm:p-6">
           <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
             <PieChartIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            <span className="text-sm sm:text-base">Despesas por Categoria</span>
+            <span className="text-sm sm:text-base">{t("expensesByCategory")}</span>
           </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -385,7 +373,7 @@ export default function FinanceiroPage() {
 
       {/* Tabela de Top Categorias */}
       <GlassCard className="p-4 sm:p-6">
-        <h3 className="text-base sm:text-lg font-semibold mb-4">Top Categorias de Despesa</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-4">{t("topExpenseCategories")}</h3>
         <div className="space-y-3">
           {expensesByCategory.map((item: any, index: number) => {
             const percentage = (item.total / summary.totalExpenses) * 100;
@@ -398,7 +386,7 @@ export default function FinanceiroPage() {
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base truncate">{CATEGORY_LABELS[item.category] || item.category}</p>
+                  <p className="font-medium text-sm sm:text-base truncate">{tExpenses(`categories.${item.category}`) || item.category}</p>
                   <div className="w-full bg-background-alt/50 rounded-full h-2 mt-1">
                     <div 
                       className="h-2 rounded-full transition-all"
