@@ -1,6 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
+import { useTranslations } from "next-intl"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import { Sun, Moon, Monitor, Check } from "lucide-react"
@@ -11,6 +12,7 @@ import { useState, useEffect } from "react"
 
 export default function ConfiguracoesPage() {
   const { data: session } = useSession()
+  const t = useTranslations("settings")
   const [displayMode, setDisplayMode] = useState<'light' | 'dark' | 'system'>('dark')
   const [mounted, setMounted] = useState(false)
 
@@ -47,21 +49,21 @@ export default function ConfiguracoesPage() {
   const displayModes = [
     {
       value: "light" as const,
-      label: "Modo Claro",
+      label: t("lightMode"),
       icon: Sun,
-      description: "Tema claro para ambientes bem iluminados",
+      description: t("lightModeDesc"),
     },
     {
       value: "dark" as const,
-      label: "Modo Escuro",
+      label: t("darkMode"),
       icon: Moon,
-      description: "Tema escuro para reduzir cansaço visual",
+      description: t("darkModeDesc"),
     },
     {
       value: "system" as const,
-      label: "Sistema",
+      label: t("systemMode"),
       icon: Monitor,
-      description: "Usar preferência do sistema operacional",
+      description: t("systemModeDesc"),
     },
   ]
 
@@ -85,9 +87,9 @@ export default function ConfiguracoesPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
           <p className="text-foreground-muted mt-2">
-            Personalize a aparência e preferências do sistema
+            {t("subtitle")}
           </p>
         </div>
 
@@ -101,10 +103,10 @@ export default function ConfiguracoesPage() {
               ) : (
                 <Sun className="h-5 w-5 text-primary" />
               )}
-              Modo de Exibição
+              {t("displayModeTitle")}
             </h2>
             <p className="text-sm text-foreground-muted mt-1">
-              Escolha entre modo claro, escuro ou automático
+              {t("displayModeSubtitle")}
             </p>
           </div>
 
@@ -177,7 +179,7 @@ export default function ConfiguracoesPage() {
       {/* Info */}
       <div className="text-sm text-foreground-muted bg-background-alt/30 border border-border/30 rounded-lg p-4">
         <p>
-          💡 <strong>Dica:</strong> O tema será salvo automaticamente e aplicado em todas as suas sessões.
+          💡 <strong>{t("tipLabel")}</strong> {t("themeTip")}
         </p>
       </div>
       </div>

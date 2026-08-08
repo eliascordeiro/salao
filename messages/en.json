@@ -553,6 +553,23 @@
     "passwordChanged": "Password changed successfully!",
     "passwordChangeError": "Error changing password"
   },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize the system's appearance and preferences",
+    "displayModeTitle": "Display Mode",
+    "displayModeSubtitle": "Choose between light, dark, or automatic mode",
+    "lightMode": "Light Mode",
+    "lightModeDesc": "Light theme for well-lit environments",
+    "darkMode": "Dark Mode",
+    "darkModeDesc": "Dark theme to reduce eye strain",
+    "systemMode": "System",
+    "systemModeDesc": "Use operating system preference",
+    "tipLabel": "Tip:",
+    "themeTip": "The theme will be saved automatically and applied across all your sessions.",
+    "colorThemeTitle": "Color Theme",
+    "colorThemeSubtitle": "Choose the system's color scheme",
+    "colorThemeTip": "The chosen theme will be applied throughout the system, including gradients, buttons, and highlighted elements."
+  },
   "auth": {
     "login": "Sign In",
     "register": "Register",

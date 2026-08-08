@@ -553,6 +553,23 @@
     "passwordChanged": "¡Contraseña cambiada con éxito!",
     "passwordChangeError": "Error al cambiar la contraseña"
   },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Personaliza la apariencia y las preferencias del sistema",
+    "displayModeTitle": "Modo de Visualización",
+    "displayModeSubtitle": "Elige entre modo claro, oscuro o automático",
+    "lightMode": "Modo Claro",
+    "lightModeDesc": "Tema claro para ambientes bien iluminados",
+    "darkMode": "Modo Oscuro",
+    "darkModeDesc": "Tema oscuro para reducir la fatiga visual",
+    "systemMode": "Sistema",
+    "systemModeDesc": "Usar la preferencia del sistema operativo",
+    "tipLabel": "Consejo:",
+    "themeTip": "El tema se guardará automáticamente y se aplicará en todas tus sesiones.",
+    "colorThemeTitle": "Tema de Colores",
+    "colorThemeSubtitle": "Elige el esquema de colores del sistema",
+    "colorThemeTip": "El tema elegido se aplicará en todo el sistema, incluyendo degradados, botones y elementos destacados."
+  },
   "auth": {
     "login": "Iniciar Sesión",
     "register": "Registrarse",

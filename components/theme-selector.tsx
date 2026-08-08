@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { GlassCard } from "@/components/ui/glass-card"
 import { THEMES, applyTheme, getCurrentThemeId } from "@/lib/themes"
 import { Check, Palette } from "lucide-react"
 
 export function ThemeSelector() {
+  const t = useTranslations("settings")
+  const tCommon = useTranslations("common")
   const [currentTheme, setCurrentTheme] = useState<string>('modern')
   const [mounted, setMounted] = useState(false)
 
@@ -30,9 +33,9 @@ export function ThemeSelector() {
           <Palette className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-foreground">Tema de Cores</h3>
+          <h3 className="text-lg font-bold text-foreground">{t("colorThemeTitle")}</h3>
           <p className="text-sm text-foreground-muted">
-            Escolha o esquema de cores do sistema
+            {t("colorThemeSubtitle")}
           </p>
         </div>
       </div>
@@ -70,7 +73,7 @@ export function ThemeSelector() {
                 {theme.name}
                 {currentTheme === theme.id && (
                   <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded-full">
-                    Ativo
+                    {tCommon("active")}
                   </span>
                 )}
               </h4>
@@ -109,8 +112,7 @@ export function ThemeSelector() {
 
       <div className="mt-4 p-4 glass-card bg-primary/5 border-primary/20">
         <p className="text-xs text-foreground-muted">
-          💡 <strong>Dica:</strong> O tema escolhido será aplicado em todo o sistema, 
-          incluindo gradientes, botões e elementos destacados.
+          💡 <strong>{t("tipLabel")}</strong> {t("colorThemeTip")}
         </p>
       </div>
     </GlassCard>
