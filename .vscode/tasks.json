@@ -269,12 +269,12 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "git-commit-i18n-pages-2",
+			"label": "git-commit-i18n-pages-3",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"i18n: translate services list page and delete-service dialog (pt/en/es/fr)\" && git push origin $(git branch --show-current)"
+				"git add -A && git commit -m \"i18n: translate appointments admin page (list, filters, edit/confirm/cancel dialogs) pt/en/es/fr\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Calendar, Clock, User, Phone, Mail, Filter, Search, Sparkles, CheckCircle, XCircle, AlertCircle, Plus, Edit2, Save, X as XIcon, Check, Briefcase, UserCheck } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -101,15 +102,18 @@ interface TimeSlot {
 }
 
 const statusConfig = {
-  PENDING: { label: "Pendente", color: "glass-card border-yellow-500/50 bg-yellow-500/10 text-yellow-400", icon: AlertCircle },
-  CONFIRMED: { label: "Confirmado", color: "glass-card border-primary/50 bg-primary/10 text-primary", icon: CheckCircle },
-  COMPLETED: { label: "Concluído", color: "glass-card border-accent/50 bg-accent/10 text-accent", icon: CheckCircle },
-  CANCELLED: { label: "Cancelado", color: "glass-card border-destructive/50 bg-destructive/10 text-destructive", icon: XCircle },
-  NO_SHOW: { label: "Não compareceu", color: "glass-card bg-background-alt/50 text-foreground-muted", icon: XCircle },
+  PENDING: { color: "glass-card border-yellow-500/50 bg-yellow-500/10 text-yellow-400", icon: AlertCircle },
+  CONFIRMED: { color: "glass-card border-primary/50 bg-primary/10 text-primary", icon: CheckCircle },
+  COMPLETED: { color: "glass-card border-accent/50 bg-accent/10 text-accent", icon: CheckCircle },
+  CANCELLED: { color: "glass-card border-destructive/50 bg-destructive/10 text-destructive", icon: XCircle },
+  NO_SHOW: { color: "glass-card bg-background-alt/50 text-foreground-muted", icon: XCircle },
 };
 
 export default function AgendamentosPage() {
   const { data: session } = useSession();
+  const t = useTranslations("bookings");
+  const tCommon = useTranslations("common");
+  const tStatus = useTranslations("status");
   const [mounted, setMounted] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
@@ -888,10 +892,10 @@ export default function AgendamentosPage() {
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground flex items-center gap-2 md:gap-3">
                 <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                Agendamentos
+                {t("title")}
               </h1>
               <p className="text-sm sm:text-base text-foreground-muted mt-1 md:mt-2">
-                Gerencie todos os agendamentos do salão
+                {t("subtitle")}
               </p>
             </div>
             <Link href="/dashboard/agendamentos/novo">
@@ -900,7 +904,7 @@ export default function AgendamentosPage() {
                 className="w-full sm:w-auto px-4 py-2 gap-2 min-h-[44px]"
               >
                 <Plus className="h-5 w-5" />
-                Novo Agendamento
+                {t("newBooking")}
               </GradientButton>
             </Link>
           </div>
@@ -914,13 +918,13 @@ export default function AgendamentosPage() {
                 className="px-4 py-2 min-h-[44px] w-full sm:w-auto"
               >
                 <Filter className="h-4 w-4" />
-                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+                {showFilters ? t("hideFilters") : t("showFilters")}
               </GradientButton>
 
               <div className="flex items-center gap-2 flex-1 max-w-full sm:max-w-md">
                 <Search className="h-4 w-4 text-primary flex-shrink-0" />
                 <Input
-                  placeholder="Buscar por cliente, serviço ou profissional..."
+                  placeholder={t("searchPlaceholder")}
                   value={filters.search}
                   onChange={(e) =>
                     setFilters({ ...filters, search: e.target.value })
@@ -934,7 +938,7 @@ export default function AgendamentosPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-primary/20">
                 {/* Status */}
                 <div>
-                  <Label htmlFor="status" className="text-foreground">Status</Label>
+                  <Label htmlFor="status" className="text-foreground">{t("filterByStatus")}</Label>
                   <select
                     id="status"
                     value={filters.status}
@@ -943,18 +947,18 @@ export default function AgendamentosPage() {
                     }
                     className="w-full px-3 py-2 glass-card bg-background-alt/50 border-primary/20 text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="">Todos</option>
-                    <option value="PENDING">Pendente</option>
-                    <option value="CONFIRMED">Confirmado</option>
-                    <option value="COMPLETED">Concluído</option>
-                    <option value="CANCELLED">Cancelado</option>
-                    <option value="NO_SHOW">Não compareceu</option>
+                    <option value="">{tCommon("all")}</option>
+                    <option value="PENDING">{tStatus("PENDING")}</option>
+                    <option value="CONFIRMED">{tStatus("CONFIRMED")}</option>
+                    <option value="COMPLETED">{tStatus("COMPLETED")}</option>
+                    <option value="CANCELLED">{tStatus("CANCELLED")}</option>
+                    <option value="NO_SHOW">{tStatus("NO_SHOW")}</option>
                   </select>
                 </div>
 
                 {/* Profissional */}
                 <div>
-                  <Label htmlFor="staffId" className="text-foreground">Profissional</Label>
+                  <Label htmlFor="staffId" className="text-foreground">{t("filterByProfessional")}</Label>
                   <select
                     id="staffId"
                     value={filters.staffId}
@@ -963,7 +967,7 @@ export default function AgendamentosPage() {
                     }
                     className="w-full px-3 py-2 glass-card bg-background-alt/50 border-primary/20 text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="">Todos</option>
+                    <option value="">{tCommon("all")}</option>
                     {staff.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -974,7 +978,7 @@ export default function AgendamentosPage() {
 
                 {/* Data Início */}
                 <div>
-                  <Label htmlFor="startDate" className="text-foreground">Data Início</Label>
+                  <Label htmlFor="startDate" className="text-foreground">{t("filterByStartDate")}</Label>
                   <Input
                     id="startDate"
                     type="date"
@@ -988,7 +992,7 @@ export default function AgendamentosPage() {
 
                 {/* Data Fim */}
                 <div>
-                  <Label htmlFor="endDate" className="text-foreground">Data Fim</Label>
+                  <Label htmlFor="endDate" className="text-foreground">{t("filterByEndDate")}</Label>
                   <Input
                     id="endDate"
                     type="date"
@@ -1006,32 +1010,32 @@ export default function AgendamentosPage() {
           {/* Estatísticas */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
             <GlassCard className="p-6">
-              <p className="text-sm text-foreground-muted">Total</p>
+              <p className="text-sm text-foreground-muted">{tCommon("total")}</p>
               <p className="text-2xl font-bold text-foreground">{filteredBookings.length}</p>
             </GlassCard>
             <GlassCard className="p-6" glow="primary">
-              <p className="text-sm text-foreground-muted">Pendentes</p>
+              <p className="text-sm text-foreground-muted">{t("statPending")}</p>
               <p className="text-2xl font-bold text-yellow-400 flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "PENDING").length}
               </p>
             </GlassCard>
             <GlassCard className="p-6" glow="success">
-              <p className="text-sm text-foreground-muted">Confirmados</p>
+              <p className="text-sm text-foreground-muted">{t("statConfirmed")}</p>
               <p className="text-2xl font-bold text-primary flex items-center gap-2">
                 <CheckCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "CONFIRMED").length}
               </p>
             </GlassCard>
             <GlassCard className="p-6" glow="accent">
-              <p className="text-sm text-foreground-muted">Concluídos</p>
+              <p className="text-sm text-foreground-muted">{t("statCompleted")}</p>
               <p className="text-2xl font-bold text-accent flex items-center gap-2">
                 <CheckCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "COMPLETED").length}
               </p>
             </GlassCard>
             <GlassCard className="p-6">
-              <p className="text-sm text-foreground-muted">Cancelados</p>
+              <p className="text-sm text-foreground-muted">{t("statCancelled")}</p>
               <p className="text-2xl font-bold text-destructive flex items-center gap-2">
                 <XCircle className="h-5 w-5" />
                 {filteredBookings.filter((b) => b.status === "CANCELLED").length}
@@ -1043,16 +1047,16 @@ export default function AgendamentosPage() {
           {loading ? (
             <div className="text-center py-12">
               <Sparkles className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
-              <p className="text-foreground-muted">Carregando agendamentos...</p>
+              <p className="text-foreground-muted">{t("loadingBookings")}</p>
             </div>
           ) : filteredBookings.length === 0 ? (
             <GlassCard className="p-12 text-center">
               <Calendar className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Nenhum agendamento encontrado
+                {t("noBookings")}
               </h3>
               <p className="text-foreground-muted">
-                Tente ajustar os filtros ou aguarde novos agendamentos
+                {t("adjustFilters")}
               </p>
             </GlassCard>
           ) : (
@@ -1088,7 +1092,7 @@ export default function AgendamentosPage() {
                             const Icon = statusConfig[booking.status as keyof typeof statusConfig]?.icon;
                             return Icon && <Icon className="h-3 w-3" />;
                           })()}
-                          {statusConfig[booking.status as keyof typeof statusConfig]?.label}
+                          {tStatus(booking.status as "PENDING")}
                         </span>
                       </div>
 
@@ -1130,7 +1134,7 @@ export default function AgendamentosPage() {
                       {/* Preço */}
                       <div className="text-sm">
                         <span className="font-medium text-foreground">
-                          Valor:{" "}
+                          {t("value")}:{" "}
                         </span>
                         <span className="text-lg font-bold text-accent">
                           R$ {booking.totalPrice.toFixed(2)}
@@ -1141,7 +1145,7 @@ export default function AgendamentosPage() {
                       {booking.notes && (
                         <div className="text-sm">
                           <span className="font-medium text-foreground">
-                            Observações:{" "}
+                            {tCommon("notes")}:{" "}
                           </span>
                           <span className="text-foreground-muted">{booking.notes}</span>
                         </div>
@@ -1158,7 +1162,7 @@ export default function AgendamentosPage() {
                           className="w-full py-2 gap-2 border-primary/30 hover:bg-primary/10 min-h-[44px]"
                         >
                           <Edit2 className="h-4 w-4" />
-                          Editar
+                          {tCommon("edit")}
                         </Button>
                       )}
                       
@@ -1172,7 +1176,7 @@ export default function AgendamentosPage() {
                             className="w-full py-2 min-h-[44px]"
                           >
                             <CheckCircle className="h-4 w-4" />
-                            Confirmar
+                            {tCommon("confirm")}
                           </GradientButton>
                           <GradientButton
                             variant="accent"
@@ -1182,7 +1186,7 @@ export default function AgendamentosPage() {
                             className="w-full py-2 bg-destructive/20 hover:bg-destructive/30 text-destructive min-h-[44px]"
                           >
                             <XCircle className="h-4 w-4" />
-                            Cancelar
+                            {tCommon("cancel")}
                           </GradientButton>
                         </>
                       )}
@@ -1196,7 +1200,7 @@ export default function AgendamentosPage() {
                             className="w-full py-2 min-h-[44px]"
                           >
                             <CheckCircle className="h-4 w-4" />
-                            Marcar Concluído
+                            {t("markCompleted")}
                           </GradientButton>
                           <GradientButton
                             variant="primary"
@@ -1206,7 +1210,7 @@ export default function AgendamentosPage() {
                             className="w-full py-2 min-h-[44px]"
                           >
                             <XCircle className="h-4 w-4" />
-                            Não Compareceu
+                            {t("markNoShow")}
                           </GradientButton>
                         </>
                       )}
@@ -1214,7 +1218,7 @@ export default function AgendamentosPage() {
                         booking.status === "CANCELLED" ||
                         booking.status === "NO_SHOW") && (
                         <p className="text-sm text-foreground-muted text-center py-2 glass-card bg-background-alt/30 rounded-lg">
-                          Agendamento finalizado
+                          {t("bookingFinished")}
                         </p>
                       )}
                     </div>
@@ -1634,10 +1638,10 @@ export default function AgendamentosPage() {
           <DialogHeader className="pb-4 md:pb-6 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3 text-foreground">
               <Edit2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-              Editar Agendamento
+              {t("editBooking")}
             </DialogTitle>
             <DialogDescription className="text-base mt-3 text-muted-foreground">
-              Atualize os dados do agendamento
+              {t("updateBookingData")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1647,7 +1651,7 @@ export default function AgendamentosPage() {
               <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
                 <Label className="text-base font-medium flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Cliente
+                  {t("clientFieldLabel")}
                 </Label>
                 <div className="space-y-2 pl-6">
                   <div className="font-medium text-base">{editingBooking.client.name}</div>
@@ -1660,7 +1664,7 @@ export default function AgendamentosPage() {
             <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
               <Label htmlFor="edit-service" className="text-base font-medium flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
-                Serviço *
+                {t("serviceFieldLabel")} *
               </Label>
               <Select
                 value={formData.serviceId}
@@ -1676,12 +1680,12 @@ export default function AgendamentosPage() {
                 }}
               >
                 <SelectTrigger className="h-14 text-base">
-                  <SelectValue placeholder="Selecione o serviço" />
+                  <SelectValue placeholder={t("selectService")} />
                 </SelectTrigger>
                 <SelectContent>
                   {services.length === 0 ? (
                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                      Nenhum serviço ativo cadastrado
+                      {t("noActiveServices")}
                     </div>
                   ) : (
                     services.map((service) => (
@@ -1698,7 +1702,7 @@ export default function AgendamentosPage() {
             <div className="space-y-4 p-6 glass-card rounded-xl border border-primary/20 bg-background-alt/30">
               <Label htmlFor="edit-staff" className="text-base font-medium flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
-                Profissional *
+                {t("professionalFieldLabel")} *
               </Label>
               <Select
                 value={formData.staffId}
@@ -1710,16 +1714,16 @@ export default function AgendamentosPage() {
                 <SelectTrigger className="h-14 text-base">
                   <SelectValue placeholder={
                     !formData.serviceId 
-                      ? "Selecione primeiro o serviço" 
-                      : "Selecione o profissional"
+                      ? t("selectServiceFirst")
+                      : t("selectProfessional")
                   } />
                 </SelectTrigger>
                 <SelectContent>
                   {getFilteredStaff().length === 0 ? (
                     <div className="px-3 py-2 text-sm text-muted-foreground">
                       {!formData.serviceId 
-                        ? "Selecione um serviço primeiro"
-                        : "Nenhum profissional disponível para este serviço"
+                        ? t("selectServiceFirst")
+                        : t("noProfessionalAvailable")
                       }
                     </div>
                   ) : (
@@ -1738,7 +1742,7 @@ export default function AgendamentosPage() {
               <div className="space-y-4">
                 <Label htmlFor="edit-date" className="text-base font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  Data *
+                  {t("dateLabel")} *
                 </Label>
                 <Input
                   id="edit-date"
@@ -1757,25 +1761,25 @@ export default function AgendamentosPage() {
                 <div className="space-y-4 pt-2">
                   <Label className="text-base font-medium flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Horários Disponíveis *
+                    {t("availableSlots")} *
                   </Label>
                   {loadingSlots ? (
                     <div className="flex items-center justify-center py-16 glass-card rounded-xl">
                       <Sparkles className="h-8 w-8 animate-spin text-primary" />
                       <span className="ml-3 text-base text-muted-foreground">
-                        Carregando horários...
+                        {t("loadingSlots")}
                       </span>
                     </div>
                   ) : availableSlots.length === 0 ? (
                     <div className="glass-card bg-muted/50 p-8 rounded-xl text-center border border-dashed border-muted-foreground/30">
                       <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                       <p className="text-base text-muted-foreground font-medium mb-2">
-                        Nenhum horário disponível
+                        {t("noSlotsAvailable")}
                       </p>
                       <p className="text-sm text-muted-foreground/80 max-w-md mx-auto">
-                        O profissional pode não trabalhar neste dia ou todos os horários estão ocupados.
+                        {t("slotsUnavailableReason")}
                         <br />
-                        Tente outra data ou profissional.
+                        {t("tryAnotherDate")}
                       </p>
                     </div>
                   ) : (
@@ -1814,7 +1818,7 @@ export default function AgendamentosPage() {
               <div className="space-y-3">
                 <Label htmlFor="edit-notes" className="flex items-center gap-2 text-base">
                   <AlertCircle className="h-4 w-4" />
-                  Observações (opcional)
+                  {tCommon("notes")} (opcional)
                 </Label>
                 <Input
                   id="edit-notes"
@@ -1822,7 +1826,7 @@ export default function AgendamentosPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
-                  placeholder="Observações adicionais (opcional)"
+                  placeholder={t("notesPlaceholder")}
                   className="h-12"
                 />
               </div>
@@ -1843,10 +1847,10 @@ export default function AgendamentosPage() {
                     className="text-base font-medium cursor-pointer flex items-center gap-2"
                   >
                     <Mail className="h-4 w-4 text-accent" />
-                    Notificar cliente sobre as alterações
+                    {t("notifyOnUpdate")}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Se marcado, o cliente receberá um email/WhatsApp informando sobre a mudança no agendamento (horário, profissional, etc.)
+                    {t("notifyOnUpdateDescription")}
                   </p>
                 </div>
               </div>
@@ -1864,7 +1868,7 @@ export default function AgendamentosPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <XIcon className="h-4 w-4 mr-2" />
-                Cancelar
+                {tCommon("cancel")}
               </Button>
               <GradientButton
                 variant="primary"
@@ -1875,12 +1879,12 @@ export default function AgendamentosPage() {
                 {saving ? (
                   <>
                     <Sparkles className="h-5 w-5 mr-2 animate-spin" />
-                    Salvando...
+                    {t("saving")}
                   </>
                 ) : (
                   <>
                     <Save className="h-5 w-5 mr-2" />
-                    Salvar Alterações
+                    {t("saveChanges")}
                   </>
                 )}
               </GradientButton>
@@ -1895,10 +1899,10 @@ export default function AgendamentosPage() {
           <DialogHeader className="pb-4 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-success">
               <CheckCircle className="h-6 w-6" />
-              Confirmar Agendamento
+              {t("confirmBooking")}
             </DialogTitle>
             <DialogDescription className="text-base mt-3">
-              Tem certeza que deseja confirmar este agendamento?
+              {t("confirmConfirm")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1907,16 +1911,16 @@ export default function AgendamentosPage() {
             {confirmingBooking && (
               <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
                 <p className="text-sm">
-                  <span className="font-semibold">Cliente:</span> {confirmingBooking.client.name}
+                  <span className="font-semibold">{t("clientFieldLabel")}:</span> {confirmingBooking.client.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Serviço:</span> {confirmingBooking.service.name}
+                  <span className="font-semibold">{t("serviceFieldLabel")}:</span> {confirmingBooking.service.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Profissional:</span> {confirmingBooking.staff.name}
+                  <span className="font-semibold">{t("professionalFieldLabel")}:</span> {confirmingBooking.staff.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Data/Hora:</span>{" "}
+                  <span className="font-semibold">{t("dateTimeFieldLabel")}:</span>{" "}
                   {format(new Date(confirmingBooking.date), "dd/MM/yyyy", { locale: ptBR })} às{" "}
                   {new Date(confirmingBooking.date).getUTCHours().toString().padStart(2, "0")}:
                   {new Date(confirmingBooking.date).getUTCMinutes().toString().padStart(2, "0")}
@@ -1939,10 +1943,10 @@ export default function AgendamentosPage() {
                     className="text-base font-medium cursor-pointer flex items-center gap-2"
                   >
                     <Mail className="h-4 w-4 text-accent" />
-                    Notificar cliente sobre a confirmação
+                    {t("notifyOnConfirm")}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Se marcado, o cliente receberá um email/WhatsApp confirmando o agendamento
+                    {t("notifyOnConfirmDescription")}
                   </p>
                 </div>
               </div>
@@ -1955,7 +1959,7 @@ export default function AgendamentosPage() {
                 onClick={() => setShowConfirmDialog(false)}
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
-                Voltar
+                {tCommon("back")}
               </Button>
               <GradientButton
                 variant="success"
@@ -1963,7 +1967,7 @@ export default function AgendamentosPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
-                Confirmar Agendamento
+                {t("confirmBooking")}
               </GradientButton>
             </div>
           </div>
@@ -1976,10 +1980,10 @@ export default function AgendamentosPage() {
           <DialogHeader className="pb-4 border-b border-primary/10">
             <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-destructive">
               <XCircle className="h-6 w-6" />
-              Confirmar Cancelamento
+              {t("confirmCancelTitle")}
             </DialogTitle>
             <DialogDescription className="text-base mt-3">
-              Tem certeza que deseja cancelar este agendamento?
+              {t("cancelConfirm")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1988,16 +1992,16 @@ export default function AgendamentosPage() {
             {cancellingBooking && (
               <div className="p-4 glass-card rounded-xl border border-primary/10 bg-primary/5 space-y-2">
                 <p className="text-sm">
-                  <span className="font-semibold">Cliente:</span> {cancellingBooking.client.name}
+                  <span className="font-semibold">{t("clientFieldLabel")}:</span> {cancellingBooking.client.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Serviço:</span> {cancellingBooking.service.name}
+                  <span className="font-semibold">{t("serviceFieldLabel")}:</span> {cancellingBooking.service.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Profissional:</span> {cancellingBooking.staff.name}
+                  <span className="font-semibold">{t("professionalFieldLabel")}:</span> {cancellingBooking.staff.name}
                 </p>
                 <p className="text-sm">
-                  <span className="font-semibold">Data/Hora:</span>{" "}
+                  <span className="font-semibold">{t("dateTimeFieldLabel")}:</span>{" "}
                   {format(new Date(cancellingBooking.date), "dd/MM/yyyy", { locale: ptBR })} às{" "}
                   {new Date(cancellingBooking.date).getUTCHours().toString().padStart(2, "0")}:
                   {new Date(cancellingBooking.date).getUTCMinutes().toString().padStart(2, "0")}
@@ -2020,10 +2024,10 @@ export default function AgendamentosPage() {
                     className="text-base font-medium cursor-pointer flex items-center gap-2"
                   >
                     <Mail className="h-4 w-4 text-accent" />
-                    Notificar cliente sobre o cancelamento
+                    {t("notifyOnCancel")}
                   </Label>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Se marcado, o cliente receberá um email/WhatsApp informando sobre o cancelamento
+                    {t("notifyOnCancelDescription")}
                   </p>
                 </div>
               </div>
@@ -2036,7 +2040,7 @@ export default function AgendamentosPage() {
                 onClick={() => setShowCancelDialog(false)}
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px]"
               >
-                Voltar
+                {tCommon("back")}
               </Button>
               <GradientButton
                 variant="accent"
@@ -2044,7 +2048,7 @@ export default function AgendamentosPage() {
                 className="flex-1 h-12 sm:h-11 text-base min-h-[44px] bg-destructive/80 hover:bg-destructive text-destructive-foreground"
               >
                 <XCircle className="h-5 w-5 mr-2" />
-                Confirmar Cancelamento
+                {t("confirmCancelTitle")}
               </GradientButton>
             </div>
           </div>
