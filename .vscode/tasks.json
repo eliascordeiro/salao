@@ -269,12 +269,12 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "git-commit-i18n-pages-16",
+			"label": "git-commit-i18n-pages-17",
 			"type": "shell",
 			"command": "bash",
 			"args": [
 				"-lc",
-				"git add -A && git commit -m \"i18n: translate subscription admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
+				"git add -A && git commit -m \"i18n: translate suporte-plataforma admin page pt/en/es/fr\" && git push origin $(git branch --show-current)"
 			],
 			"isBackground": false
 		}

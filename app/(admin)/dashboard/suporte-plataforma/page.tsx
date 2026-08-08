@@ -36,30 +36,31 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 
-const STATUS_OPTIONS = [
-  { value: "ALL", label: "Todos" },
-  { value: "OPEN", label: "Abertos", color: "text-red-500" },
-  { value: "IN_PROGRESS", label: "Em Andamento", color: "text-yellow-500" },
-  { value: "RESOLVED", label: "Resolvidos", color: "text-green-500" },
-  { value: "CLOSED", label: "Fechados", color: "text-gray-500" },
+const STATUS_VALUES = [
+  { value: "ALL" },
+  { value: "OPEN", color: "text-red-500" },
+  { value: "IN_PROGRESS", color: "text-yellow-500" },
+  { value: "RESOLVED", color: "text-green-500" },
+  { value: "CLOSED", color: "text-gray-500" },
 ];
 
-const CATEGORY_OPTIONS = [
-  { value: "ALL", label: "Todas" },
-  { value: "BUG", label: "Bug/Erro Técnico" },
-  { value: "FEATURE_REQUEST", label: "Solicitação de Funcionalidade" },
-  { value: "QUESTION", label: "Dúvida sobre Sistema" },
-  { value: "INTEGRATION", label: "Problema de Integração" },
-  { value: "BILLING", label: "Faturamento/Assinatura" },
-  { value: "OTHER", label: "Outro" },
+const CATEGORY_VALUES = [
+  { value: "ALL" },
+  { value: "BUG" },
+  { value: "FEATURE_REQUEST" },
+  { value: "QUESTION" },
+  { value: "INTEGRATION" },
+  { value: "BILLING" },
+  { value: "OTHER" },
 ];
 
-const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Baixa", color: "bg-blue-500" },
-  { value: "MEDIUM", label: "Média", color: "bg-yellow-500" },
-  { value: "HIGH", label: "Alta", color: "bg-orange-500" },
-  { value: "URGENT", label: "Urgente", color: "bg-red-500" },
+const PRIORITY_VALUES = [
+  { value: "LOW", color: "bg-blue-500" },
+  { value: "MEDIUM", color: "bg-yellow-500" },
+  { value: "HIGH", color: "bg-orange-500" },
+  { value: "URGENT", color: "bg-red-500" },
 ];
 
 interface PlatformTicket {
@@ -86,6 +87,8 @@ interface PlatformTicket {
 
 export default function SuportePlataformaPage() {
   const { data: session } = useSession();
+  const t = useTranslations("platformSupport");
+  const tSupport = useTranslations("support");
   const [tickets, setTickets] = useState<PlatformTicket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<PlatformTicket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<PlatformTicket | null>(null);
@@ -164,7 +167,7 @@ export default function SuportePlataformaPage() {
 
   const handleCreateTicket = async () => {
     if (!newTicket.subject || !newTicket.category || !newTicket.description) {
-      alert("Preencha todos os campos obrigatórios");
+      alert(t("fillRequiredFields"));
       return;
     }
 
@@ -185,13 +188,13 @@ export default function SuportePlataformaPage() {
           priority: "MEDIUM",
         });
         fetchTickets();
-        alert("Chamado criado com sucesso! Nossa equipe entrará em contato em breve.");
+        alert(t("ticketCreatedSuccess"));
       } else {
-        alert("Erro ao criar chamado");
+        alert(t("ticketCreatedError"));
       }
     } catch (error) {
       console.error("Erro:", error);
-      alert("Erro ao criar chamado");
+      alert(t("ticketCreatedError"));
     } finally {
       setSending(false);
     }
@@ -232,7 +235,7 @@ export default function SuportePlataformaPage() {
   };
 
   const handleCloseTicket = async (ticketId: string) => {
-    if (!confirm("Tem certeza que deseja fechar este chamado?")) return;
+    if (!confirm(t("confirmCloseTicket"))) return;
 
     try {
       const response = await fetch(`/api/platform-support/tickets/${ticketId}`, {
@@ -248,6 +251,40 @@ export default function SuportePlataformaPage() {
     } catch (error) {
       console.error("Erro ao fechar ticket:", error);
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      ALL: t("statusAll"),
+      OPEN: t("statusOpen"),
+      IN_PROGRESS: t("statusInProgress"),
+      RESOLVED: t("statusResolved"),
+      CLOSED: t("statusClosed"),
+    };
+    return map[status] || status;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const map: Record<string, string> = {
+      ALL: t("categoryAll"),
+      BUG: t("categoryBug"),
+      FEATURE_REQUEST: t("categoryFeatureRequest"),
+      QUESTION: t("categoryQuestion"),
+      INTEGRATION: t("categoryIntegration"),
+      BILLING: t("categoryBilling"),
+      OTHER: t("categoryOther"),
+    };
+    return map[category] || category;
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    const map: Record<string, string> = {
+      LOW: tSupport("priorityLow"),
+      MEDIUM: tSupport("priorityMedium"),
+      HIGH: tSupport("priorityHigh"),
+      URGENT: tSupport("priorityUrgent"),
+    };
+    return map[priority] || priority;
   };
 
   const getStatusIcon = (status: string) => {
@@ -275,7 +312,7 @@ export default function SuportePlataformaPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Carregando chamados...</p>
+        <p>{t("loadingTickets")}</p>
       </div>
     );
   }
@@ -298,10 +335,10 @@ export default function SuportePlataformaPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
               <Headset className="h-6 w-6 sm:h-8 sm:w-8" />
-              Suporte da Plataforma
+              {t("title")}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Abra chamados para nossa equipe de suporte técnico
+              {t("subtitle")}
             </p>
           </div>
 
@@ -310,7 +347,7 @@ export default function SuportePlataformaPage() {
             className="w-full sm:w-auto gap-2 min-h-[44px]"
           >
             <Plus className="h-4 w-4" />
-            Abrir Chamado
+            {t("openTicketButton")}
           </Button>
         </div>
 
@@ -320,7 +357,7 @@ export default function SuportePlataformaPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="text-sm text-muted-foreground">{t("statTotal")}</p>
                   <p className="text-2xl font-bold">{stats.total}</p>
                 </div>
                 <Ticket className="h-8 w-8 text-primary opacity-50" />
@@ -332,7 +369,7 @@ export default function SuportePlataformaPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Abertos</p>
+                  <p className="text-sm text-muted-foreground">{t("statusOpen")}</p>
                   <p className="text-2xl font-bold text-red-500">{stats.open}</p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-red-500 opacity-50" />
@@ -344,7 +381,7 @@ export default function SuportePlataformaPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Em Andamento</p>
+                  <p className="text-sm text-muted-foreground">{t("statusInProgress")}</p>
                   <p className="text-2xl font-bold text-yellow-500">
                     {stats.inProgress}
                   </p>
@@ -358,7 +395,7 @@ export default function SuportePlataformaPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Resolvidos</p>
+                  <p className="text-sm text-muted-foreground">{t("statusResolved")}</p>
                   <p className="text-2xl font-bold text-green-500">
                     {stats.resolved}
                   </p>
@@ -374,11 +411,11 @@ export default function SuportePlataformaPage() {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label>Buscar</Label>
+                <Label>{t("searchLabel")}</Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Número ou assunto..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -387,15 +424,15 @@ export default function SuportePlataformaPage() {
               </div>
 
               <div>
-                <Label>Status</Label>
+                <Label>{t("statusLabel")}</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTIONS.map((opt) => (
+                    {STATUS_VALUES.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
+                        {getStatusLabel(opt.value)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -403,15 +440,15 @@ export default function SuportePlataformaPage() {
               </div>
 
               <div>
-                <Label>Categoria</Label>
+                <Label>{t("categoryLabel")}</Label>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORY_OPTIONS.map((opt) => (
+                    {CATEGORY_VALUES.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
+                        {getCategoryLabel(opt.value)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -424,17 +461,17 @@ export default function SuportePlataformaPage() {
         {/* Tickets List */}
         <Card>
           <CardHeader>
-            <CardTitle>Meus Chamados ({filteredTickets.length})</CardTitle>
+            <CardTitle>{t("ticketsListTitle", { count: filteredTickets.length })}</CardTitle>
           </CardHeader>
           <CardContent>
             {filteredTickets.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Headset className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">
-                  Nenhum chamado encontrado
+                  {t("noTicketsFound")}
                 </p>
                 <p className="text-sm">
-                  Abra um chamado se precisar de ajuda com a plataforma
+                  {t("noTicketsFoundDesc")}
                 </p>
               </div>
             ) : (
@@ -455,25 +492,17 @@ export default function SuportePlataformaPage() {
                           <span className="font-semibold">{ticket.subject}</span>
                           <span
                             className={`text-xs px-2 py-1 rounded-full ${
-                              PRIORITY_OPTIONS.find(
+                              PRIORITY_VALUES.find(
                                 (p) => p.value === ticket.priority
                               )?.color
                             } text-white`}
                           >
-                            {
-                              PRIORITY_OPTIONS.find(
-                                (p) => p.value === ticket.priority
-                              )?.label
-                            }
+                            {getPriorityLabel(ticket.priority)}
                           </span>
                         </div>
                         <div className="text-sm text-muted-foreground flex items-center gap-4">
                           <span>
-                            {
-                              CATEGORY_OPTIONS.find(
-                                (c) => c.value === ticket.category
-                              )?.label
-                            }
+                            {getCategoryLabel(ticket.category)}
                           </span>
                           <span>
                             {format(
@@ -502,28 +531,27 @@ export default function SuportePlataformaPage() {
         <Dialog open={showNewTicketModal} onOpenChange={setShowNewTicketModal}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Abrir Novo Chamado</DialogTitle>
+              <DialogTitle>{t("newTicketModalTitle")}</DialogTitle>
               <DialogDescription>
-                Descreva seu problema ou solicitação. Nossa equipe responderá em
-                breve.
+                {t("newTicketModalDesc")}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div>
-                <Label>Assunto *</Label>
+                <Label>{t("subjectLabel")}</Label>
                 <Input
                   value={newTicket.subject}
                   onChange={(e) =>
                     setNewTicket({ ...newTicket, subject: e.target.value })
                   }
-                  placeholder="Ex: Erro ao gerar relatório financeiro"
+                  placeholder={t("subjectPlaceholder")}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Categoria *</Label>
+                  <Label>{t("categoryRequiredLabel")}</Label>
                   <Select
                     value={newTicket.category}
                     onValueChange={(value) =>
@@ -531,13 +559,13 @@ export default function SuportePlataformaPage() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione..." />
+                      <SelectValue placeholder={t("categoryPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORY_OPTIONS.filter((c) => c.value !== "ALL").map(
+                      {CATEGORY_VALUES.filter((c) => c.value !== "ALL").map(
                         (opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                            {getCategoryLabel(opt.value)}
                           </SelectItem>
                         )
                       )}
@@ -546,7 +574,7 @@ export default function SuportePlataformaPage() {
                 </div>
 
                 <div>
-                  <Label>Prioridade</Label>
+                  <Label>{t("priorityLabel")}</Label>
                   <Select
                     value={newTicket.priority}
                     onValueChange={(value) =>
@@ -557,9 +585,9 @@ export default function SuportePlataformaPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {PRIORITY_OPTIONS.map((opt) => (
+                      {PRIORITY_VALUES.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                          {getPriorityLabel(opt.value)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -568,13 +596,13 @@ export default function SuportePlataformaPage() {
               </div>
 
               <div>
-                <Label>Descrição Detalhada *</Label>
+                <Label>{t("descriptionLabel")}</Label>
                 <Textarea
                   value={newTicket.description}
                   onChange={(e) =>
                     setNewTicket({ ...newTicket, description: e.target.value })
                   }
-                  placeholder="Descreva o problema em detalhes: o que aconteceu, quando aconteceu, passos para reproduzir, etc."
+                  placeholder={t("descriptionPlaceholder")}
                   rows={6}
                 />
               </div>
@@ -585,10 +613,10 @@ export default function SuportePlataformaPage() {
                   onClick={() => setShowNewTicketModal(false)}
                   disabled={sending}
                 >
-                  Cancelar
+                  {t("cancelButton")}
                 </Button>
                 <Button onClick={handleCreateTicket} disabled={sending}>
-                  {sending ? "Criando..." : "Abrir Chamado"}
+                  {sending ? t("creatingButton") : t("openTicketButton")}
                 </Button>
               </div>
             </div>
@@ -611,31 +639,19 @@ export default function SuportePlataformaPage() {
                     <div className="flex flex-wrap items-center gap-4 mt-2">
                       <span className="flex items-center gap-1">
                         {getStatusIcon(selectedTicket.status)}
-                        {
-                          STATUS_OPTIONS.find(
-                            (s) => s.value === selectedTicket.status
-                          )?.label
-                        }
+                        {getStatusLabel(selectedTicket.status)}
                       </span>
                       <span>
-                        {
-                          CATEGORY_OPTIONS.find(
-                            (c) => c.value === selectedTicket.category
-                          )?.label
-                        }
+                        {getCategoryLabel(selectedTicket.category)}
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded text-xs text-white ${
-                          PRIORITY_OPTIONS.find(
+                          PRIORITY_VALUES.find(
                             (p) => p.value === selectedTicket.priority
                           )?.color
                         }`}
                       >
-                        {
-                          PRIORITY_OPTIONS.find(
-                            (p) => p.value === selectedTicket.priority
-                          )?.label
-                        }
+                        {getPriorityLabel(selectedTicket.priority)}
                       </span>
                     </div>
                   </DialogDescription>
@@ -646,13 +662,13 @@ export default function SuportePlataformaPage() {
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-sm font-medium mb-2">
-                        Descrição Original:
+                        {t("originalDescription")}
                       </p>
                       <p className="text-sm whitespace-pre-wrap">
                         {selectedTicket.description}
                       </p>
                       <p className="text-xs text-muted-foreground mt-4">
-                        Criado em{" "}
+                        {t("createdAtLabel")}{" "}
                         {format(
                           new Date(selectedTicket.createdAt),
                           "dd/MM/yyyy 'às' HH:mm",
@@ -665,7 +681,7 @@ export default function SuportePlataformaPage() {
                   {/* Mensagens */}
                   {selectedTicket.messages.length > 0 && (
                     <div>
-                      <h4 className="font-semibold mb-3">Conversação</h4>
+                      <h4 className="font-semibold mb-3">{t("conversation")}</h4>
                       <div className="space-y-3 max-h-[300px] overflow-y-auto">
                         {selectedTicket.messages.map((msg) => (
                           <Card
@@ -692,7 +708,7 @@ export default function SuportePlataformaPage() {
                                     </span>
                                     {msg.isSupport && (
                                       <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
-                                        Suporte
+                                        {t("supportBadge")}
                                       </span>
                                     )}
                                     <span className="text-xs text-muted-foreground">
@@ -718,12 +734,12 @@ export default function SuportePlataformaPage() {
                   {/* Nova Mensagem */}
                   {selectedTicket.status !== "CLOSED" && (
                     <div>
-                      <Label>Adicionar Mensagem</Label>
+                      <Label>{t("addMessageLabel")}</Label>
                       <div className="flex gap-2 mt-2">
                         <Textarea
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
-                          placeholder="Digite sua mensagem..."
+                          placeholder={t("messagePlaceholder")}
                           rows={3}
                           disabled={sending}
                         />
@@ -745,7 +761,7 @@ export default function SuportePlataformaPage() {
                         variant="outline"
                         onClick={() => handleCloseTicket(selectedTicket.id)}
                       >
-                        Fechar Chamado
+                        {t("closeTicketButton")}
                       </Button>
                     </div>
                   )}
